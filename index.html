@@ -7,7 +7,6 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* TEMA WARNA (10 Tema) */
         :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; }
         
         [data-theme="light-default"] { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; }
@@ -47,13 +46,14 @@
         button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
-        /* MENU NAVIGASI 1 BARIS (KLIK DI MANA SAJA UNTUK MEMBUKA) */
+        /* NAVBAR 1 BARIS (TIDAK AKAN TERPOTONG) */
         .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
-        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--btn-bg); font-weight: bold; font-size: 13px; cursor: pointer; }
-        .nav-summary-info { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center;}
+        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; font-size: 13px; cursor: pointer; gap: 8px;}
+        .nav-summary-info { flex: 1; white-space: nowrap; overflow-x: auto; scrollbar-width: none; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center;}
+        .nav-summary-info::-webkit-scrollbar { display: none; }
         
-        .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 11px; padding: 0; flex-shrink: 0;}
-        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 4px 8px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
+        .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 10px; padding: 0; flex-shrink: 0;}
+        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 5px 8px; font-size: 11px; border: none; cursor: pointer; flex-shrink: 0;}
 
         .nav-full-menu { display: none; padding: 15px; background: var(--bg); border-top: 1px solid var(--border); }
         .nav-full-menu.open { display: flex; flex-direction: column; gap: 10px; }
@@ -61,7 +61,6 @@
         .icon-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .icon-btn { flex: 1; min-width: 35px; background: var(--btn-bg); color: var(--text); font-size: 14px; padding: 10px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-weight: bold; }
         
-        /* AREA BACAAN E-READER */
         .reading-area { padding: 20px 15px; min-height: 50vh; font-size: var(--font-size); text-align: justify; color: var(--custom-color, var(--text)); transition: color 0.3s;}
         .book-title { font-size: 1.6em; font-weight: bold; color: var(--primary); margin: 30px 0 15px 0; border-bottom: 2px solid var(--border); padding-bottom: 5px; display: block; width: 100%;}
         
@@ -91,10 +90,10 @@
 
 <div class="container" id="main-container">
     
-    <!-- ================= 1. HALAMAN LOGIN ================= -->
+    <!-- ================= 1. LOGIN ================= -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 Login E-Reader Pro</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 25.0 (Final Search & 1-Line Nav)</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 26.0 (Fixed Nav & Search)</h4>
         
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
@@ -128,7 +127,7 @@
         <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px; margin-top: 15px;">Masuk Aplikasi</button>
     </div>
 
-    <!-- ================= 2. PENGATURAN AWAL ================= -->
+    <!-- ================= 2. SETTINGS ================= -->
     <div id="settings-page" class="modal hidden">
         <div class="modal-content card">
             <h2 style="text-align: center;">⚙️ Pilih Rencana</h2>
@@ -142,25 +141,23 @@
         </div>
     </div>
 
-    <!-- ================= 3. HALAMAN PENCARIAN (Default) ================= -->
+    <!-- ================= 3. HALAMAN PENCARIAN ================= -->
     <div id="search-page" class="hidden">
-        
         <div class="top-nav-bar">
-            <!-- 1 BARIS MUTLAK (KLIK DI MANA SAJA UNTUK MEMBUKA) -->
+            <!-- 1 Baris Mutlak (Teks digeser otomatis, tombol Signout & Segitiga aman di ujung) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">
                 <div class="nav-summary-info">
                     <span>🔍</span>
-                    <span id="search-info-title">Pencarian Baru</span> | 
+                    <span id="search-info-title">Pencarian</span> | 
                     <span id="search-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
                     <span id="search-info-words">0 Kata</span>
                 </div>
-                <div style="display: flex; gap:6px; align-items:center;" onclick="event.stopPropagation()">
+                <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
                     <button class="btn-signout" onclick="logout()">Sign Out</button>
                     <button class="btn-triangle" id="btn-toggle-search" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">▼</button>
                 </div>
             </div>
             
-            <!-- ISI MENU NAVIGASI LENGKAP -->
             <div class="nav-full-menu" id="search-menu">
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🌐 Bandingkan Bahasa</div>
                 <div class="icon-bar">
@@ -172,7 +169,7 @@
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔍 Navigasi Pencarian</div>
                 <div style="display:flex; gap:10px;">
                     <select id="search-book" style="flex:2;"></select>
-                    <input type="number" id="search-chapter" placeholder="Pasal" value="1" style="flex:1;">
+                    <input type="number" id="search-chapter" placeholder="Pasal" value="5" style="flex:1;">
                 </div>
                 <div style="display:flex; gap:10px;">
                     <input type="number" id="search-verse-start" placeholder="Ayat Awal" value="1" style="flex:1;">
@@ -230,9 +227,7 @@
 
     <!-- ================= 4. HALAMAN PEMBACAAN ================= -->
     <div id="read-page" class="hidden">
-        
         <div class="top-nav-bar">
-            <!-- 1 BARIS MUTLAK -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">
                 <div class="nav-summary-info">
                     <span>📖</span>
@@ -240,13 +235,12 @@
                     <span id="read-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
                     <span id="read-info-words">0 Kata</span>
                 </div>
-                <div style="display: flex; gap:6px; align-items:center;" onclick="event.stopPropagation()">
+                <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
                     <button class="btn-signout" onclick="logout()">Sign Out</button>
                     <button class="btn-triangle" id="btn-toggle-read" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">▼</button>
                 </div>
             </div>
             
-            <!-- ISI MENU LENGKAP -->
             <div class="nav-full-menu" id="read-menu">
                 <div style="font-size: 12px; font-weight: bold; color: gray;">⚙️ Navigasi Hari</div>
                 <div class="icon-bar">
@@ -315,7 +309,7 @@
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvr74f3OPZk5uBKmhWpYPETThNZtH_o4HKehXQnaNK-EHsfcfvemxRONP8psHchC_bRw/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyt5uqbnL2Qgpw-VTFpU1VRC8UGEDlKi8qHqIxO64Ga7Pfy2lAsOU_hT-otAYJbmb6_YQ/exec';
     
     let userSession = {};
     let currentHariKe = 1;
