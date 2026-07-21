@@ -45,23 +45,22 @@
         .container.full-width { max-width: 100%; padding: 5px; } 
         .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
-        input, select, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 15px; outline: none; }
+        input, select, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 15px; outline: none; box-sizing: border-box;}
         button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
         /* MENU NAVIGASI 1 BARIS MUTLAK */
-        .collapsible-menu { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 15px; }
-        .menu-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; cursor: pointer; font-size: 14px; font-weight: bold; background: var(--btn-bg); white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
-        .menu-header::-webkit-scrollbar { display: none; }
-        .menu-header-info { display: flex; align-items: center; gap: 8px; flex: 1; }
-        .menu-header-actions { display: flex; gap: 6px; }
+        .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
+        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--btn-bg); font-weight: bold; font-size: 14px; }
+        .nav-summary-info { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; gap: 8px; align-items: center;}
         
-        .menu-content { display: none; padding: 15px; border-top: 1px solid var(--border); background: var(--bg); }
-        .menu-content.open { display: flex; flex-direction: column; gap: 10px; }
+        .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 12px; padding: 0;}
+        
+        .nav-full-menu { display: none; padding: 15px; background: var(--bg); border-top: 1px solid var(--border); }
+        .nav-full-menu.open { display: flex; flex-direction: column; gap: 10px; }
         
         .icon-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .icon-btn { flex: 1; min-width: 35px; background: var(--btn-bg); color: var(--text); font-size: 14px; padding: 10px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-weight: bold; }
-        .quick-btn { padding: 4px 8px; font-size: 13px; border-radius: 6px; background: var(--card); border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center;}
         
         /* AREA BACAAN E-READER */
         .reading-area { padding: 20px 15px; min-height: 50vh; font-size: var(--font-size); text-align: justify; color: var(--custom-color, var(--text)); transition: color 0.3s;}
@@ -84,7 +83,7 @@
         .hidden { display: none !important; }
         
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
-        .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; }
+        .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; margin-top: 10vh;}
     </style>
 </head>
 <body class="font-apple" data-theme="light-default">
@@ -94,10 +93,10 @@
     <!-- ================= 1. HALAMAN LOGIN ================= -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 Login E-Reader Pro</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 22.0 (Bahasa Dinamis)</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 23.0 (1 Baris Mutlak & Bahasa Dinamis)</h4>
         
-        <div style="display: flex; gap: 10px;">
-            <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1;">
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
                 <optgroup label="☀️ Tema Terang">
                     <option value="light-default">Terang Default</option>
                     <option value="light-sepia">Sepia Klasik</option>
@@ -114,7 +113,7 @@
                 </optgroup>
             </select>
             
-            <select id="login-language" style="font-weight: bold; flex:1;">
+            <select id="login-language" style="font-weight: bold; flex:1; margin:0;">
                 <option value="ind">🇮🇩 Indonesia (Ind)</option>
                 <option value="eng">🇬🇧 English (Eng)</option>
                 <option value="chs">🇨🇳 Chinese (Chs)</option>
@@ -130,7 +129,7 @@
 
     <!-- ================= 2. PENGATURAN AWAL ================= -->
     <div id="settings-page" class="modal hidden">
-        <div class="modal-content card" style="margin-top: 10vh;">
+        <div class="modal-content card">
             <h2 style="text-align: center;">⚙️ Pilih Rencana</h2>
             <select id="set-plan">
                 <option value="Amsal 1 Bulan">Kitab Amsal (1 Bulan)</option>
@@ -145,30 +144,26 @@
     <!-- ================= 3. HALAMAN PENCARIAN (Default) ================= -->
     <div id="search-page" class="hidden">
         
-        <div class="collapsible-menu">
-            <!-- HEADER 1 BARIS -->
-            <div class="menu-header">
-                <div class="menu-header-info" onclick="toggleMenu('search-menu', this)">
-                    <span class="toggle-icon">▶</span>
+        <div class="top-nav-bar">
+            <!-- 1 BARIS MUTLAK -->
+            <div class="nav-summary-row">
+                <div class="nav-summary-info">
+                    <span>🔍</span>
                     <span id="search-info-title">Pencarian</span> | 
                     <span id="search-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
                     <span id="search-info-words">0 Kata</span>
                 </div>
-                <div class="menu-header-actions">
-                    <button class="quick-btn" onclick="toggleLebarLayar()">↔</button>
-                    <button class="quick-btn" onclick="gantiTemaCepat()">🎨</button>
-                    <button class="quick-btn" style="background:var(--primary); color:white; border:none;" onclick="bukaPembacaan()">📖 Baca</button>
-                </div>
+                <button class="btn-triangle" id="btn-toggle-search" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">▼</button>
             </div>
             
-            <!-- ISI MENU LENGKAP -->
-            <div class="menu-content" id="search-menu">
+            <!-- ISI MENU NAVIGASI -->
+            <div class="nav-full-menu" id="search-menu">
                 
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🌐 Bandingkan Bahasa</div>
                 <div class="icon-bar">
-                    <select id="lang1-search" class="icon-btn lang-selector-search" onchange="sinkronisasiBukuPencarian()"><option value="ind">Ind (Default)</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
-                    <select id="lang2-search" class="icon-btn lang-selector-search"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
-                    <select id="lang3-search" class="icon-btn lang-selector-search"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
+                    <select id="lang1-search" class="icon-btn" onchange="sinkronisasiBukuPencarian()"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
+                    <select id="lang2-search" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
+                    <select id="lang3-search" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
                 </div>
 
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔍 Navigasi Pencarian</div>
@@ -180,8 +175,9 @@
                     <input type="number" id="search-verse-start" placeholder="Ayat Awal" style="flex:1;">
                     <input type="number" id="search-verse-end" placeholder="Ayat Akhir" style="flex:1;">
                 </div>
+                <button class="icon-btn" style="background:var(--primary); color:white; width: 100%; margin: 10px 0;" onclick="eksekusiPencarian()">🔍 Eksekusi Pencarian</button>
 
-                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:10px;">🗣️ Suara & Visual</div>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">🗣️ Suara & Visual</div>
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="ubahFont(2)">A➕</button>
                     <button class="icon-btn" onclick="ubahFont(-2)">A➖</button>
@@ -202,7 +198,7 @@
                 <div class="icon-bar">
                     <select id="voice-select-search" class="icon-btn" style="flex:2;"></select>
                     <select id="voice-target-search" class="icon-btn" style="flex:1;">
-                        <option value="lang1">Baca Kolom 1</option><option value="lang2">Baca Kolom 2</option><option value="lang3">Baca Kolom 3</option>
+                        <option value="lang1">Kolom 1</option><option value="lang2">Kolom 2</option><option value="lang3">Kolom 3</option>
                     </select>
                 </div>
                 
@@ -215,7 +211,11 @@
                 </div>
 
                 <hr style="border-color: var(--border); margin: 10px 0;">
-                <button class="icon-btn" style="background:var(--primary); color:white; padding:12px; font-size:16px;" onclick="eksekusiPencarian()">🔍 Eksekusi Pencarian</button>
+                <div class="icon-bar">
+                    <button class="icon-btn" onclick="toggleLebarLayar()">↔ Lebar Layar</button>
+                    <button class="icon-btn" onclick="salinTeks('search-results')">📋 Copy</button>
+                    <button class="icon-btn" style="background:#5856d6; color:white;" onclick="bukaPembacaan()">📖 Ke Pembacaan</button>
+                </div>
             </div>
         </div>
 
@@ -228,38 +228,34 @@
     <!-- ================= 4. HALAMAN PEMBACAAN ================= -->
     <div id="read-page" class="hidden">
         
-        <div class="collapsible-menu">
-            <!-- HEADER 1 BARIS -->
-            <div class="menu-header">
-                <div class="menu-header-info" onclick="toggleMenu('read-menu', this)">
-                    <span class="toggle-icon">▶</span>
+        <div class="top-nav-bar">
+            <!-- 1 BARIS MUTLAK -->
+            <div class="nav-summary-row">
+                <div class="nav-summary-info">
+                    <span>📖</span>
                     <span id="read-info-title">Memuat...</span> | 
                     <span id="read-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
                     <span id="read-info-words">0 Kata</span>
                 </div>
-                <div class="menu-header-actions">
-                    <button class="quick-btn" onclick="toggleLebarLayar()">↔</button>
-                    <button class="quick-btn" onclick="gantiTemaCepat()">🎨</button>
-                    <button class="quick-btn" style="background:#5856d6; color:white; border:none;" onclick="bukaPencarian()">🔍 Cari</button>
-                </div>
+                <button class="btn-triangle" id="btn-toggle-read" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">▼</button>
             </div>
             
             <!-- ISI MENU LENGKAP -->
-            <div class="menu-content" id="read-menu">
+            <div class="nav-full-menu" id="read-menu">
                 <div style="font-size: 12px; font-weight: bold; color: gray;">⚙️ Navigasi Hari</div>
                 <div class="icon-bar">
-                    <button class="icon-btn" onclick="gantiHari(-1)">◀ Sebelumnya</button>
+                    <button class="icon-btn" onclick="gantiHari(-1)">◀ Prev</button>
                     <button class="icon-btn" onclick="kembaliHariIni()">📅 Hari Ini</button>
-                    <button class="icon-btn" onclick="gantiHari(1)">Selanjutnya ▶</button>
+                    <button class="icon-btn" onclick="gantiHari(1)">Next ▶</button>
                 </div>
                 
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:10px;">🌐 Bandingkan Bahasa</div>
                 <div class="icon-bar">
-                    <select id="lang1-read" class="icon-btn lang-selector-read"><option value="ind">Ind (Default)</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
-                    <select id="lang2-read" class="icon-btn lang-selector-read"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
-                    <select id="lang3-read" class="icon-btn lang-selector-read"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
+                    <select id="lang1-read" class="icon-btn"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
+                    <select id="lang2-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
+                    <select id="lang3-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
                 </div>
-                <button class="icon-btn" style="background:var(--primary); color:white; width:100%; margin-bottom:10px;" onclick="muatAyatServer()">🔄 Muat Ulang Bahasa</button>
+                <button class="icon-btn" style="background:var(--primary); color:white; width:100%; margin: 10px 0;" onclick="muatAyatServer()">🔄 Muat Ulang Bahasa</button>
 
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🗣️ Suara & Visual</div>
                 <div class="icon-bar">
@@ -282,7 +278,7 @@
                 <div class="icon-bar">
                     <select id="voice-select-read" class="icon-btn" style="flex:2;"></select>
                     <select id="voice-target-read" class="icon-btn" style="flex:1;">
-                        <option value="lang1">Baca Kolom 1</option><option value="lang2">Baca Kolom 2</option><option value="lang3">Baca Kolom 3</option>
+                        <option value="lang1">Kolom 1</option><option value="lang2">Kolom 2</option><option value="lang3">Kolom 3</option>
                     </select>
                 </div>
                 
@@ -293,6 +289,13 @@
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('reading-content', 'read')">▶</button>
                     <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
                 </div>
+
+                <hr style="border-color: var(--border); margin: 10px 0;">
+                <div class="icon-bar">
+                    <button class="icon-btn" onclick="toggleLebarLayar()">↔ Lebar Layar</button>
+                    <button class="icon-btn" onclick="salinTeks('reading-content')">📋 Copy</button>
+                    <button class="icon-btn" style="background:#5856d6; color:white;" onclick="bukaPencarian()">🔍 Ke Pencarian</button>
+                </div>
             </div>
         </div>
 
@@ -302,6 +305,7 @@
         
         <button onclick="tandaiSelesai()" style="background: #34c759; color: white; padding: 18px; font-size: 18px; border-radius: 30px; margin-top: 20px;">✅ Saya Sudah Membaca Ini</button>
     </div>
+
 </div>
 
 <script>
@@ -313,20 +317,20 @@
     let actualHariKe = 1; 
     let currentFontSize = 18;
     
+    // Variabel TTS
     let allVoices = [];
     let verseQueue = [];
     let isReading = false;
     let currentVerseIndex = 0;
     const themeList = ["light-default","light-sepia","light-mint","light-sky","light-peach","dark-default","dark-ocean","dark-dracula","dark-forest","dark-charcoal"];
-    let themeIndex = 0;
 
-    // DATA BUKU MULTI BAHASA
+    // DATA BUKU LENGKAP (Semua Array dipaksa panjang 66, jika kosong diisi nama Indonesia)
     const bookData = {
         ind: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matius","Markus","Lukas","Yohanes","Kisah Rasul-rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus","Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"],
         chs: ["创世记","出埃及","利未记","民数记","申命记","约书亚记","士师记","路得记","撒母耳记上","撒母耳记下","列王纪上","列王纪下","历代志上","历代志下","以斯拉记","尼希米记","以斯帖记","约伯记","诗篇","箴言","传道书","雅歌","以赛亚书","耶利米书","耶利米哀歌","以西结书","但以理书","何西阿书","约珥书","阿摩司书","俄巴底亚书","约拿书","弥迦书","那鸿书","哈巴谷书","西番雅书","哈该书","撒迦利亚书","玛拉基书","马太福音","马可福音","路加福音","约翰福音","使徒行传","罗马书","歌林多前书","歌林多后书","加拉太书","以弗所书","腓立比书","歌罗西书","帖撒罗尼迦前书","帖撒罗尼迦后书","提摩太前书","提摩太后书","提多书","腓利门书","希伯来书","雅各书","彼得前书","彼得后书","约翰一书","约翰二书","约翰三书","犹大书","启示录"],
         kjv: ["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi","Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"],
         eng: ["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi","Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"],
-        jawa: ["Matéus","Markus","Lukas","Yohanes","Para Rasul","Rum","1 Korinta","2 Korinta","Galasia","Efése","Filipi","Kolosé","1 Tèsalonika","2 Tèsalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Pétrus","2 Pétrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Pamedaran"]
+        jawa: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matéus","Markus","Lukas","Yohanes","Para Rasul","Rum","1 Korinta","2 Korinta","Galasia","Efése","Filipi","Kolosé","1 Tèsalonika","2 Tèsalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Pétrus","2 Pétrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Pamedaran"]
     };
 
     window.onload = () => {
@@ -334,23 +338,31 @@
         muatDaftarSuara(); 
     };
 
-    // --- MANAJEMEN UI ---
-    function toggleMenu(id, elHeader) { 
-        document.getElementById(id).classList.toggle('open'); 
-        if(elHeader){
-            let icon = elHeader.querySelector('.toggle-icon');
-            icon.innerText = document.getElementById(id).classList.contains('open') ? "▼" : "▶";
-        }
+    // --- MANAJEMEN UI (TOGGLE MENU SEGITIGA) ---
+    function toggleNavMenu(menuId, btnId) {
+        const menu = document.getElementById(menuId);
+        const btn = document.getElementById(btnId);
+        menu.classList.toggle('open');
+        btn.innerText = menu.classList.contains('open') ? "▲" : "▼";
+    }
+
+    function tutupSemuaNavMenu() {
+        document.getElementById('search-menu').classList.remove('open');
+        document.getElementById('btn-toggle-search').innerText = "▼";
+        document.getElementById('read-menu').classList.remove('open');
+        document.getElementById('btn-toggle-read').innerText = "▼";
     }
 
     function bukaPencarian() {
         hentikanSuara();
+        tutupSemuaNavMenu();
         document.getElementById('read-page').classList.add('hidden');
         document.getElementById('search-page').classList.remove('hidden');
     }
 
     function bukaPembacaan() {
         hentikanSuara();
+        tutupSemuaNavMenu();
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('read-page').classList.remove('hidden');
         kalkulasiTanggal(); 
@@ -362,8 +374,11 @@
         const bookSelect = document.getElementById('search-book');
         bookSelect.innerHTML = '';
         
-        const books = bookData[langSelected] || bookData['ind'];
-        books.forEach(k => bookSelect.appendChild(new Option(k, k)));
+        const books = bookData[langSelected];
+        books.forEach((bookName, index) => {
+            // VALUE selalu diisi index (0-65) agar saat dikirim ke backend bisa dirubah ke format Indonesia
+            bookSelect.appendChild(new Option(bookName, index));
+        });
     }
 
     // --- TTS (SUARA) ---
@@ -395,7 +410,7 @@
         let idx = parseInt(targetSelectorIdx.replace("lang", "")) - 1;
         let langCodeToRead = targetLangs[idx];
 
-        if(!langCodeToRead) return alert("Bahasa target kosong!");
+        if(!langCodeToRead) return alert("Bahasa target kolom kosong!");
 
         verseQueue = Array.from(document.querySelectorAll(`#${containerId} .verse-text[data-lang="${langCodeToRead}"]`));
         if (verseQueue.length === 0) return alert("Belum ada teks bahasa tersebut.");
@@ -445,11 +460,6 @@
     function gantiTemaGlobal(tema) { 
         document.body.setAttribute('data-theme', tema); 
         document.querySelectorAll('.theme-selector').forEach(el => el.value = tema);
-        themeIndex = themeList.indexOf(tema) > -1 ? themeList.indexOf(tema) : 0;
-    }
-    function gantiTemaCepat() {
-        themeIndex = (themeIndex + 1) % themeList.length;
-        gantiTemaGlobal(themeList[themeIndex]);
     }
     function gantiGayaFontGlobal(kelas) { 
         document.body.className = kelas; 
@@ -503,11 +513,11 @@
         const u = document.getElementById('username').value, p = document.getElementById('password').value;
         if (!u || !p) return alert("Isi Username & Password!");
         
-        // Simpan default bahasa dari login
+        // Atur Bahasa Default Saat Login
         const defaultLang = document.getElementById('login-language').value;
         document.getElementById('lang1-search').value = defaultLang;
         document.getElementById('lang1-read').value = defaultLang;
-        sinkronisasiBukuPencarian(); // Generate list buku sesuai bahasa
+        sinkronisasiBukuPencarian(); 
 
         document.getElementById('btn-login').innerText = "Memeriksa...";
         try {
@@ -541,48 +551,59 @@
     function gantiHari(arah) { hentikanSuara(); if(currentHariKe + arah < 1) return; currentHariKe += arah; muatAyatServer(); }
     function kembaliHariIni() { hentikanSuara(); currentHariKe = actualHariKe; muatAyatServer(); }
 
-    // --- EKSEKUSI SERVER ---
+    // --- EKSEKUSI PENCARIAN & PEMBACAAN ---
     async function muatAyatServer() {
         const box = document.getElementById('reading-content');
         box.innerHTML = "<h3 style='text-align:center;'>⏳ Mengunduh ayat...</h3>";
-        document.getElementById('read-info-title').innerText = `${userSession.plan} (H-${currentHariKe})`;
         
         let targetLangs = getSelectedLangs('read');
         try {
             let payload = userSession.plan === "Amsal 1 Bulan" ? { action: "searchSpesific", book: "Amsal", chapter: currentHariKe, languages: targetLangs } : { action: "getReading", plan: userSession.plan, hari_ke: currentHariKe, languages: targetLangs };
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
             const data = await res.json();
-            document.getElementById('read-menu').classList.remove('open');
-            document.querySelector('#read-page .toggle-icon').innerText = "▶";
-            renderEreaderGrouped(data.ayat, 'reading-content', 'read');
+            
+            tutupSemuaNavMenu();
+            renderEreaderGrouped(data.ayat, 'reading-content', 'read-info');
         } catch(e) { box.innerHTML = "Gagal memuat ayat."; }
     }
 
     async function eksekusiPencarian() {
-        const book = document.getElementById('search-book').value, chapter = document.getElementById('search-chapter').value;
+        // Ambil INDEX dari buku yang dipilih, lalu gunakan Book Data Indonesia agar selalu Valid di Backend
+        const bookIndex = document.getElementById('search-book').value;
+        const bookIndoName = bookData['ind'][bookIndex]; 
+        
+        const chapter = document.getElementById('search-chapter').value;
         const vStart = document.getElementById('search-verse-start').value, vEnd = document.getElementById('search-verse-end').value;
         if(!chapter) return alert("Pasal wajib diisi!");
         
         document.getElementById('search-results').innerHTML = "<h3>⏳ Sedang mencari...</h3>";
-        document.getElementById('search-menu').classList.remove('open'); 
-        document.querySelector('#search-page .toggle-icon').innerText = "▶";
+        tutupSemuaNavMenu();
         
         let targetLangs = getSelectedLangs('search');
         try {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "searchSpesific", book: book, chapter: chapter, verse_start: vStart, verse_end: vEnd, languages: targetLangs }) });
+            // Mengirimkan bookIndoName menjamin backend Google Sheet (yang berbahasa Indo) selalu mendeteksi Kitab
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "searchSpesific", book: bookIndoName, chapter: chapter, verse_start: vStart, verse_end: vEnd, languages: targetLangs }) });
             const data = await res.json();
-            renderEreaderGrouped(data.ayat, 'search-results', 'search');
+            
+            renderEreaderGrouped(data.ayat, 'search-results', 'search-info');
         } catch(e) { document.getElementById('search-results').innerHTML = "Gagal mencari."; }
     }
 
-    function salinTeks(elId) {
-        let txt = document.getElementById(elId).innerText;
-        navigator.clipboard.writeText(txt).then(() => alert("✅ Tercopy!"));
-    }
+    function salinTeks(elId) { navigator.clipboard.writeText(document.getElementById(elId).innerText).then(() => alert("✅ Tercopy!")); }
+    
     function tandaiSelesai() {
         hentikanSuara();
-        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-        setTimeout(() => alert(`🎉 Bacaan selesai!`), 500);
+        if(userSession.plan === "Amsal 1 Bulan" && currentHariKe === 31) {
+            let dur = 5000, end = Date.now() + dur;
+            let int = setInterval(function() {
+                if (Date.now() > end) return clearInterval(int);
+                confetti({ particleCount: 50, startVelocity: 30, spread: 360, origin: { x: Math.random(), y: Math.random() - 0.2 } });
+            }, 250);
+            setTimeout(() => alert("🎉 HALELUYA! Anda menyelesaikan Kitab Amsal!"), 1000);
+        } else {
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            setTimeout(() => alert(`🎉 Bacaan selesai!`), 500);
+        }
     }
 </script>
 </body>
