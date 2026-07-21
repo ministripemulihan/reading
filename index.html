@@ -7,11 +7,22 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* TEMA WARNA */
+        /* TEMA WARNA (10 Tema) */
         :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; }
+        
+        /* 5 Tema Terang */
+        [data-theme="light-default"] { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; }
         [data-theme="light-sepia"] { --bg: #f4ecd8; --text: #433422; --card: #fbf0d9; --primary: #d97736; --border: #d7c9a9; --btn-bg: #eedfbe; }
+        [data-theme="light-mint"] { --bg: #e8f5e9; --text: #1b5e20; --card: #ffffff; --primary: #2e7d32; --border: #c8e6c9; --btn-bg: #c8e6c9; }
+        [data-theme="light-sky"] { --bg: #e3f2fd; --text: #0d47a1; --card: #ffffff; --primary: #1976d2; --border: #bbdefb; --btn-bg: #bbdefb; }
+        [data-theme="light-peach"] { --bg: #fff0e5; --text: #5d4037; --card: #ffffff; --primary: #d84315; --border: #ffccbc; --btn-bg: #ffccbc; }
+
+        /* 5 Tema Gelap */
         [data-theme="dark-default"] { --bg: #000000; --text: #f2f2f7; --card: #1c1c1e; --primary: #0a84ff; --border: #38383a; --btn-bg: #2c2c2e; }
         [data-theme="dark-ocean"] { --bg: #0b192c; --text: #e2e8f0; --card: #112240; --primary: #64ffda; --border: #233f62; --btn-bg: #1a365d; }
+        [data-theme="dark-dracula"] { --bg: #282a36; --text: #f8f8f2; --card: #44475a; --primary: #ff79c6; --border: #6272a4; --btn-bg: #6272a4; }
+        [data-theme="dark-forest"] { --bg: #142f1d; --text: #dcf2e3; --card: #1e452a; --primary: #4ade80; --border: #2a613b; --btn-bg: #2a613b; }
+        [data-theme="dark-charcoal"] { --bg: #202020; --text: #e0e0e0; --card: #2d2d2d; --primary: #ffb74d; --border: #424242; --btn-bg: #424242; }
 
         /* GAYA FONT */
         body.font-apple { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -21,19 +32,28 @@
         body.font-arial { font-family: Arial, Helvetica, sans-serif; }
         body.font-verdana { font-family: Verdana, Geneva, sans-serif; }
 
-        body { background: var(--bg); color: var(--text); margin: 0; padding: 0; font-size: var(--font-size); line-height: 1.8; transition: 0.3s; }
+        /* BACKGROUND GOOGLE DRIVE HARDCODE */
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            /* URL Drive Diubah ke format export=view agar bisa dirender sebagai gambar */
+            background-image: url('https://drive.google.com/uc?export=view&id=1c7K5b2okVGA9OWcdL03sVbhF9s5OMjE2');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            z-index: -1; opacity: 0.12; transition: opacity 0.3s;
+        }
+        [data-theme^="dark"] body::before { opacity: 0.05; } /* Lebih redup di mode gelap */
+
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 0; font-size: var(--font-size); line-height: 1.8; transition: 0.3s; }
         
-        /* PENGATURAN LEBAR LAYAR */
         .container { max-width: 800px; margin: auto; padding: 15px; transition: max-width 0.3s ease; }
-        .container.full-width { max-width: 100%; padding: 5px; }
+        .container.full-width { max-width: 100%; padding: 5px; } 
         
-        .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
         input, select, button { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; outline: none; }
-        button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; }
+        button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
-        /* MENU NAVIGASI MINIMALIS */
+        /* MENU NAVIGASI */
         .collapsible-menu { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 15px; }
         .menu-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; cursor: pointer; font-weight: bold; font-size: 15px; }
         .menu-content { display: none; padding: 15px; border-top: 1px solid var(--border); background: var(--bg); }
@@ -43,26 +63,25 @@
         .icon-btn { flex: 1; min-width: 40px; background: var(--btn-bg); color: var(--text); font-size: 16px; padding: 10px; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-weight: bold;}
         
         /* AREA BACAAN E-READER */
-        .reading-area { padding: 20px 10px; min-height: 60vh; font-size: var(--font-size); text-align: justify; color: var(--custom-color, var(--text)); transition: color 0.3s;}
+        .reading-area { padding: 20px 15px; min-height: 60vh; font-size: var(--font-size); text-align: justify; color: var(--custom-color, var(--text)); transition: color 0.3s;}
         .book-title { font-size: 1.6em; font-weight: bold; color: var(--primary); margin: 30px 0 15px 0; border-bottom: 2px solid var(--border); padding-bottom: 5px; }
         .verse-num { font-size: 0.6em; font-weight: bold; color: var(--primary); margin-right: 4px; vertical-align: super; }
         
-        /* Format Tambahan (Tebal, Garis Bawah, Mode Baris) */
         body.force-bold .reading-area { font-weight: bold; }
         body.force-underline .verse-text { text-decoration: underline; }
         
-        .verse-item { display: inline; margin-right: 8px; transition: background-color 0.2s; border-radius: 5px;}
+        .verse-item { display: inline; margin-right: 8px; transition: background-color 0.2s; border-radius: 5px; }
         .reading-area.mode-baris .verse-item { display: block; margin-bottom: 12px; }
 
-        /* HIGHLIGHT SUARA (KARAOKE) */
-        .highlight-tts { background-color: #ffeb3b !important; color: #000 !important; box-shadow: 0 0 5px #ffeb3b; padding: 2px 4px; }
+        /* HIGHLIGHT SUARA (KONTRAST TINGGI) */
+        .highlight-tts { background-color: #ffeb3b !important; color: #000000 !important; box-shadow: 0 0 5px #ffeb3b; padding: 2px 4px; font-weight: bold; }
 
         .hidden { display: none !important; }
         
-        /* MODAL PENCARIAN & LAYAR LEBAR */
-        .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
-        .modal-content { width: 100%; max-width: 800px; padding: 20px; display: flex; flex-direction: column; transition: max-width 0.3s ease; }
-        .modal-content.full-width-modal { max-width: 100%; padding: 5px; }
+        /* MODAL */
+        .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
+        .modal-content { background: var(--bg); width: 100%; max-width: 800px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; transition: max-width 0.3s ease; min-height: 90vh; }
+        .modal-content.full-width-modal { max-width: 100%; padding: 10px; border-radius: 0; }
     </style>
 </head>
 <body class="font-apple" data-theme="light-default">
@@ -71,10 +90,29 @@
     <!-- 1. LOGIN -->
     <div id="login-page" class="card" style="margin-top: 10vh;">
         <h2 style="text-align: center;">📖 Login E-Reader</h2>
-        <h4 style="text-align: center; color: gray; margin-top: -10px;">ver 18.0 (Highlight & Artikulasi)</h4>
+        <h4 style="text-align: center; color: gray; margin-top: -10px;">ver 19.0 (Auto-Tutup & Background)</h4>
+        
+        <!-- Tema saat Login -->
+        <select onchange="gantiTema(this.value)" style="margin-bottom: 15px; font-weight: bold;">
+            <optgroup label="☀️ Tema Terang">
+                <option value="light-default">Terang Default</option>
+                <option value="light-sepia">Sepia Klasik</option>
+                <option value="light-mint">Hijau Mint</option>
+                <option value="light-sky">Biru Langit</option>
+                <option value="light-peach">Peach Hangat</option>
+            </optgroup>
+            <optgroup label="🌙 Tema Gelap">
+                <option value="dark-default">Gelap Default</option>
+                <option value="dark-ocean">Samudera Biru</option>
+                <option value="dark-dracula">Dracula (Ungu)</option>
+                <option value="dark-forest">Hutan Gelap</option>
+                <option value="dark-charcoal">Abu-abu Arang</option>
+            </optgroup>
+        </select>
+
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
-        <button onclick="prosesLogin()" id="btn-login">Masuk</button>
+        <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px;">Masuk Aplikasi</button>
     </div>
 
     <!-- 2. SETTINGS -->
@@ -109,7 +147,6 @@
                     <button class="icon-btn" onclick="toggleModeBaris()" title="Mode Paragraf / Baris">¶</button>
                 </div>
                 
-                <!-- FORMAT TEKS -->
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="ubahFont(2)">A➕</button>
                     <button class="icon-btn" onclick="ubahFont(-2)">A➖</button>
@@ -134,7 +171,7 @@
                         <option value="font-courier">Font: Courier</option>
                         <option value="font-comic">Font: Comic</option>
                     </select>
-                    <select class="icon-btn" style="flex:2; margin:0;" onchange="gantiTema(this.value)">
+                    <select class="icon-btn" style="flex:2; margin:0;" id="theme-selector-app" onchange="gantiTema(this.value)">
                         <option value="light-default">Tema: Terang</option>
                         <option value="light-sepia">Tema: Sepia</option>
                         <option value="dark-default">Tema: Gelap</option>
@@ -142,7 +179,6 @@
                     </select>
                 </div>
                 
-                <!-- FITUR SUARA LANJUTAN -->
                 <div class="icon-bar">
                     <select id="voice-lang-filter" class="icon-btn" style="flex:1; margin:0;" onchange="filterVoice()">
                         <option value="all">🌐 Semua</option>
@@ -167,8 +203,8 @@
                     <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label">Kec: 1.0 | Art: 1.0</span>
                 </div>
                 <div class="icon-bar">
-                    <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1" style="flex:1;" title="Kecepatan Baca" oninput="updateSpeedLabel()">
-                    <input type="range" id="voice-pitch" min="0.5" max="2" step="0.1" value="1" style="flex:1;" title="Artikulasi (Pitch)" oninput="updateSpeedLabel()">
+                    <input type="range" id="voice-speed" min="0.5" max="2.5" step="0.1" value="1" style="flex:1;" title="Kecepatan Baca" oninput="updateSpeedLabel()">
+                    <input type="range" id="voice-pitch" min="0.1" max="2" step="0.1" value="1" style="flex:1;" title="Artikulasi (Pitch)" oninput="updateSpeedLabel()">
                     
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('reading-content')">🗣️ ▶</button>
                     <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
@@ -183,7 +219,7 @@
             </div>
         </div>
 
-        <div id="reading-content" class="reading-area mode-baris">
+        <div id="reading-content" class="reading-area mode-baris card" style="background: var(--card);">
             <i>Mempersiapkan bacaan...</i>
         </div>
         
@@ -192,13 +228,15 @@
 
     <!-- 4. MODAL PENCARIAN -->
     <div id="search-modal" class="modal hidden">
-        <div class="modal-content" id="search-container">
+        <div class="modal-content card" id="search-container" style="background: var(--bg);">
             <div class="collapsible-menu">
                 <div class="menu-header" onclick="toggleMenu('search-menu')">
-                    <span>🔍 Parameter Pencarian</span> <span style="color: var(--primary);">▼</span>
+                    <span>🔍 Navigasi & Pencarian Lengkap</span> <span style="color: var(--primary);">▼</span>
                 </div>
-                <!-- Menu Default Tertutup saat Pencarian Dibuka -->
+                
+                <!-- MENU PENCARIAN TAMPIL LENGKAP -->
                 <div class="menu-content" id="search-menu">
+                    <!-- Filter Kitab -->
                     <div style="display:flex; gap:10px;">
                         <select id="search-book" style="flex:2;"></select>
                         <input type="number" id="search-chapter" placeholder="Pasal" style="flex:1;">
@@ -207,20 +245,31 @@
                         <input type="number" id="search-verse-start" placeholder="Ayat Awal" style="flex:1;">
                         <input type="number" id="search-verse-end" placeholder="Ayat Akhir" style="flex:1;">
                     </div>
+                    
+                    <!-- Format Font di Modal Pencarian -->
                     <div class="icon-bar" style="margin-top: 10px;">
-                        <button class="icon-btn" style="background:var(--primary); color:white;" onclick="eksekusiPencarian()">🔍 Cari Ayat</button>
+                        <button class="icon-btn" onclick="ubahFont(2)">A➕</button>
+                        <button class="icon-btn" onclick="ubahFont(-2)">A➖</button>
+                        <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
+                        <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
+                        <button class="icon-btn" onclick="toggleModeBaris()">¶</button>
+                    </div>
+
+                    <!-- TTS & Lebar Layar di Modal Pencarian -->
+                    <div class="icon-bar" style="margin-top: 10px;">
+                        <button class="icon-btn" style="background:var(--primary); color:white; flex:2;" onclick="eksekusiPencarian()">🔍 Eksekusi Pencarian</button>
                         <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('search-results')">🗣️ ▶</button>
                         <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
                     </div>
                     <div class="icon-bar" style="margin-top: 10px;">
-                        <button class="icon-btn" onclick="toggleLebarLayar('search-container')">↔ Lebar Maks</button>
+                        <button class="icon-btn" onclick="toggleLebarLayar('search-container')">↔ Lebar Maks (HP/PC)</button>
                         <button class="icon-btn" onclick="salinTeks('search-results')">📋 Copy</button>
                         <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="tutupModalCari()">Tutup</button>
                     </div>
                 </div>
             </div>
 
-            <div id="search-results" class="reading-area mode-baris" style="border: 1px solid var(--border); border-radius: 12px; padding: 15px;">
+            <div id="search-results" class="reading-area mode-baris card" style="border: 1px solid var(--border); padding: 15px; margin-top: 10px; flex-grow: 1;">
                 <i>Hasil pencarian akan tampil di sini...</i>
             </div>
         </div>
@@ -293,7 +342,6 @@
     function bacakanTeks(containerId) {
         hentikanSuara(); 
         
-        // Ambil semua elemen ayat di dalam container (membaca satu persatu)
         verseQueue = Array.from(document.querySelectorAll(`#${containerId} .verse-item`));
         if (verseQueue.length === 0) return alert("Belum ada teks untuk dibaca.");
         
@@ -310,7 +358,7 @@
 
         hapusHighlight();
         let elAyat = verseQueue[currentVerseIndex];
-        elAyat.classList.add('highlight-tts'); // Berikan Highlight
+        elAyat.classList.add('highlight-tts');
 
         let textToRead = elAyat.querySelector('.verse-text').innerText;
         let msg = new SpeechSynthesisUtterance(textToRead);
@@ -319,7 +367,7 @@
         if(allVoices[selIdx]) msg.voice = allVoices[selIdx];
         
         msg.rate = parseFloat(document.getElementById('voice-speed').value);
-        msg.pitch = parseFloat(document.getElementById('voice-pitch').value); // Artikulasi
+        msg.pitch = parseFloat(document.getElementById('voice-pitch').value); 
 
         msg.onend = () => {
             currentVerseIndex++;
@@ -340,7 +388,7 @@
         document.querySelectorAll('.highlight-tts').forEach(el => el.classList.remove('highlight-tts'));
     }
 
-    // --- LAYOUT E-READER ---
+    // --- LAYOUT & TEMA ---
     function toggleLebarLayar(elementId) {
         document.getElementById(elementId).classList.toggle('full-width');
         if(elementId === 'search-container') document.getElementById(elementId).classList.toggle('full-width-modal');
@@ -357,7 +405,14 @@
     }
 
     function ubahFont(val) { currentFontSize += val; document.body.style.setProperty('--font-size', currentFontSize + 'px'); }
-    function gantiTema(tema) { document.body.setAttribute('data-theme', tema); }
+    
+    function gantiTema(tema) { 
+        document.body.setAttribute('data-theme', tema); 
+        // Sinkronisasi dropdown tema di Dashboard jika diubah dari Login
+        let appSelector = document.getElementById('theme-selector-app');
+        if(appSelector) appSelector.value = tema;
+    }
+    
     function gantiGayaFont(kelas) { document.body.className = kelas; }
 
     function renderEreaderHtml(ayatArray, containerId, targetWordCountId) {
@@ -378,7 +433,6 @@
                 htmlOut += `<div class="book-title">${header}</div>`;
                 currentHeader = header;
             }
-            // Struktur terpisah agar highlight menargetkan verse-item yang spesifik
             htmlOut += `<div class="verse-item"><span class="verse-num">${a.v}</span><span class="verse-text">${a.t}</span></div>`;
             
             let words = a.t.trim().split(/\s+/);
@@ -389,7 +443,7 @@
         if(targetWordCountId) document.getElementById(targetWordCountId).innerText = `Kata: ${wordCount}`;
     }
 
-    // --- OTENTIKASI & TANGGAL (Tetap Sama) ---
+    // --- OTENTIKASI & BACAAN ---
     async function prosesLogin() {
         const u = document.getElementById('username').value, p = document.getElementById('password').value;
         if (!u || !p) return alert("Isi Username & Password!");
@@ -402,8 +456,8 @@
                 document.getElementById('login-page').classList.add('hidden');
                 if (!userSession.plan || !userSession.start_date) document.getElementById('settings-page').classList.remove('hidden');
                 else { document.getElementById('app-page').classList.remove('hidden'); kalkulasiTanggal(); }
-            } else { alert(out.message); document.getElementById('btn-login').innerText = "Masuk"; }
-        } catch(e) { alert("Error Server."); document.getElementById('btn-login').innerText = "Masuk"; }
+            } else { alert(out.message); document.getElementById('btn-login').innerText = "Masuk Aplikasi"; }
+        } catch(e) { alert("Error Server."); document.getElementById('btn-login').innerText = "Masuk Aplikasi"; }
     }
 
     async function simpanSetting() {
@@ -438,11 +492,12 @@
         } catch(e) { box.innerHTML = "Gagal memuat ayat."; }
     }
 
-    // --- PENCARIAN ---
+    // --- PENCARIAN & AUTO-TUTUP MENU ---
     function bukaModalCari() { 
         hentikanSuara();
         document.getElementById('search-modal').classList.remove('hidden'); 
-        document.getElementById('search-menu').classList.remove('open'); // Tertutup by default
+        // Buka menu penuh saat masuk pencarian pertama kali
+        document.getElementById('search-menu').classList.add('open'); 
     }
     function tutupModalCari() { hentikanSuara(); document.getElementById('search-modal').classList.add('hidden'); }
 
@@ -450,11 +505,15 @@
         const book = document.getElementById('search-book').value, chapter = document.getElementById('search-chapter').value;
         const vStart = document.getElementById('search-verse-start').value, vEnd = document.getElementById('search-verse-end').value;
         if(!chapter) return alert("Pasal wajib diisi!");
+        
         document.getElementById('search-results').innerHTML = "<h3>⏳ Sedang mencari...</h3>";
+        
+        // Auto-Tutup Menu Navigasi Pencarian
+        document.getElementById('search-menu').classList.remove('open');
+        
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "searchSpesific", book: book, chapter: chapter, verse_start: vStart, verse_end: vEnd }) });
             const data = await res.json();
-            document.getElementById('search-menu').classList.remove('open');
             renderEreaderHtml(data.ayat, 'search-results', null);
         } catch(e) { document.getElementById('search-results').innerHTML = "Gagal mencari."; }
     }
