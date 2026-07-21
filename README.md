@@ -1,0 +1,1 @@
+pembacaan alkitab setiap hari
