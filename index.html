@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Reader Alkitab</title>
+    <title>E-Reader Alkitab Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* TEMA WARNA (Ringkas) */
+        /* TEMA WARNA */
         :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; }
         [data-theme="light-sepia"] { --bg: #f4ecd8; --text: #433422; --card: #fbf0d9; --primary: #d97736; --border: #d7c9a9; --btn-bg: #eedfbe; }
         [data-theme="dark-default"] { --bg: #000000; --text: #f2f2f7; --card: #1c1c1e; --primary: #0a84ff; --border: #38383a; --btn-bg: #2c2c2e; }
@@ -17,11 +17,15 @@
         body.font-apple { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 400; }
         body.font-bold { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 700; }
         body.font-italic { font-family: Georgia, serif; font-weight: 400; font-style: italic; }
-        body.font-lucu { font-family: "Comic Sans MS", "Marker Felt", cursive; font-weight: 400; }
+        body.font-comic { font-family: "Comic Sans MS", "Marker Felt", cursive; font-weight: 400; }
+        body.font-roboto { font-family: 'Roboto', Arial, sans-serif; font-weight: 400; }
+        body.font-courier { font-family: 'Courier New', Courier, monospace; font-weight: 400; }
 
         body { background: var(--bg); color: var(--text); margin: 0; padding: 0; font-size: var(--font-size); line-height: 1.8; transition: 0.3s; }
         
-        .container { max-width: 900px; margin: auto; padding: 15px; }
+        .container { max-width: 800px; margin: auto; padding: 15px; transition: max-width 0.3s ease; }
+        .container.full-width { max-width: 100%; padding: 5px; } /* Mode Layar Lebar */
+        
         .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
         input, select, button { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; outline: none; }
@@ -34,14 +38,17 @@
         .menu-content { display: none; padding: 15px; border-top: 1px solid var(--border); background: var(--bg); }
         .menu-content.open { display: flex; flex-direction: column; gap: 10px; }
         
-        .icon-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
-        .icon-btn { flex: 1; min-width: 45px; background: var(--btn-bg); color: var(--text); font-size: 18px; padding: 10px; border-radius: 10px; display: flex; justify-content: center; align-items: center; }
+        .icon-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+        .icon-btn { flex: 1; min-width: 40px; background: var(--btn-bg); color: var(--text); font-size: 16px; padding: 10px; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; }
         
         /* AREA BACAAN E-READER */
         .reading-area { padding: 20px 10px; min-height: 60vh; font-size: var(--font-size); text-align: justify; }
         .book-title { font-size: 1.6em; font-weight: bold; color: var(--primary); margin: 30px 0 15px 0; border-bottom: 2px solid var(--border); padding-bottom: 5px; }
         .verse-num { font-size: 0.6em; font-weight: bold; color: var(--primary); margin-right: 4px; vertical-align: super; }
-        .verse-text { margin-right: 8px; }
+        
+        /* Layout Paragraf vs Baris Baru */
+        .verse-item { display: inline; margin-right: 8px; }
+        .reading-area.mode-baris .verse-item { display: block; margin-bottom: 12px; } /* Mode ke Bawah */
 
         .hidden { display: none !important; }
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; }
@@ -50,11 +57,11 @@
 </head>
 <body class="font-apple" data-theme="light-default">
 
-<div class="container">
+<div class="container" id="main-container">
     <!-- 1. LOGIN -->
     <div id="login-page" class="card" style="margin-top: 10vh;">
         <h2 style="text-align: center;">📖 Login E-Reader</h2>
-        <h2 style="text-align: center;">📖 ver 16.23</h2>
+        <h4 style="text-align: center; color: gray; margin-top: -10px;">ver 17.0 (Multi Voice & Layout)</h4>
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
         <button onclick="prosesLogin()" id="btn-login">Masuk</button>
@@ -89,15 +96,18 @@
                     <button class="icon-btn" onclick="gantiHari(-1)" title="Hari Sebelumnya">◀</button>
                     <button class="icon-btn" onclick="kembaliHariIni()" title="Hari Ini">📅</button>
                     <button class="icon-btn" onclick="gantiHari(1)" title="Hari Selanjutnya">▶</button>
+                    <button class="icon-btn" onclick="toggleModeBaris()" title="Paragraf / Baris Baru">¶</button>
                 </div>
                 <div class="icon-bar">
-                    <button class="icon-btn" onclick="ubahFont(2)" title="Perbesar Teks">➕</button>
-                    <button class="icon-btn" onclick="ubahFont(-2)" title="Perkecil Teks">➖</button>
+                    <button class="icon-btn" onclick="ubahFont(2)" title="Perbesar Teks">A➕</button>
+                    <button class="icon-btn" onclick="ubahFont(-2)" title="Perkecil Teks">A➖</button>
                     <select class="icon-btn" style="flex:2; margin:0;" onchange="gantiGayaFont(this.value)">
-                        <option value="font-apple">🗛 Biasa</option>
+                        <option value="font-apple">🗛 Apple</option>
                         <option value="font-bold">🗛 Tebal</option>
                         <option value="font-italic">🗛 Miring</option>
-                        <option value="font-lucu">🗛 Lucu</option>
+                        <option value="font-comic">🗛 Comic</option>
+                        <option value="font-roboto">🗛 Roboto</option>
+                        <option value="font-courier">🗛 Courier (Mesin Tik)</option>
                     </select>
                     <select class="icon-btn" style="flex:2; margin:0;" onchange="gantiTema(this.value)">
                         <option value="light-default">🎨 Terang</option>
@@ -106,13 +116,29 @@
                         <option value="dark-ocean">🎨 Biru Laut</option>
                     </select>
                 </div>
+                
+                <!-- Fitur Suara Lanjutan -->
                 <div class="icon-bar">
+                    <select id="voice-lang-filter" class="icon-btn" style="flex:1; margin:0;" onchange="filterVoice()">
+                        <option value="all">Semua Bahasa</option>
+                        <option value="id">Indonesia</option>
+                        <option value="en">Inggris</option>
+                        <option value="zh">Mandarin</option>
+                        <option value="ko">Korea</option>
+                        <option value="ja">Jepang</option>
+                        <option value="de">Jerman</option>
+                    </select>
                     <select id="voice-select" class="icon-btn" style="flex:2; margin:0;"></select>
-                    <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1" style="flex:1;" title="Kecepatan Baca">
+                </div>
+                <div class="icon-bar">
+                    <span style="font-size:12px; font-weight:bold;" id="speed-label">Kec: 1.0x</span>
+                    <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel(this.value)">
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('reading-content')">🗣️ ▶</button>
                     <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="window.speechSynthesis.cancel()">⏹</button>
                 </div>
+
                 <div class="icon-bar">
+                    <button class="icon-btn" onclick="toggleLebarLayar()">↔ Lebar Maks</button>
                     <button class="icon-btn" onclick="document.documentElement.requestFullscreen()">⛶ Fullscreen</button>
                     <button class="icon-btn" onclick="bukaModalCari()">🔍 Cari</button>
                     <button class="icon-btn" onclick="salinTeks('reading-content')">📋 Copy</button>
@@ -121,7 +147,7 @@
             </div>
         </div>
 
-        <!-- AREA TEKS E-READER -->
+        <!-- AREA TEKS E-READER (Bisa class "mode-baris") -->
         <div id="reading-content" class="reading-area">
             <i>Mempersiapkan bacaan...</i>
         </div>
@@ -147,15 +173,16 @@
                     </div>
                     <div class="icon-bar" style="margin-top: 10px;">
                         <button class="icon-btn" style="background:var(--primary); color:white;" onclick="eksekusiPencarian()">🔍 Cari Ayat</button>
-                        <button class="icon-btn" onclick="ubahFont(2)">➕</button>
-                        <button class="icon-btn" onclick="ubahFont(-2)">➖</button>
+                        <button class="icon-btn" onclick="toggleModeBaris()">¶</button>
+                        <button class="icon-btn" onclick="ubahFont(2)">A➕</button>
+                        <button class="icon-btn" onclick="ubahFont(-2)">A➖</button>
                         <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="tutupModalCari()">Tutup</button>
                     </div>
                 </div>
             </div>
 
             <div id="search-results" class="reading-area" style="border: 1px solid var(--border); border-radius: 12px; padding: 15px;">
-                <i>Hasil pencarian akan tampil di sini seperti format buku...</i>
+                <i>Hasil pencarian akan tampil di sini...</i>
             </div>
             <button onclick="salinTeks('search-results')" style="margin-top:15px; background:var(--primary);">📋 Copy Hasil</button>
         </div>
@@ -170,16 +197,18 @@
     let currentHariKe = 1;
     let actualHariKe = 1; 
     let currentFontSize = 18;
-    let availableVoices = [];
-    let textToReadRaw = ""; // Variabel murni untuk dibaca Google Voice
+    let allVoices = [];
+    let textToReadRaw = ""; 
 
     const daftarkitab = ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matius","Markus","Lukas","Yohanes","Kisah Para Rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus","Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"];
 
     window.onload = () => {
         const bookSelect = document.getElementById('search-book');
         daftarkitab.forEach(k => bookSelect.appendChild(new Option(k, k)));
-        speechSynthesis.onvoiceschanged = muatDaftarSuara;
-        muatDaftarSuara(); 
+        
+        // Setup Suara
+        speechSynthesis.onvoiceschanged = ambilSemuaSuara;
+        ambilSemuaSuara(); 
     };
 
     function toggleMenu(id) {
@@ -187,13 +216,41 @@
         menu.classList.toggle('open');
     }
 
-    function muatDaftarSuara() {
-        availableVoices = speechSynthesis.getVoices();
+    // --- MANAJEMEN SUARA MULTI-BAHASA ---
+    function ambilSemuaSuara() {
+        allVoices = speechSynthesis.getVoices();
+        filterVoice(); 
+    }
+
+    function filterVoice() {
+        const langFilter = document.getElementById('voice-lang-filter').value;
         const select = document.getElementById('voice-select');
         select.innerHTML = '';
-        availableVoices.forEach((v, i) => {
-            if(v.lang.includes('id') || v.lang.includes('en')) select.appendChild(new Option(v.name, i));
+        
+        allVoices.forEach((v, index) => {
+            let langCode = v.lang.toLowerCase();
+            let gender = v.name.toLowerCase().includes('female') ? '♀' : (v.name.toLowerCase().includes('male') ? '♂' : '⚙️');
+            
+            if (langFilter === 'all' || langCode.includes(langFilter)) {
+                let opt = new Option(`${gender} ${v.name} (${v.lang})`, index);
+                select.appendChild(opt);
+            }
         });
+    }
+
+    function updateSpeedLabel(val) {
+        document.getElementById('speed-label').innerText = `Kec: ${val}x`;
+    }
+
+    // --- LAYOUT LEBAR MAKSIMAL ---
+    function toggleLebarLayar() {
+        document.getElementById('main-container').classList.toggle('full-width');
+    }
+
+    // --- LAYOUT PARAGRAF VS BARIS BARU ---
+    function toggleModeBaris() {
+        document.getElementById('reading-content').classList.toggle('mode-baris');
+        document.getElementById('search-results').classList.toggle('mode-baris');
     }
 
     // --- OTENTIKASI ---
@@ -239,12 +296,12 @@
     function gantiHari(arah) { if(currentHariKe + arah < 1) return; currentHariKe += arah; muatAyatServer(); }
     function kembaliHariIni() { currentHariKe = actualHariKe; muatAyatServer(); }
 
-    // --- RENDER AYAT (Format E-Reader & Word Count) ---
+    // --- RENDER AYAT (Bisa Paragraf atau Baris) ---
     function renderEreaderHtml(ayatArray, containerId, targetWordCountId) {
         const box = document.getElementById(containerId);
         if (!ayatArray || ayatArray.length === 0) {
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Ayat tidak ditemukan.</h3>";
-            document.getElementById(targetWordCountId).innerText = "Kata: 0";
+            if(targetWordCountId) document.getElementById(targetWordCountId).innerText = "Kata: 0";
             return;
         }
 
@@ -259,18 +316,16 @@
                 htmlOut += `<div class="book-title">${header}</div>`;
                 currentHeader = header;
             }
-            htmlOut += `<span class="verse-num">${a.v}</span><span class="verse-text">${a.t}</span>`;
+            // Tiap ayat dibungkus dalam div/span class "verse-item"
+            htmlOut += `<div class="verse-item"><span class="verse-num">${a.v}</span><span class="verse-text">${a.t}</span></div>`;
             textToReadRaw += a.t + " ";
             
-            // Hitung kata (pisahkan berdasarkan spasi)
             let words = a.t.trim().split(/\s+/);
             wordCount += words.length;
         });
 
         box.innerHTML = htmlOut;
-        if(targetWordCountId) {
-            document.getElementById(targetWordCountId).innerText = `Kata: ${wordCount}`;
-        }
+        if(targetWordCountId) document.getElementById(targetWordCountId).innerText = `Kata: ${wordCount}`;
     }
 
     // --- AMBIL DATA BACAAN ---
@@ -287,13 +342,12 @@
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
             const data = await res.json();
             
-            // Tutup menu agar layar lega untuk membaca
             document.getElementById('main-menu').classList.remove('open');
             renderEreaderHtml(data.ayat, 'reading-content', 'word-count');
         } catch(e) { box.innerHTML = "Gagal memuat ayat."; }
     }
 
-    // --- PENCARIAN FULLSCREEN ---
+    // --- PENCARIAN ---
     function bukaModalCari() { document.getElementById('search-modal').classList.remove('hidden'); document.getElementById('search-menu').classList.add('open'); }
     function tutupModalCari() { document.getElementById('search-modal').classList.add('hidden'); }
 
@@ -307,12 +361,12 @@
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "searchSpesific", book: book, chapter: chapter, verse_start: vStart, verse_end: vEnd }) });
             const data = await res.json();
             
-            document.getElementById('search-menu').classList.remove('open'); // Tutup menu pencarian
+            document.getElementById('search-menu').classList.remove('open');
             renderEreaderHtml(data.ayat, 'search-results', null);
         } catch(e) { document.getElementById('search-results').innerHTML = "Gagal mencari."; }
     }
 
-    // --- UTILITAS ---
+    // --- UTILITAS UI & TTS ---
     function ubahFont(val) { currentFontSize += val; document.body.style.setProperty('--font-size', currentFontSize + 'px'); }
     function gantiTema(tema) { document.body.setAttribute('data-theme', tema); }
     function gantiGayaFont(kelas) { document.body.className = kelas; }
@@ -328,9 +382,9 @@
         const msg = new SpeechSynthesisUtterance(textToReadRaw);
         
         let selIdx = document.getElementById('voice-select').value;
-        if(availableVoices[selIdx]) msg.voice = availableVoices[selIdx];
+        if(allVoices[selIdx]) msg.voice = allVoices[selIdx];
         
-        msg.rate = parseFloat(document.getElementById('voice-speed').value); // Ambil slider kecepatan
+        msg.rate = parseFloat(document.getElementById('voice-speed').value);
         window.speechSynthesis.speak(msg);
     }
 
@@ -347,7 +401,6 @@
             setTimeout(() => alert(`🎉 Bacaan Hari ke-${currentHariKe} selesai!`), 500);
         }
     }
-    
     function logout() { location.reload(); }
 </script>
 </body>
