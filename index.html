@@ -46,14 +46,13 @@
         button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
-        /* NAVBAR 1 BARIS (TIDAK AKAN TERPOTONG) */
         .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
         .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; font-size: 13px; cursor: pointer; gap: 8px;}
         .nav-summary-info { flex: 1; white-space: nowrap; overflow-x: auto; scrollbar-width: none; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center;}
         .nav-summary-info::-webkit-scrollbar { display: none; }
         
-        .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 10px; padding: 0; flex-shrink: 0;}
-        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 5px 8px; font-size: 11px; border: none; cursor: pointer; flex-shrink: 0;}
+        .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 11px; padding: 0; flex-shrink: 0;}
+        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 4px 8px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
 
         .nav-full-menu { display: none; padding: 15px; background: var(--bg); border-top: 1px solid var(--border); }
         .nav-full-menu.open { display: flex; flex-direction: column; gap: 10px; }
@@ -90,10 +89,10 @@
 
 <div class="container" id="main-container">
     
-    <!-- ================= 1. LOGIN ================= -->
+    <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 Login E-Reader Pro</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 26.0 (Fixed Nav & Search)</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 27.0 (Fixed Book Search)</h4>
         
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
@@ -127,7 +126,7 @@
         <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px; margin-top: 15px;">Masuk Aplikasi</button>
     </div>
 
-    <!-- ================= 2. SETTINGS ================= -->
+    <!-- SETTINGS -->
     <div id="settings-page" class="modal hidden">
         <div class="modal-content card">
             <h2 style="text-align: center;">⚙️ Pilih Rencana</h2>
@@ -141,10 +140,9 @@
         </div>
     </div>
 
-    <!-- ================= 3. HALAMAN PENCARIAN ================= -->
+    <!-- PENCARIAN -->
     <div id="search-page" class="hidden">
         <div class="top-nav-bar">
-            <!-- 1 Baris Mutlak (Teks digeser otomatis, tombol Signout & Segitiga aman di ujung) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">
                 <div class="nav-summary-info">
                     <span>🔍</span>
@@ -225,7 +223,7 @@
     </div>
 
 
-    <!-- ================= 4. HALAMAN PEMBACAAN ================= -->
+    <!-- PEMBACAAN -->
     <div id="read-page" class="hidden">
         <div class="top-nav-bar">
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">
@@ -309,7 +307,7 @@
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyt5uqbnL2Qgpw-VTFpU1VRC8UGEDlKi8qHqIxO64Ga7Pfy2lAsOU_hT-otAYJbmb6_YQ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLWskKf2DbgTOPEJ9sbCuq1ziqKwPXwIpvuhoGfYr_pGMh56IqrUexDTKY73OsNmrh1A/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -376,10 +374,11 @@
         bookSelect.innerHTML = '';
         
         const books = bookData[langSelected] || bookData['ind'];
-        const offset = langSelected === 'jawa' ? 39 : 0; 
         
         books.forEach((bookName, index) => {
-            bookSelect.appendChild(new Option(bookName, index + 1 + offset));
+            // Indeks array dimulai dari 0, sedangkan Book Number di Alkitab dimulai dari 1 (Kejadian = 1, Matius = 40)
+            let bookNum = index + 1;
+            bookSelect.appendChild(new Option(bookName, bookNum));
         });
     }
 
