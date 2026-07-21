@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Jadwal Pembacaan</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #f9f9f9;
+            --btn-bg: #4CAF50;
+            --btn-text: white;
+            --font-size: 16px;
+            --font-weight: normal;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #f1f1f1;
+            --card-bg: #2d2d2d;
+            --btn-bg: #45a049;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: Arial, sans-serif;
+            font-size: var(--font-size);
+            font-weight: var(--font-weight);
+            margin: 0; padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: var(--card-bg); padding: 10px; border-radius: 8px;}
+        button, select {
+            background: var(--btn-bg); color: var(--btn-text); border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;
+        }
+        button:hover { opacity: 0.9; }
+        .hidden { display: none; }
+        .warning { background: #ffcc00; color: #333; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+        input[type="text"] { padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Halaman Login -->
+    <div id="login-section" class="card">
+        <h2>Login Pembaca</h2>
+        <input type="text" id="username" placeholder="Masukkan Nama Anda...">
+        <button onclick="login()">Masuk</button>
+    </div>
+
+    <!-- Aplikasi Utama -->
+    <div id="app-section" class="hidden">
+        <div class="toolbar">
+            <span id="welcome-msg"></span>
+            <button onclick="toggleTheme()">Gelap/Terang</button>
+            <button onclick="toggleFullscreen()">Layar Penuh</button>
+            <select id="fontSize" onchange="changeFont()">
+                <option value="14px">Kecil</option>
+                <option value="16px" selected>Sedang</option>
+                <option value="20px">Besar</option>
+                <option value="24px">Sangat Besar</option>
+            </select>
+            <select id="fontWeight" onchange="changeFont()">
+                <option value="normal" selected>Tipis</option>
+                <option value="bold">Tebal</option>
+            </select>
+            <button onclick="logout()" style="background: #f44336;">Logout</button>
+        </div>
+
+        <div id="late-warning" class="warning hidden">
+            <strong>Perhatian:</strong> Anda memiliki jadwal yang terlewat! Silakan baca materi hari ini dan pastikan menekan tombol "Selesai" sebelum berganti hari.
+        </div>
+
+        <div class="card" id="content-card">
+            <h2 id="judul-hari">Memuat Jadwal...</h2>
+            <p><strong>Tanggal:</strong> <span id="tgl-baca"></span></p>
+            <p><strong>PL:</strong> <span id="pl-teks"></span></p>
+            <p><strong>PB:</strong> <span id="pb-teks"></span></p>
+            
+            <hr>
+            <h3>Isi Pembacaan:</h3>
+            <p id="isi-pembacaan"></p>
+            <button onclick="bacakanSuara()">🔊 Bacakan Teks (Google Voice)</button>
+            
+            <hr>
+            <p><a href="#" id="link-pl" target="_blank">Tonton Video PL</a> | <a href="#" id="link-pb" target="_blank">Tonton Video PB</a></p>
+            
+            <br><br>
+            <label>Keterangan Tambahan (Opsional):</label>
+            <input type="text" id="keterangan" placeholder="Misal: Selesai dibaca dengan baik...">
+            <br>
+            <button onclick="tandaiSelesai()" style="width: 100%; font-size: 18px; padding: 15px; margin-top:10px;">✅ KLIK SELESAI</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // MASUKKAN URL APPS SCRIPT ANDA DI SINI
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyPdB2s0pyC1oPXusMFXVJKRZWd0IlQnqagN5qh4kan0Vl8Ib3h63S08OqMBKA_AP6fJw/exec'; 
+    
+    let currentData = null;
+    let username = localStorage.getItem('username');
+
+    // Inisialisasi Pengaturan Tersimpan
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+    document.documentElement.style.setProperty('--font-size', localStorage.getItem('fontSize') || '16px');
+    document.documentElement.style.setProperty('--font-weight', localStorage.getItem('fontWeight') || 'normal');
+    document.getElementById('fontSize').value = localStorage.getItem('fontSize') || '16px';
+    document.getElementById('fontWeight').value = localStorage.getItem('fontWeight') || 'normal';
+
+    if(username) { showApp(); }
+
+    function login() {
+        const input = document.getElementById('username').value;
+        if(input.trim() === "") return alert("Nama tidak boleh kosong!");
+        username = input;
+        localStorage.setItem('username', username);
+        showApp();
+    }
+
+    function logout() {
+        localStorage.removeItem('username');
+        location.reload();
+    }
+
+    function showApp() {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('app-section').classList.remove('hidden');
+        document.getElementById('welcome-msg').innerText = `Halo, ${username}!`;
+        loadJadwal();
+    }
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const target = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', target);
+        localStorage.setItem('theme', target);
+    }
+
+    function changeFont() {
+        const size = document.getElementById('fontSize').value;
+        const weight = document.getElementById('fontWeight').value;
+        document.documentElement.style.setProperty('--font-size', size);
+        document.documentElement.style.setProperty('--font-weight', weight);
+        localStorage.setItem('fontSize', size);
+        localStorage.setItem('fontWeight', weight);
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => console.log(err));
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    function bacakanSuara() {
+        const teks = document.getElementById('isi-pembacaan').innerText;
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Hentikan suara sebelumnya
+            const msg = new SpeechSynthesisUtterance(teks);
+            msg.lang = 'id-ID'; // Bahasa Indonesia
+            window.speechSynthesis.speak(msg);
+        } else {
+            alert("Browser Anda tidak mendukung fitur suara.");
+        }
+    }
+
+    async function loadJadwal() {
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const result = await response.json();
+            
+            // Logika Otomatis Mencari Jadwal Hari Ini
+            const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+            
+            // Mencari data yang tanggalnya cocok dengan hari ini
+            let jadwalHariIni = result.data.find(row => row['tgl'] === today);
+            
+            if(!jadwalHariIni) {
+                // Jika tidak ketemu, ambil data pertama sebagai fallback (bisa disesuaikan)
+                jadwalHariIni = result.data[0]; 
+            }
+
+            // Pengecekan Keterlambatan Sederhana
+            const lastRead = localStorage.getItem('lastReadDate');
+            if(lastRead && lastRead !== today) {
+                document.getElementById('late-warning').classList.remove('hidden');
+            }
+
+            currentData = jadwalHariIni;
+            
+            // Menampilkan data ke HTML
+            document.getElementById('judul-hari').innerText = `Hari ke-${jadwalHariIni['hari ke']} (${jadwalHariIni['mode baca']})`;
+            document.getElementById('tgl-baca').innerText = jadwalHariIni['tgl'];
+            document.getElementById('pl-teks').innerText = `${jadwalHariIni['PL']} - ${jadwalHariIni['isi PL']}`;
+            document.getElementById('pb-teks').innerText = `${jadwalHariIni['PB']} - ${jadwalHariIni['isi PB']}`;
+            document.getElementById('isi-pembacaan').innerText = jadwalHariIni['isi pembacaan'];
+            document.getElementById('link-pl').href = jadwalHariIni['link video PL'];
+            document.getElementById('link-pb').href = jadwalHariIni['link video PB'];
+
+        } catch (error) {
+            document.getElementById('judul-hari').innerText = "Gagal memuat jadwal. Periksa koneksi/URL.";
+        }
+    }
+
+    async function tandaiSelesai() {
+        if(!currentData) return;
+        const btn = event.target;
+        btn.innerText = "Menyimpan...";
+        btn.disabled = true;
+
+        const payload = {
+            username: username,
+            hari_ke: currentData['hari ke'],
+            mode_baca: currentData['mode baca'],
+            PL: currentData['PL'],
+            PB: currentData['PB'],
+            isi_PL: currentData['isi PL'],
+            isi_PB: currentData['isi PB'],
+            isi_pembacaan: currentData['isi pembacaan'],
+            link_video_PL: currentData['link video PL'],
+            link_video_PB: currentData['link video PB'],
+            keterangan: document.getElementById('keterangan').value
+        };
+
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            const today = new Date().toISOString().split('T')[0];
+            localStorage.setItem('lastReadDate', today);
+            
+            alert("Luar biasa! Data pembacaan Anda telah disimpan ke Google Sheets.");
+            document.getElementById('late-warning').classList.add('hidden');
+            btn.innerText = "✅ SELESAI";
+        } catch (error) {
+            alert("Terjadi kesalahan saat menyimpan data.");
+            btn.innerText = "✅ KLIK SELESAI";
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
