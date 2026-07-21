@@ -3,200 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kompetisi Baca Alkitab</title>
-    <!-- Library untuk animasi Reward -->
+    <title>Aplikasi Pembacaan Alkitab</title>
+    <!-- Library untuk Animasi Reward (Confetti) -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333;}
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .hidden { display: none; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px;}
-        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #45a049; }
-        
-        /* Leaderboard Style */
-        .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .leaderboard-table th, .leaderboard-table td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        .leaderboard-table th { background-color: #f8f9fa; }
-        .rank-1 { background-color: #ffd700; font-weight: bold; } /* Emas untuk juara 1 */
-        
-        .ayat-box { background: #fdfbf7; padding: 15px; border-left: 4px solid #d4af37; margin-bottom: 10px; }
+        :root {
+            --bg-color: #f5f5f7;
+            --text-color: #1d1d1f;
+            --card-bg: #ffffff;
+            --primary-color: #0071e3;
+            --secondary-bg: #e8e8ed;
+            --border-color: #d2d2d7;
+            --font-size: 17px;
+            --font-weight: 400;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #000000;
+            --text-color: #f5f5f7;
+            --card-bg: #1c1c1e;
+            --primary-color: #0a84ff;
+            --secondary-bg: #2c2c2e;
+            --border-color: #38383a;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            font-size: var(--font-size);
+            font-weight: var(--font-weight);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 28px;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+        }
+
+        h2, h3 {
+            margin-top: 0;
+            letter-spacing: -0.5px;
+        }
+
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 14px 16px;
+            margin: 8px 0 16px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Toolbar Controls */
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .toolbar button {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 14px;
+            background: var(--secondary-bg);
+            color: var(--text-color);
+            border-radius: 10px;
+            min-width: 60px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Custom Information Boxes */
+        .date-badge {
+            background: var(--secondary-bg);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .note-box {
+            background: #fff8e1;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        [data-theme="dark"] .note-box {
+            background: #332b00;
+            color: #ffe082;
+            border-left-color: #ffe082;
+        }
+
+        .ayat-item {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .ayat-ref {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-right: 6px;
+        }
+
+        /* Modal Overlay */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px;
+            padding: 24px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
-    <!-- Halaman Login -->
-    <div id="login-page">
-        <h2 style="text-align: center;">📖 Login Pemain</h2>
-        <input type="text" id="username" placeholder="Masukkan Nama Anda (Cth: Budi)">
-        <select id="plan-baca">
-            <option value="Matius_1_Bulan">Kitab Matius (1 Bulan)</option>
-            <option value="Alkitab_1_Tahun">Alkitab Lengkap (1 Tahun)</option>
+
+    <!-- 1. HALAMAN LOGIN -->
+    <div id="login-section" class="card">
+        <h2 style="text-align: center; margin-bottom: 24px;">📖 Login Pembaca</h2>
+        
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Masukkan Username...">
+        
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Masukkan Password...">
+        
+        <label>Pilih Program Pembacaan</label>
+        <select id="login-plan">
+            <option value="Amsal 1 Bulan">Kitab Amsal (1 Bulan)</option>
+            <option value="PB 1 Bulan">Perjanjian Baru (1 Bulan)</option>
+            <option value="Alkitab 1 Tahun">Seluruh Alkitab (1 Tahun)</option>
         </select>
-        <button onclick="login()">Masuk ke Arena</button>
+        
+        <button onclick="prosesLogin()" id="btn-login">Masuk Aplikasi</button>
     </div>
 
-    <!-- Halaman Dashboard & Leaderboard -->
-    <div id="dashboard-page" class="hidden">
-        <h2>Halo, <span id="user-name"></span>!</h2>
+    <!-- 2. HALAMAN UTAMA (DASHBOARD BACAAN) -->
+    <div id="app-section" class="hidden">
         
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-            <h3>Target Hari Ini: Hari ke-<span id="hari-ke">1</span></h3>
-            <button onclick="mulaiMembaca()">Mulai Membaca 📖</button>
+        <!-- Toolbar Navigasi & Pengaturan Teks -->
+        <div class="toolbar">
+            <button onclick="ubahUkuranFont(2)">A+</button>
+            <button onclick="ubahUkuranFont(-2)">A-</button>
+            <button onclick="toggleTebal()"><b>B</b></button>
+            <button onclick="toggleTheme()">🌙/☀️</button>
+            <button onclick="toggleFullscreen()">⛶ Fullscreen</button>
+            <button onclick="bukaPencarian()">🔍 Cari</button>
+            <button onclick="logout()" style="background: #ff3b30; color: white;">Logout</button>
         </div>
 
-        <h3>🏆 Papan Peringkat (Multiplayer)</h3>
-        <table class="leaderboard-table">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Nama</th>
-                    <th>Skor</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="leaderboard-body">
-                <tr><td colspan="4">Memuat data kompetisi...</td></tr>
-            </tbody>
-        </table>
-        <br>
-        <button onclick="logout()" style="background: #f44336;">Keluar</button>
+        <div class="card">
+            <h2 id="judul-program">Memuat Program...</h2>
+            
+            <!-- Informasi Estimasi Tanggal -->
+            <div id="date-badge" class="date-badge">
+                Tunggu sebentar, sedang menghitung estimasi...
+            </div>
+
+            <!-- Note Harian -->
+            <div id="note-box" class="note-box hidden"></div>
+
+            <!-- Kontrol Suara & Salin -->
+            <div class="toolbar" style="margin-bottom: 15px;">
+                <button onclick="bacakanTeks()" style="background: #34c759; color: white;">🔊 Bacakan Teks</button>
+                <button onclick="hentikanSuara()" style="background: #ff9500; color: white;">⏹ Stop Suara</button>
+                <button onclick="salinTeks()" style="background: #5856d6; color: white;">📋 Salin Semua Teks</button>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+            <!-- Container Teks Ayat Alkitab -->
+            <div id="reading-content">
+                Memuat isi Alkitab dari server...
+            </div>
+
+            <!-- Tombol Selesai -->
+            <button onclick="selesaiMembaca()" style="margin-top: 30px; padding: 18px; font-size: 18px; background-color: #34c759;">
+                ✅ KLIK SELESAI MEMBACA
+            </button>
+        </div>
     </div>
 
-    <!-- Halaman Membaca -->
-    <div id="reading-page" class="hidden">
-        <h2>Matius 1 (Contoh Tampilan)</h2>
-        <div class="ayat-box">
-            <p><strong>Ayat 1:</strong> Inilah silsilah Yesus Kristus, anak Daud, anak Abraham.</p>
+    <!-- 3. MODAL PENCARIAN AYAT -->
+    <div id="search-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>🔍 Pencarian Alkitab</h3>
+            <input type="text" id="search-query" placeholder="Ketik kata kunci atau ayat (cth: Kasih, Yohanes 3)...">
+            <button onclick="cariAyat()">Cari Sekarang</button>
+            <button onclick="tutupPencarian()" style="background: var(--secondary-bg); color: var(--text-color); margin-top: 8px;">Tutup</button>
+            
+            <div id="search-results" style="margin-top: 20px;"></div>
         </div>
-        <div class="ayat-box">
-            <p><strong>Ayat 2:</strong> Abraham memperanakkan Ishak, Ishak memperanakkan Yakub...</p>
-        </div>
-        
-        <!-- Simulasi apakah dia telat baca atau tidak -->
-        <label><input type="checkbox" id="tepatWaktu" checked> Saya membaca tepat pada harinya (+100 Skor)</label><br><br>
-        
-        <button onclick="selesaiMembaca()">Selesai & Kumpulkan Poin! ✅</button>
-        <button onclick="kembaliKeDashboard()" style="background: #9e9e9e;">Kembali</button>
     </div>
 
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTlB9XEl4qwtOQm7JZv9adVNIU8nqjDqFsV3MdBkoMO6OxMnbvVB9kurSUDpJcll13Ug/exec'; // Ganti dengan URL dari langkah 3
+    // ==========================================
+    // CONFIGURATION: GANTI DENGAN URL APPS SCRIPT ANDA
+    // ==========================================
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEj1RJ7KvB5G5sxSNB68Rr5cweKLUn46X4Fq0qvZs1m8TTuilBhcl_F4x8sEsiFFPV8A/exec';
 
-    function login() {
-        const user = document.getElementById('username').value;
-        if (!user) return alert('Nama harus diisi!');
-        localStorage.setItem('username', user);
-        localStorage.setItem('plan', document.getElementById('plan-baca').value);
-        showPage('dashboard-page');
-        document.getElementById('user-name').innerText = user;
-        loadLeaderboard();
+    let currentFontSize = parseInt(localStorage.getItem('fontSize')) || 17;
+    let isBold = localStorage.getItem('fontWeight') === 'bold';
+    let rawTextForCopy = "";
+
+    // Inisialisasi Tampilan
+    window.onload = () => {
+        terapkanPengaturanDisimpan();
+        if (localStorage.getItem('username')) {
+            tampilkanAplikasi();
+        }
+    };
+
+    // --- PROSES AUTHENTICATION ---
+    async function prosesLogin() {
+        const user = document.getElementById('login-username').value.trim();
+        const pass = document.getElementById('login-password').value.trim();
+        const plan = document.getElementById('login-plan').value;
+
+        if (!user || !pass) return alert("Username dan Password wajib diisi!");
+
+        const btn = document.getElementById('btn-login');
+        btn.innerText = "Memeriksa...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "login", username: user, password: pass })
+            });
+            const data = await res.json();
+
+            if (data.status === "success") {
+                localStorage.setItem('username', user);
+                localStorage.setItem('plan', plan);
+                tampilkanAplikasi();
+            } else {
+                alert(data.message || "Login gagal! Periksa username dan password Anda.");
+            }
+        } catch (e) {
+            alert("Gagal terhubung ke server Google Apps Script.");
+        } finally {
+            btn.innerText = "Masuk Aplikasi";
+            btn.disabled = false;
+        }
     }
 
     function logout() {
-        localStorage.clear();
-        showPage('login-page');
+        localStorage.removeItem('username');
+        localStorage.removeItem('plan');
+        location.reload();
     }
 
-    function mulaiMembaca() {
-        showPage('reading-page');
+    function tampilkanAplikasi() {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('app-section').classList.remove('hidden');
+        muatBacaanHariIni();
     }
 
-    function kembaliKeDashboard() {
-        showPage('dashboard-page');
-    }
+    // --- FITUR LOAD BACAAN HARIAN ---
+    async function muatBacaanHariIni() {
+        const plan = localStorage.getItem('plan');
+        const hariKe = 1; // Default hari ke-1, bisa disesuaikan dinamis
 
-    async function loadLeaderboard() {
+        document.getElementById('judul-program').innerText = `${plan} - Hari Ke-${hariKe}`;
+
         try {
-            const response = await fetch(SCRIPT_URL, {
+            const res = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "getDashboard" })
+                body: JSON.stringify({ action: "getReading", plan: plan, hari_ke: hariKe })
             });
-            const res = await response.json();
-            
-            let tbody = document.getElementById('leaderboard-body');
-            tbody.innerHTML = '';
-            
-            res.leaderboard.forEach((player, index) => {
-                let rankClass = index === 0 ? 'rank-1' : '';
-                let medali = index === 0 ? '👑' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : ''));
-                
-                tbody.innerHTML += `
-                    <tr class="${rankClass}">
-                        <td>${index + 1} ${medali}</td>
-                        <td>${player.username}</td>
-                        <td>${player.skor} Poin</td>
-                        <td><small>${player.status} (Hari ${player.hari_terakhir})</small></td>
-                    </tr>
-                `;
-            });
+            const data = await res.json();
+
+            if (data.status === "success") {
+                // 1. Tampilkan Estimasi Tanggal
+                hitungEstimasiSelesai(data.total_hari || 30);
+
+                // 2. Tampilkan Catatan/Note jika ada
+                if (data.note) {
+                    const noteBox = document.getElementById('note-box');
+                    noteBox.innerText = `💡 Catatan Hari Ini: ${data.note}`;
+                    noteBox.classList.remove('hidden');
+                }
+
+                // 3. Render Ayat
+                const container = document.getElementById('reading-content');
+                container.innerHTML = "";
+                rawTextForCopy = "";
+
+                data.teks.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "ayat-item";
+                    div.innerHTML = item;
+                    container.appendChild(div);
+
+                    // Bersihkan HTML tag untuk fitur salin
+                    rawTextForCopy += div.innerText + "\n";
+                });
+
+            } else {
+                document.getElementById('reading-content').innerText = "Jadwal bacaan tidak ditemukan untuk hari ini.";
+            }
         } catch (e) {
-            document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="4">Gagal memuat papan peringkat.</td></tr>';
+            document.getElementById('reading-content').innerText = "Gagal mengambil data dari Google Sheets.";
         }
     }
 
-    async function selesaiMembaca() {
-        // 1. Tembak Kembang Api (Confetti Reward)
-        fireConfetti();
+    // --- HITUNG ESTIMASI TANGGAL ---
+    function hitungEstimasiSelesai(totalHari) {
+        const tglMulai = new Date();
+        const tglSelesai = new Date();
+        tglSelesai.setDate(tglMulai.getDate() + parseInt(totalHari));
+
+        const opsi = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         
-        // 2. Kirim Poin ke Server
-        const isTepatWaktu = document.getElementById('tepatWaktu').checked;
-        const payload = {
-            action: "submitBacaan",
-            username: localStorage.getItem('username'),
-            plan: localStorage.getItem('plan'),
-            hari_ke: 1, // Simulasi
-            tepat_waktu: isTepatWaktu
-        };
+        document.getElementById('date-badge').innerHTML = `
+            <strong>📅 Tanggal Mulai:</strong> ${tglMulai.toLocaleDateString('id-ID', opsi)}<br>
+            <strong>🎯 Estimasi Selesai:</strong> ${tglSelesai.toLocaleDateString('id-ID', opsi)} (${totalHari} Hari)
+        `;
+    }
 
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            
-            alert(`Selamat! Anda mendapatkan ${isTepatWaktu ? '100' : '50'} Poin!`);
-            showPage('dashboard-page');
-            loadLeaderboard(); // Refresh skor
-        } catch (e) {
-            alert("Terjadi kesalahan saat menyimpan poin.");
+    // --- PENGATURAN TEKS & TEMA ---
+    function ubahUkuranFont(delta) {
+        currentFontSize += delta;
+        document.body.style.setProperty('--font-size', currentFontSize + 'px');
+        localStorage.setItem('fontSize', currentFontSize);
+    }
+
+    function toggleTebal() {
+        isBold = !isBold;
+        document.body.style.setProperty('--font-weight', isBold ? '700' : '400');
+        localStorage.setItem('fontWeight', isBold ? 'bold' : 'normal');
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', targetTheme);
+        localStorage.setItem('theme', targetTheme);
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => console.log(err));
+        } else {
+            document.exitFullscreen();
         }
     }
 
-    // Fungsi untuk Reward Animasi Kembang Api
-    function fireConfetti() {
+    function terapkanPengaturanDisimpan() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.body.style.setProperty('--font-size', currentFontSize + 'px');
+        document.body.style.setProperty('--font-weight', isBold ? '700' : '400');
+    }
+
+    // --- FITUR SUARA (GOOGLE VOICE / TEXT-TO-SPEECH) ---
+    function bacakanTeks() {
+        if (!rawTextForCopy) return alert("Teks bacaan belum siap.");
+        hentikanSuara();
+
+        const msg = new SpeechSynthesisUtterance(rawTextForCopy);
+        msg.lang = 'id-ID';
+        msg.rate = 0.9;
+        window.speechSynthesis.speak(msg);
+    }
+
+    function hentikanSuara() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+    }
+
+    // --- FITUR SALIN TEKS ---
+    function salinTeks() {
+        if (!rawTextForCopy) return alert("Tidak ada teks untuk disalin!");
+        navigator.clipboard.writeText(rawTextForCopy).then(() => {
+            alert("📋 Seluruh teks bacaan berhasil disalin!");
+        });
+    }
+
+    // --- FITUR PENCARIAN ---
+    function bukaPencarian() { document.getElementById('search-modal').classList.remove('hidden'); }
+    function tutupPencarian() { document.getElementById('search-modal').classList.add('hidden'); }
+
+    async function cariAyat() {
+        const q = document.getElementById('search-query').value.trim();
+        if (!q) return;
+
+        const resContainer = document.getElementById('search-results');
+        resContainer.innerHTML = "Mencari di Alkitab...";
+
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "search", query: q })
+            });
+            const data = await res.json();
+
+            if (data.status === "success" && data.data.length > 0) {
+                resContainer.innerHTML = data.data.map(item => `<div class="ayat-item">${item}</div>`).join('');
+            } else {
+                resContainer.innerHTML = "Tidak ada ayat yang cocok.";
+            }
+        } catch (e) {
+            resContainer.innerHTML = "Gagal melakukan pencarian.";
+        }
+    }
+
+    // --- SELESAI MEMBACA & REWARD ---
+    function selesaiMembaca() {
+        // Efek Confetti (Kembang Api)
         var duration = 3 * 1000;
-        var animationEnd = Date.now() + duration;
-        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+        var end = Date.now() + duration;
 
-        function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+        (function frame() {
+            confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+            confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+            if (Date.now() < end) requestAnimationFrame(frame);
+        }());
 
-        var interval = setInterval(function() {
-            var timeLeft = animationEnd - Date.now();
-            if (timeLeft <= 0) { return clearInterval(interval); }
-            var particleCount = 50 * (timeLeft / duration);
-            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-        }, 250);
-    }
-
-    // Helper untuk pindah halaman
-    function showPage(pageId) {
-        document.getElementById('login-page').classList.add('hidden');
-        document.getElementById('dashboard-page').classList.add('hidden');
-        document.getElementById('reading-page').classList.add('hidden');
-        document.getElementById(pageId).classList.remove('hidden');
-    }
-
-    // Cek status saat web dibuka
-    if(localStorage.getItem('username')) {
-        document.getElementById('user-name').innerText = localStorage.getItem('username');
-        showPage('dashboard-page');
-        loadLeaderboard();
+        alert("Puji Tuhan! Pembacaan hari ini selesai dan poin Anda telah berhasil dicatat.");
     }
 </script>
 </body>
