@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; }
+        :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; --custom-divider: transparent;}
         
         [data-theme="light-default"] { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; }
         [data-theme="light-sepia"] { --bg: #f4ecd8; --text: #433422; --card: #fbf0d9; --primary: #d97736; --border: #d7c9a9; --btn-bg: #eedfbe; }
@@ -33,7 +33,7 @@
             content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-image: url('https://drive.google.com/uc?export=view&id=1KJFjezDcxNtIfiPaoUCBA7bgIo8HSfP8');
             background-size: cover; background-position: center; background-attachment: fixed;
-            z-index: -1; opacity: 0.12; transition: opacity 0.3s;
+            z-index: -1; opacity: 0.15; transition: opacity 0.3s;
         }
         [data-theme^="dark"] body::before { opacity: 0.05; } 
 
@@ -49,14 +49,18 @@
         button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
+        /* PENGATURAN NAVIGASI BAR: DIPERBAIKI LEBARNYA */
         .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
-        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; font-size: 13px; cursor: pointer; gap: 8px;}
-        .nav-summary-info { flex: 1; white-space: nowrap; overflow-x: auto; scrollbar-width: none; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center;}
-        .nav-summary-info::-webkit-scrollbar { display: none; }
+        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--btn-bg); font-weight: bold; cursor: pointer; gap: 8px;}
+        
+        .nav-summary-info { flex: 1 1 auto; overflow: hidden; white-space: nowrap; }
+        .nav-summary-info span { display: block; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+        
+        .nav-summary-actions { flex: 0 0 auto; display: flex; gap: 6px; align-items: center;}
         
         .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 11px; padding: 0; flex-shrink: 0;}
         .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 6px 10px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
-        .btn-switch-mode { background: #5856d6; color: white; border-radius: 6px; padding: 6px 10px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0; font-weight: bold;}
+        .btn-icon-top { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px; font-size: 14px; cursor: pointer; flex-shrink: 0;}
 
         .nav-full-menu { display: none; padding: 15px; background: var(--bg); border-top: 1px solid var(--border); }
         .nav-full-menu.open { display: flex; flex-direction: column; gap: 10px; }
@@ -85,17 +89,19 @@
         .reading-area.mode-baris .verse-group { display: block; margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 10px;}
         .reading-area.mode-baris .verse-item { display: block; margin-bottom: 8px; }
 
-        /* MODE PARAREL SINKRONUS (BARU) */
-        .reading-area.mode-parallel .verse-group { display: flex; flex-direction: row; gap: 15px; border-bottom: 1px dashed var(--border); padding-bottom: 15px; margin-bottom: 15px; width: 100%; }
-        .reading-area.mode-parallel .verse-item { flex: 1; display: block; margin: 0; }
+        /* MODE PARAREL SINKRONUS */
+        .reading-area.mode-parallel .verse-group { display: flex; flex-direction: row; gap: 0; border-bottom: 1px dashed var(--border); padding-bottom: 15px; margin-bottom: 15px; width: 100%; }
+        .reading-area.mode-parallel .verse-item { flex: 1; display: block; margin: 0; padding: 0 10px; border-right: 2px solid var(--custom-divider); }
+        .reading-area.mode-parallel .verse-item:last-child { border-right: none; } /* Hilangkan border di kolom terakhir */
         .reading-area.mode-parallel .verse-num { display: block; margin-bottom: 4px; border-bottom: 1px solid var(--border); }
-        .reading-area.mode-parallel .lang-badge { display: none; } /* Sembunyikan badge karena sudah sejajar kolom */
+        .reading-area.mode-parallel .lang-badge { display: none; } 
 
         .highlight-tts { background-color: rgba(255, 235, 59, 0.4) !important; box-shadow: 0 0 5px rgba(255, 235, 59, 0.5); padding: 5px; border-radius: 5px; }
+        .user-highlight { background-color: rgba(135, 206, 250, 0.4) !important; padding: 5px; border-radius: 5px; } /* Warna Highlight Klik */
 
         .hidden { display: none !important; }
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
-        .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; margin-top: 10vh;}
+        .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; margin-top: 10vh; margin-bottom: auto;}
         .progress-banner { background: #34c759; color: white; text-align: center; font-weight: bold; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);}
     </style>
 </head>
@@ -106,35 +112,8 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">Edition 10:42</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">Ultimate Edition</h4>
         
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
-                <optgroup label="☀️ Tema Terang">
-                    <option value="light-default">Terang Default</option>
-                    <option value="light-sepia">Sepia Klasik</option>
-                    <option value="light-mint">Hijau Mint</option>
-                    <option value="light-sky">Biru Langit</option>
-                    <option value="light-peach">Peach Hangat</option>
-                </optgroup>
-                <optgroup label="🌙 Tema Gelap">
-                    <option value="dark-default">Gelap Default</option>
-                    <option value="dark-ocean">Samudera Biru</option>
-                    <option value="dark-dracula">Dracula (Ungu)</option>
-                    <option value="dark-forest">Hutan Gelap</option>
-                    <option value="dark-charcoal">Abu-abu Arang</option>
-                </optgroup>
-            </select>
-            
-            <select id="login-language" style="font-weight: bold; flex:1; margin:0;">
-                <option value="ind">🇮🇩 Indonesia (Ind)</option>
-                <option value="eng">🇬🇧 English (Eng)</option>
-                <option value="chs">🇨🇳 Chinese (Chs)</option>
-                <option value="kjv">🇬🇧 KJV (Eng)</option>
-                <option value="jawa">🇮🇩 Jawa</option>
-            </select>
-        </div>
-
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
         <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px; margin-top: 15px;">Masuk Aplikasi</button>
@@ -156,17 +135,45 @@
             <button onclick="simpanSetting()">Mulai Baca</button>
         </div>
     </div>
+    
+    <!-- MODAL THEME 10 PILIHAN -->
+    <div id="modal-theme" class="modal hidden" onclick="this.classList.add('hidden')">
+        <div class="modal-content card" onclick="event.stopPropagation()">
+            <h3 style="text-align: center; margin-top:0;">🎨 Pilih Tema</h3>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <b style="color:gray;">☀️ Light Theme</b>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-default')" style="width:100%; margin-bottom:5px;">Terang Default</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-sepia')" style="width:100%; margin-bottom:5px;">Sepia Klasik</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-mint')" style="width:100%; margin-bottom:5px;">Hijau Mint</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-sky')" style="width:100%; margin-bottom:5px;">Biru Langit</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-peach')" style="width:100%; margin-bottom:5px;">Peach Hangat</button>
+                </div>
+                <div style="flex:1;">
+                    <b style="color:gray;">🌙 Dark Theme</b>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-default')" style="width:100%; margin-bottom:5px;">Gelap Default</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-ocean')" style="width:100%; margin-bottom:5px;">Samudera Biru</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-dracula')" style="width:100%; margin-bottom:5px;">Dracula (Ungu)</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-forest')" style="width:100%; margin-bottom:5px;">Hutan Gelap</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-charcoal')" style="width:100%; margin-bottom:5px;">Abu-abu Arang</button>
+                </div>
+            </div>
+            <button onclick="document.getElementById('modal-theme').classList.add('hidden')" style="background:#ff3b30; margin-top:15px;">Tutup</button>
+        </div>
+    </div>
 
     <!-- PENCARIAN -->
     <div id="search-page" class="hidden">
         <div class="top-nav-bar">
+            <!-- BAR NAVIGASI (AMAN DARI KEPOTONG LAYAR KECIL) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">
                 <div class="nav-summary-info">
-                    <span id="search-info-title" style="font-size: 14px; font-weight: 800;">Pencarian Kosong...</span>
+                    <span id="search-info-title">Pencarian Kosong...</span>
                 </div>
-                <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
-                    <button class="btn-switch-mode" onclick="bukaPembacaan()">📖 Ke Pembacaan</button>
-                    <button class="btn-signout" onclick="logout()">Sign Out</button>
+                <div class="nav-summary-actions" onclick="event.stopPropagation()">
+                    <button class="btn-icon-top" onclick="bukaPembacaan()" title="Ke Pembacaan">📖</button>
+                    <button class="btn-icon-top" onclick="document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                    <button class="btn-signout" onclick="logout()">Keluar</button>
                     <button class="btn-triangle" id="btn-toggle-search" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">▼</button>
                 </div>
             </div>
@@ -198,9 +205,11 @@
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
                 </div>
+                
                 <div class="icon-bar">
                     <button class="icon-btn" style="background:#007aff; color:white;" onclick="toggleModeBaris()">¶ Baris</button>
                     <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePararel()">||| Pararel</button>
+                    <button class="icon-btn" onclick="ubahWarnaPembatas()" title="Beri warna garis antar bahasa">🌈 Warna Pembatas</button>
                 </div>
                 
                 <div class="icon-bar">
@@ -232,6 +241,7 @@
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="toggleLebarLayar()">📱/💻 Ubah Ukuran Layar</button>
                     <button class="icon-btn" onclick="salinTeks('search-results')">📋 Copy</button>
+                    <button class="icon-btn" id="btn-hl-search" onclick="toggleHighlightMode()">🖍️ Highlight Klik: OFF</button>
                 </div>
             </div>
         </div>
@@ -248,14 +258,15 @@
         <div id="reading-progress-banner" class="progress-banner hidden">Progress Membaca: 0%</div>
         
         <div class="top-nav-bar">
-            <!-- BAR NAVIGASI SESUAI INSTRUKSI -->
+            <!-- BAR NAVIGASI (AMAN DARI KEPOTONG LAYAR KECIL) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">
                 <div class="nav-summary-info">
-                    <span id="read-info-title" style="font-size: 14px; font-weight: 800;">Mempersiapkan...</span>
+                    <span id="read-info-title">Mempersiapkan...</span>
                 </div>
-                <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
-                    <button class="btn-switch-mode" onclick="bukaPencarian()">🔍 Ke Pencarian</button>
-                    <button class="btn-signout" onclick="logout()">Sign Out</button>
+                <div class="nav-summary-actions" onclick="event.stopPropagation()">
+                    <button class="btn-icon-top" onclick="bukaPencarian()" title="Ke Pencarian">🔍</button>
+                    <button class="btn-icon-top" onclick="document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                    <button class="btn-signout" onclick="logout()">Keluar</button>
                     <button class="btn-triangle" id="btn-toggle-read" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">▼</button>
                 </div>
             </div>
@@ -284,9 +295,11 @@
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
                 </div>
+                
                 <div class="icon-bar">
                     <button class="icon-btn" style="background:#007aff; color:white;" onclick="toggleModeBaris()">¶ Baris</button>
                     <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePararel()">||| Pararel</button>
+                    <button class="icon-btn" onclick="ubahWarnaPembatas()" title="Beri warna garis antar bahasa">🌈 Warna Pembatas</button>
                 </div>
                 
                 <div class="icon-bar">
@@ -318,6 +331,7 @@
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="toggleLebarLayar()">📱/💻 Ubah Ukuran Layar</button>
                     <button class="icon-btn" onclick="salinTeks('reading-content')">📋 Copy</button>
+                    <button class="icon-btn" id="btn-hl-read" onclick="toggleHighlightMode()">🖍️ Highlight Klik: OFF</button>
                 </div>
             </div>
         </div>
@@ -333,7 +347,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFvpFkM7N_QbetpU6v1_nDcHDBhh2gqEbdyLEkVRhfXowda36pK9Toj7XsTSu2i7Be/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEDWfCDhcpbqM4VHHlhy36UCkMTOcyE2V8-oy5pZ5Lpf9elRauckysoYooOmbg5x_vCg/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -347,6 +361,16 @@
     let currentVerseIndex = 0;
     
     let currentLayoutMode = 0; 
+    let isClickHighlightOn = false;
+    
+    // Deteksi IP Address dan Tipe Device untuk Disimpan ke log_pembacaan
+    let userIP = "Sedang melacak...";
+    let userDevice = /Mobile|Android|iP(hone|od|ad)/i.test(navigator.userAgent) ? "Handphone" : "Windows/Laptop";
+    
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => { userIP = data.ip; })
+        .catch(err => { userIP = "Hidden/Gagal"; });
 
     const bookData = {
         ind: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matius","Markus","Lukas","Yohanes","Kisah Rasul-rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus","Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"],
@@ -472,6 +496,28 @@
     function hapusHighlight() { 
         document.querySelectorAll('.highlight-tts').forEach(el => el.classList.remove('highlight-tts')); 
     }
+    
+    // Fitur Mode Klik Tahan/Highlight Otomatis
+    function toggleHighlightMode() {
+        isClickHighlightOn = !isClickHighlightOn;
+        let status = isClickHighlightOn ? "ON" : "OFF";
+        document.getElementById('btn-hl-search').innerText = `🖍️ Highlight Klik: ${status}`;
+        document.getElementById('btn-hl-read').innerText = `🖍️ Highlight Klik: ${status}`;
+        
+        if (!isClickHighlightOn) {
+            // Bersihkan semua highlight klik saat dimatikan
+            document.querySelectorAll('.user-highlight').forEach(el => el.classList.remove('user-highlight'));
+        }
+    }
+    
+    // Deteksi Klik pada halaman untuk Highlight
+    document.addEventListener('click', function(e) {
+        if (!isClickHighlightOn) return;
+        let targetGroup = e.target.closest('.verse-group');
+        if (targetGroup) {
+            targetGroup.classList.toggle('user-highlight');
+        }
+    });
 
     function toggleLebarLayar() {
         const container = document.getElementById('main-container');
@@ -501,6 +547,14 @@
         currentLayoutMode = 1;
     }
     
+    // Fitur Ganti Warna Pembatas/Border di Mode Pararel
+    function ubahWarnaPembatas() {
+        // Hasilkan warna hex secara acak
+        const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        document.body.style.setProperty('--custom-divider', randomColor);
+        alert("Warna pembatas telah dirubah!");
+    }
+    
     function gantiWarnaFontGlobal(warna) {
         if(warna) document.body.style.setProperty('--custom-color', warna);
         else document.body.style.removeProperty('--custom-color');
@@ -515,6 +569,7 @@
     function gantiTemaGlobal(tema) { 
         document.body.setAttribute('data-theme', tema); 
         document.querySelectorAll('.theme-selector').forEach(el => el.value = tema);
+        document.getElementById('modal-theme').classList.add('hidden'); // Tutup modal otomatis setelah memilih
     }
     
     function gantiGayaFontGlobal(kelas) { 
@@ -536,7 +591,7 @@
             return;
         }
 
-        let grouped = {}, currentHeader = "", htmlOut = "", wordCount = 0, verseCount = 0;
+        let grouped = {}, currentHeader = "", htmlOut = "";
         
         // Ambil array bahasa persis sesuai urutan dropdown Anda
         let selectedLangsArray = getSelectedLangs(pageId === 'read-info' ? 'read' : 'search');
@@ -546,10 +601,8 @@
             let header = `${a.b} ${a.c}`, key = a.id || `${header}-${a.v}`; 
             if (!grouped[key]) {
                 grouped[key] = { header: header, v: a.v, texts: {}, note: a.n };
-                verseCount++; 
             }
             grouped[key].texts[a.lang] = a.t;
-            wordCount += a.t.trim().split(/\s+/).length;
             if(a.n && !grouped[key].note) grouped[key].note = a.n;
         });
 
@@ -577,7 +630,7 @@
         
         box.innerHTML = htmlOut;
         
-        // PENGATURAN TEKS NAVIGASI BAR SESUAI INSTRUKSI STRICT
+        // PENGATURAN TEKS NAVIGASI BAR 1 BARIS: Format -> Nama Kitab Pasal : Ayat Awal - Ayat Akhir
         let primaryVerse = ayatArray.find(a => a.lang === primaryLang) || ayatArray[0];
         
         let bookName = primaryVerse.b;
@@ -585,8 +638,7 @@
         let minV = Math.min(...ayatArray.map(a => a.v));
         let maxV = Math.max(...ayatArray.map(a => a.v));
         
-        // Format Tepat: Bible Name, no chapter, verse, bahasa language
-        let titleFormat = `${bookName}, Chapter ${chapterNumber}, Verse ${minV}-${maxV}, Bahasa: ${primaryLang.toUpperCase()}`;
+        let titleFormat = `${bookName} ${chapterNumber} : ${minV} - ${maxV}`;
 
         let elTitle = document.getElementById(`${pageId}-info-title`);
         if (elTitle) elTitle.innerText = titleFormat;
@@ -651,7 +703,7 @@
     
     function updateProgressUI() {
         const banner = document.getElementById('reading-progress-banner');
-        document.getElementById('btn-tandai').style.display = 'block'; // Tampilkan lagi tombolnya
+        document.getElementById('btn-tandai').style.display = 'block';
 
         if(!userSession.plan) return;
         
@@ -732,12 +784,13 @@
         
         const banner = document.getElementById('reading-progress-banner');
         const btnTandai = document.getElementById('btn-tandai');
+        const isModePararel = document.getElementById('reading-content').classList.contains('mode-parallel');
         
-        // Ubah Banner Menjadi Info Selesai!
         banner.innerText = "✅ Pembacaan Hari Ini Sudah Selesai!";
-        banner.style.background = "#28a745"; // Hijau Success
-        btnTandai.style.display = 'none'; // Sembunyikan Tombol
+        banner.style.background = "#28a745"; 
+        btnTandai.style.display = 'none'; 
         
+        // Kirim semua variabel ke Apps Script (termasuk Device & IP Address)
         try {
             await fetch(SCRIPT_URL, { 
                 method: 'POST', 
@@ -745,7 +798,10 @@
                     action: "markRead", 
                     username: userSession.username, 
                     hari_ke: currentHariKe,
-                    persentase: Math.round((currentHariKe / totalHariPlan) * 100)
+                    persentase: Math.round((currentHariKe / totalHariPlan) * 100),
+                    mode_baca: isModePararel ? "Pararel" : "Satu Baris",
+                    device: userDevice,
+                    ip: userIP
                 }) 
             });
         } catch (e) {
