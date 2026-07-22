@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Reader Alkitab Online ver 12:08</title>
+    <title>E-Reader Alkitab Online ver 12:45</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -60,10 +60,12 @@
         /* Titik warna yang otomatis mengikuti warna primary tema aktif */
         .theme-dot { width: 10px; height: 10px; min-width: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 4px var(--primary); flex-shrink: 0; }
         
-        .nav-summary-actions { flex: 0 0 auto; display: flex; gap: 6px; align-items: center;}
+        /* PERBAIKAN: actions boleh scroll horizontal kalau layar sangat sempit, jadi tombol tidak pernah hilang/terpotong */
+        .nav-summary-actions { flex: 0 0 auto; display: flex; gap: 6px; align-items: center; max-width: 62%; overflow-x: auto; scrollbar-width: none; }
+        .nav-summary-actions::-webkit-scrollbar { display: none; }
         
         .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 11px; padding: 0; flex-shrink: 0;}
-        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 6px 10px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
+        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 6px 8px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
         .btn-icon-top { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px; font-size: 14px; cursor: pointer; flex-shrink: 0;}
 
         .nav-full-menu { display: none; padding: 15px; background: var(--bg); border-top: 1px solid var(--border); }
@@ -107,6 +109,17 @@
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
         .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; margin-top: 10vh; margin-bottom: auto;}
         .progress-banner { background: #34c759; color: white; text-align: center; font-weight: bold; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);}
+
+        /* FITUR SIMPAN LOG: viewer full layar */
+        .log-item-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .log-item-card input[type="checkbox"] { width: auto; margin: 0; }
+        #log-viewer { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; }
+        #log-viewer.hidden { display: none; }
+        .viewer-header { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .viewer-header b { font-size: 14px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .viewer-body { flex: 1; overflow-y: auto; padding: 20px 15px; text-align: justify; }
+        .viewer-footer { background: var(--card); border-top: 1px solid var(--border); padding: 10px; display: flex; gap: 8px; }
+        .viewer-footer button { width: auto; flex: 1; }
     </style>
 </head>
 <body class="font-apple" data-theme="light-default">
@@ -116,7 +129,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 12.08</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 12.45</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -184,8 +197,9 @@
                     <span id="search-info-title">Pencarian Kosong...</span>
                 </div>
                 <div class="nav-summary-actions" onclick="event.stopPropagation()">
-                    <button class="btn-icon-top" onclick="bukaPembacaan()" title="Ke Pembacaan">📖</button>
                     <button class="btn-icon-top" onclick="document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                    <button class="btn-icon-top" onclick="bukaPembacaan()" title="Ke Pembacaan">📖</button>
+                    <button class="btn-icon-top" onclick="bukaLog()" title="Log Tersimpan">💾</button>
                     <button class="btn-signout" onclick="logout()">Keluar</button>
                     <button class="btn-triangle" id="btn-toggle-search" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">▼</button>
                 </div>
@@ -256,6 +270,9 @@
                     <button class="icon-btn" onclick="salinTeks('search-results')">📋 Copy</button>
                     <button class="icon-btn" id="btn-hl-search" onclick="toggleHighlightMode()">🖍️ Highlight Klik: OFF</button>
                 </div>
+                <div class="icon-bar">
+                    <button class="icon-btn" style="background:#5856d6; color:white; width:100%;" onclick="simpanKeLog('search-info')">💾 Simpan Hasil Pencarian ke Log</button>
+                </div>
             </div>
         </div>
 
@@ -278,8 +295,9 @@
                     <span id="read-info-title">Mempersiapkan...</span>
                 </div>
                 <div class="nav-summary-actions" onclick="event.stopPropagation()">
-                    <button class="btn-icon-top" onclick="bukaPencarian()" title="Ke Pencarian">🔍</button>
                     <button class="btn-icon-top" onclick="document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                    <button class="btn-icon-top" onclick="bukaPencarian()" title="Ke Pencarian">🔍</button>
+                    <button class="btn-icon-top" onclick="bukaLog()" title="Log Tersimpan">💾</button>
                     <button class="btn-signout" onclick="logout()">Keluar</button>
                     <button class="btn-triangle" id="btn-toggle-read" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">▼</button>
                 </div>
@@ -347,6 +365,9 @@
                     <button class="icon-btn" onclick="salinTeks('reading-content')">📋 Copy</button>
                     <button class="icon-btn" id="btn-hl-read" onclick="toggleHighlightMode()">🖍️ Highlight Klik: OFF</button>
                 </div>
+                <div class="icon-bar">
+                    <button class="icon-btn" style="background:#5856d6; color:white; width:100%;" onclick="simpanKeLog('read-info')">💾 Simpan Bacaan Ini ke Log</button>
+                </div>
             </div>
         </div>
 
@@ -357,11 +378,53 @@
         <button id="btn-tandai" onclick="tandaiSelesai()" style="background: #34c759; color: white; padding: 18px; font-size: 18px; border-radius: 30px; margin-top: 20px;">✅ Saya Sudah Membaca Ini</button>
     </div>
 
+    <!-- LOG TERSIMPAN (Fitur ketiga) -->
+    <div id="log-page" class="hidden">
+        <div class="top-nav-bar">
+            <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'btn-toggle-log')">
+                <div class="nav-summary-info">
+                    <span class="theme-dot" title="Warna tema aktif"></span>
+                    <span id="log-info-title">💾 Log Tersimpan</span>
+                </div>
+                <div class="nav-summary-actions" onclick="event.stopPropagation()">
+                    <button class="btn-icon-top" onclick="document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                    <button class="btn-icon-top" onclick="bukaPembacaan()" title="Ke Pembacaan">📖</button>
+                    <button class="btn-icon-top" onclick="bukaPencarian()" title="Ke Pencarian">🔍</button>
+                    <button class="btn-signout" onclick="logout()">Keluar</button>
+                    <button class="btn-triangle" id="btn-toggle-log" onclick="toggleNavMenu('log-menu', 'btn-toggle-log')">▼</button>
+                </div>
+            </div>
+            <div class="nav-full-menu" id="log-menu">
+                <div style="font-size: 12px; font-weight: bold; color: gray;">💾 Tentang Fitur Log</div>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Simpan ayat/pasal pilihan Anda ke sebuah koleksi bernama (misal "SPR 21 Juli 2026") dari Mode Baca atau Mode Cari, lalu tampilkan di sini satu-satu secara berurutan, atau 2-3 ayat sekaligus dalam satu layar.</p>
+                <button class="icon-btn" style="background:var(--primary); color:white; width:100%;" onclick="muatDaftarLog()">🔄 Muat Ulang Daftar</button>
+            </div>
+        </div>
+
+        <div id="log-list-area" class="reading-area card" style="background: var(--card);">
+            <i>Memuat...</i>
+        </div>
+    </div>
+
+</div>
+
+<!-- VIEWER FULL LAYAR UNTUK FITUR LOG -->
+<div id="log-viewer" class="hidden">
+    <div class="viewer-header">
+        <b id="viewer-title">-</b>
+        <span id="viewer-mode-label" style="font-size:11px; color:gray; flex-shrink:0;"></span>
+        <button class="btn-signout" style="width:auto; flex-shrink:0;" onclick="tutupViewer()">✕ Tutup</button>
+    </div>
+    <div class="viewer-body reading-area" id="viewer-content"></div>
+    <div class="viewer-footer">
+        <button onclick="viewerPrev()">◀ Sebelumnya</button>
+        <button onclick="viewerNext()">Berikutnya ▶</button>
+    </div>
 </div>
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzd7MER9MMRKiy1Jy4xMeY9jj34lSrKJVqblhHV0CDVUlSpBm94n-PUqFnRSdQYG0Kftw/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6LB_6N8qILhTz30xeEScRLWdDsV7m-mSVCriMDo9ZZ4httN6bi0O1JqkTwrCeSbykxw/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -376,6 +439,13 @@
     
     let currentLayoutMode = 0; 
     let isClickHighlightOn = false;
+
+    // State untuk fitur Simpan Log
+    let lastAyatRead = null, lastAyatSearch = null;
+    let savedLogs = [];
+    let currentLogItems = [], currentLogId = null, currentLogName = "";
+    let selectedItemIdx = new Set();
+    let viewerIndex = 0, viewerMode = 'satu';
     
     // Deteksi IP Address dan Tipe Device untuk Disimpan ke log_pembacaan
     let userIP = "Sedang melacak...";
@@ -411,12 +481,15 @@
         document.getElementById('btn-toggle-search').innerText = "▼";
         document.getElementById('read-menu').classList.remove('open');
         document.getElementById('btn-toggle-read').innerText = "▼";
+        document.getElementById('log-menu').classList.remove('open');
+        document.getElementById('btn-toggle-log').innerText = "▼";
     }
 
     function bukaPencarian() {
         hentikanSuara();
         tutupSemuaNavMenu();
         document.getElementById('read-page').classList.add('hidden');
+        document.getElementById('log-page').classList.add('hidden');
         document.getElementById('search-page').classList.remove('hidden');
         sinkronisasiBukuPencarian();
         document.getElementById('search-info-title').innerText = buildNavInfoText('search-info', 'Silakan atur parameter pencarian');
@@ -426,9 +499,210 @@
         hentikanSuara();
         tutupSemuaNavMenu();
         document.getElementById('search-page').classList.add('hidden');
+        document.getElementById('log-page').classList.add('hidden');
         document.getElementById('read-page').classList.remove('hidden');
         document.getElementById('read-info-title').innerText = buildNavInfoText('read-info', 'Mempersiapkan bacaan...');
         kalkulasiTanggal(); 
+    }
+
+    // =====================================================================
+    // FITUR KETIGA: SIMPAN LOG
+    // Simpan ayat/pasal yang sedang tampil (Mode Baca / Mode Cari) ke sebuah
+    // koleksi bernama, lalu tampilkan lagi nanti satu-satu full layar atau
+    // 2-3 ayat sekaligus bersamaan.
+    // =====================================================================
+    function bukaLog() {
+        hentikanSuara();
+        tutupSemuaNavMenu();
+        document.getElementById('search-page').classList.add('hidden');
+        document.getElementById('read-page').classList.add('hidden');
+        document.getElementById('log-page').classList.remove('hidden');
+        muatDaftarLog();
+    }
+
+    async function simpanKeLog(pageId) {
+        let arr = pageId === 'read-info' ? lastAyatRead : lastAyatSearch;
+        if (!arr || arr.length === 0) return alert("Belum ada ayat yang ditampilkan untuk disimpan.");
+
+        let bn = arr[0].bn, chapter = arr[0].c, bookName = arr[0].b;
+        let vStart = Math.min(...arr.map(a => a.v)), vEnd = Math.max(...arr.map(a => a.v));
+        let refLabel = `${bookName} ${chapter}:${vStart}-${vEnd}`;
+
+        let daftarNama = savedLogs.map(l => l.log_name).join(", ") || "(belum ada)";
+        let defaultName = `SPR ${new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date())}`;
+        let logName = prompt(`Simpan "${refLabel}" ke Log.\nKetik nama Log baru, atau ketik persis nama Log yang sudah ada untuk menambah ayat ini ke dalamnya.\n\nLog yang sudah ada: ${daftarNama}`, defaultName);
+        if (!logName) return;
+
+        let item = {
+            book_number: bn, book_name: bookName, chapter: chapter,
+            verse_start: vStart, verse_end: vEnd,
+            languages: getSelectedLangs(pageId === 'read-info' ? 'read' : 'search')
+        };
+
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "saveLogItem", username: userSession.username, log_name: logName, item: item, device: userDevice, ip: userIP })
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                alert(`✅ Tersimpan ke Log "${data.log_name}" (${data.items_count} ayat total).`);
+            } else {
+                alert("Gagal menyimpan: " + data.message);
+            }
+        } catch (e) {
+            alert("Gagal menyimpan log: masalah koneksi.");
+        }
+    }
+
+    async function muatDaftarLog() {
+        const box = document.getElementById('log-list-area');
+        box.innerHTML = "<h3 style='text-align:center;'>⏳ Memuat daftar log...</h3>";
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getLogNames", username: userSession.username }) });
+            const data = await res.json();
+            if (data.status !== "success") { box.innerHTML = `<p style='color:red;'>${data.message}</p>`; return; }
+
+            savedLogs = data.logs;
+            document.getElementById('log-info-title').innerText = `👤 ${userSession.username || '-'} • 💾 Log Tersimpan • ${savedLogs.length} log`;
+
+            if (savedLogs.length === 0) {
+                box.innerHTML = "<i>Belum ada log tersimpan. Buka Mode Baca atau Mode Cari, lalu tekan tombol 💾 untuk menyimpan ayat/pasal ke Log.</i>";
+                return;
+            }
+            let html = "";
+            savedLogs.forEach(l => {
+                html += `<div class="log-item-card" style="cursor:pointer;" onclick="bukaIsiLog('${l.log_id}')">
+                    <div style="flex:1;">
+                        <b>${l.log_name}</b><br>
+                        <span style="font-size:12px; color:gray;">${l.jumlah_item} ayat tersimpan • ${l.tanggal}</span>
+                    </div>
+                    <button style="width:auto; background:#ff3b30; padding:8px 12px; font-size:12px;" onclick="event.stopPropagation(); hapusLog('${l.log_id}')">🗑️</button>
+                </div>`;
+            });
+            box.innerHTML = html;
+        } catch (e) {
+            box.innerHTML = "<p style='color:red;'>Gagal memuat log (masalah koneksi).</p>";
+        }
+    }
+
+    async function hapusLog(logId) {
+        if (!confirm("Hapus Log ini beserta semua ayat di dalamnya?")) return;
+        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteLog", username: userSession.username, log_id: logId }) });
+        muatDaftarLog();
+    }
+
+    async function bukaIsiLog(logId) {
+        const box = document.getElementById('log-list-area');
+        box.innerHTML = "<h3 style='text-align:center;'>⏳ Memuat isi log...</h3>";
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getLogContent", username: userSession.username, log_id: logId }) });
+            const data = await res.json();
+            if (data.status !== "success") { box.innerHTML = `<p style='color:red;'>${data.message}</p>`; return; }
+
+            currentLogItems = data.items; currentLogId = logId; currentLogName = data.log_name;
+            selectedItemIdx = new Set();
+            document.getElementById('log-info-title').innerText = `👤 ${userSession.username || '-'} • 💾 ${data.log_name} • ${currentLogItems.length} ayat`;
+            renderDaftarItemLog();
+        } catch (e) {
+            box.innerHTML = "<p style='color:red;'>Gagal memuat isi log (masalah koneksi).</p>";
+        }
+    }
+
+    function renderDaftarItemLog() {
+        const box = document.getElementById('log-list-area');
+        let html = `<button class="icon-btn" style="margin-bottom:10px;" onclick="muatDaftarLog()">◀ Kembali ke Daftar Log</button>
+            <h3 style="margin:0 0 5px 0;">${currentLogName}</h3>
+            <p style="font-size:12px; color:gray; margin-top:0;">Centang 2-3 ayat untuk ditampilkan bersama dalam satu layar, atau langsung tekan "Tampilkan Satu-satu" untuk melihat semua ayat berurutan (full layar).</p>`;
+
+        if (currentLogItems.length === 0) {
+            html += "<i>Log ini masih kosong.</i>";
+        } else {
+            currentLogItems.forEach((it, idx) => {
+                let ref = it.ref;
+                let label = `${ref.book_name} ${ref.chapter}:${ref.verse_start}-${ref.verse_end} (${(ref.languages || []).join('+').toUpperCase()})`;
+                html += `<div class="log-item-card">
+                    <input type="checkbox" onchange="toggleItemSelect(${idx}, this.checked, this)">
+                    <span style="flex:1;">${idx + 1}. ${label}</span>
+                    <button style="width:auto; padding:8px 12px; font-size:12px;" onclick="mulaiViewer(${idx}, 'satu')">👁️ Lihat</button>
+                    <button style="width:auto; background:#ff3b30; padding:8px 10px; font-size:12px;" onclick="hapusItemLog(${idx})">🗑️</button>
+                </div>`;
+            });
+            html += `<div class="icon-bar" style="margin-top:15px;">
+                <button class="icon-btn" style="background:var(--primary); color:white;" onclick="mulaiViewer(0, 'satu')">▶ Tampilkan Satu-satu</button>
+                <button class="icon-btn" style="background:#ff9500; color:white;" onclick="mulaiViewerGabungan()">||| Tampilkan Bersama (Terpilih)</button>
+            </div>`;
+        }
+        box.innerHTML = html;
+    }
+
+    function toggleItemSelect(idx, checked, el) {
+        if (checked) {
+            if (selectedItemIdx.size >= 3) { alert("Maksimal 3 ayat sekaligus untuk tampilan bersama."); if (el) el.checked = false; return; }
+            selectedItemIdx.add(idx);
+        } else {
+            selectedItemIdx.delete(idx);
+        }
+    }
+
+    async function hapusItemLog(idx) {
+        if (!confirm("Hapus ayat ini dari Log?")) return;
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteLogItem", username: userSession.username, log_id: currentLogId, item_index: idx }) });
+            const data = await res.json();
+            if (data.status === "success") bukaIsiLog(currentLogId);
+            else alert("Gagal menghapus: " + data.message);
+        } catch (e) { alert("Gagal menghapus (koneksi)."); }
+    }
+
+    // Tampilkan satu ayat/pasal full layar dengan navigasi Sebelumnya/Berikutnya
+    function mulaiViewer(startIdx, mode) {
+        viewerMode = mode; viewerIndex = startIdx;
+        document.getElementById('log-viewer').classList.remove('hidden');
+        renderViewerSatu();
+    }
+
+    function renderViewerSatu() {
+        const it = currentLogItems[viewerIndex];
+        document.getElementById('viewer-title').innerText = `${it.ref.book_name} ${it.ref.chapter}:${it.ref.verse_start}-${it.ref.verse_end}`;
+        document.getElementById('viewer-mode-label').innerText = `Satu-satu • ${viewerIndex + 1}/${currentLogItems.length}`;
+        document.getElementById('viewer-content').innerHTML = buildAyatHtml(it.ayat, it.ref.languages && it.ref.languages.length ? it.ref.languages : ['ind']);
+    }
+
+    // Tampilkan 2-3 ayat/pasal terpilih sekaligus dalam satu layar
+    function mulaiViewerGabungan() {
+        if (selectedItemIdx.size < 2) return alert("Pilih minimal 2 (maksimal 3) ayat untuk ditampilkan bersama.");
+        viewerMode = 'bersama';
+        document.getElementById('log-viewer').classList.remove('hidden');
+        renderViewerGabungan([...selectedItemIdx]);
+    }
+
+    function renderViewerGabungan(idxArray) {
+        let container = document.getElementById('viewer-content');
+        container.innerHTML = "";
+        let titles = [];
+        idxArray.forEach(i => {
+            let it = currentLogItems[i];
+            titles.push(`${it.ref.book_name} ${it.ref.chapter}:${it.ref.verse_start}-${it.ref.verse_end}`);
+            let sub = document.createElement('div');
+            sub.style.marginBottom = "25px"; sub.style.paddingBottom = "15px"; sub.style.borderBottom = "1px dashed var(--border)";
+            sub.innerHTML = buildAyatHtml(it.ayat, it.ref.languages && it.ref.languages.length ? it.ref.languages : ['ind']);
+            container.appendChild(sub);
+        });
+        document.getElementById('viewer-title').innerText = titles.join("  |  ");
+        document.getElementById('viewer-mode-label').innerText = `Bersama • ${idxArray.length} ayat`;
+    }
+
+    function viewerPrev() {
+        if (viewerMode !== 'satu') return alert("Navigasi Sebelumnya/Berikutnya hanya berlaku di mode 'Satu-satu'.");
+        if (viewerIndex > 0) { viewerIndex--; renderViewerSatu(); } else alert("Sudah di ayat/pasal pertama.");
+    }
+    function viewerNext() {
+        if (viewerMode !== 'satu') return alert("Navigasi Sebelumnya/Berikutnya hanya berlaku di mode 'Satu-satu'.");
+        if (viewerIndex < currentLogItems.length - 1) { viewerIndex++; renderViewerSatu(); } else alert("Sudah di ayat/pasal terakhir.");
+    }
+    function tutupViewer() {
+        document.getElementById('log-viewer').classList.add('hidden');
     }
 
     function toggleNote(noteId) {
@@ -598,6 +872,54 @@
         let arr = [l1]; if(l2) arr.push(l2); if(l3) arr.push(l3); return arr;
     }
 
+    // PERBAIKAN BUG BAHASA: fungsi ini membangun HTML ayat dari array hasil server.
+    // Kunci pengelompokan (key) SELALU dibuat dari nama kitab + pasal + ayat (bukan dari
+    // kolom ID baris di spreadsheet). Sebelumnya kode memakai `a.id` sebagai kunci utama;
+    // jika ID tidak sama persis antar baris bahasa untuk ayat yang sama (misal ID unik per
+    // baris di spreadsheet), maka data ind/eng/chs tidak pernah tergabung dalam satu grup,
+    // sehingga hanya bahasa yang datanya "menang" (biasanya yang terakhir diproses, chs)
+    // yang tampil. Kunci berbasis kitab+pasal+ayat selalu sama untuk ketiga bahasa,
+    // sehingga ketiganya pasti tergabung dan tampil bersamaan.
+    function buildAyatHtml(ayatArray, selectedLangsArray) {
+        let grouped = {}, order = [], currentHeader = "", htmlOut = "";
+
+        ayatArray.forEach((a) => {
+            let header = `${a.b} ${a.c}`;
+            let key = `${header}__${a.v}`;
+            if (!grouped[key]) {
+                grouped[key] = { header: header, v: a.v, texts: {}, note: a.n };
+                order.push(key);
+            }
+            grouped[key].texts[a.lang] = a.t;
+            if (a.n && !grouped[key].note) grouped[key].note = a.n;
+        });
+
+        order.forEach((key) => {
+            let g = grouped[key];
+            let safeId = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+            if (g.header !== currentHeader) { htmlOut += `<div class="book-title">${g.header}</div>`; currentHeader = g.header; }
+            htmlOut += `<div class="verse-group">`;
+
+            // Render BERDASARKAN URUTAN array dropdown (selectedLangsArray), bukan urutan acak JavaScript
+            selectedLangsArray.forEach(langCode => {
+                if (g.texts[langCode]) {
+                    htmlOut += `<div class="verse-item">
+                                    <span class="verse-num" onclick="toggleNote('note-${safeId}')" title="Klik untuk lihat catatan">${g.v}</span>`;
+                    if (selectedLangsArray.length > 1) htmlOut += `<span class="lang-badge">${langCode}</span>`;
+                    htmlOut += `<span class="verse-text" data-lang="${langCode}">${g.texts[langCode]}</span>
+                                </div>`;
+                }
+            });
+
+            if (g.note) {
+                htmlOut += `<div id="note-${safeId}" class="verse-note">💡 <b>Catatan:</b> ${g.note}</div>`;
+            }
+            htmlOut += `</div>`;
+        });
+
+        return htmlOut;
+    }
+
     function renderEreaderGrouped(ayatArray, containerId, pageId) {
         const box = document.getElementById(containerId);
         
@@ -608,44 +930,14 @@
             return;
         }
 
-        let grouped = {}, currentHeader = "", htmlOut = "";
-        
         // Ambil array bahasa persis sesuai urutan dropdown Anda
         let selectedLangsArray = getSelectedLangs(pageId === 'read-info' ? 'read' : 'search');
         let primaryLang = selectedLangsArray[0]; 
 
-        ayatArray.forEach((a) => {
-            let header = `${a.b} ${a.c}`, key = a.id || `${header}-${a.v}`; 
-            if (!grouped[key]) {
-                grouped[key] = { header: header, v: a.v, texts: {}, note: a.n };
-            }
-            grouped[key].texts[a.lang] = a.t;
-            if(a.n && !grouped[key].note) grouped[key].note = a.n;
-        });
+        box.innerHTML = buildAyatHtml(ayatArray, selectedLangsArray);
 
-        for (let key in grouped) {
-            let g = grouped[key];
-            if (g.header !== currentHeader) { htmlOut += `<div class="book-title">${g.header}</div>`; currentHeader = g.header; }
-            htmlOut += `<div class="verse-group">`;
-            
-            // Render BERDASARKAN URUTAN array dropdown (selectedLangsArray), bukan urutan acak JavaScript
-            selectedLangsArray.forEach(langCode => {
-                if (g.texts[langCode]) {
-                    htmlOut += `<div class="verse-item">
-                                    <span class="verse-num" onclick="toggleNote('note-${key}')" title="Klik untuk lihat catatan">${g.v}</span>`;
-                    if(selectedLangsArray.length > 1) htmlOut += `<span class="lang-badge">${langCode}</span>`;
-                    htmlOut += `<span class="verse-text" data-lang="${langCode}">${g.texts[langCode]}</span>
-                                </div>`;
-                }
-            });
-            
-            if(g.note) {
-                htmlOut += `<div id="note-${key}" class="verse-note">💡 <b>Catatan:</b> ${g.note}</div>`;
-            }
-            htmlOut += `</div>`;
-        }
-        
-        box.innerHTML = htmlOut;
+        // Simpan hasil terakhir untuk dipakai fitur "Simpan ke Log"
+        if (pageId === 'read-info') lastAyatRead = ayatArray; else lastAyatSearch = ayatArray;
         
         // PENGATURAN TEKS NAVIGASI BAR 1 BARIS: nama login | mode | bahasa | Kitab Pasal : Ayat
         let primaryVerse = ayatArray.find(a => a.lang === primaryLang) || ayatArray[0];
