@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>15:25 E-Bible </title>
+    <title>16:02 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -63,6 +63,8 @@
 
         /* Titik warna yang otomatis mengikuti warna primary tema aktif */
         .theme-dot { width: 9px; height: 9px; min-width: 9px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 4px var(--primary); flex-shrink: 0; }
+        /* Nama tema aktif, tampil di sebelah titik warna tema di navigasi 1 baris (Cari/Baca/Jadwal) */
+        .theme-name-label { font-size: 11px; font-weight: 600; opacity: 0.7; white-space: nowrap; }
 
         /* TAB MENU UTAMA: Cari / Baca / Jadwal - tampil sama & konsisten di ketiga halaman */
         .nav-tabs { display: flex; gap: 6px; padding: 8px 8px 0 8px; }
@@ -84,7 +86,8 @@
         .icon-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .icon-btn { flex: 1; min-width: 35px; background: var(--btn-bg); color: var(--text); font-size: 14px; padding: 10px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-weight: bold; }
         
-        .reading-area { padding: 20px 15px; min-height: 50vh; font-size: var(--font-size); text-align: justify; color: var(--custom-color, var(--text)); transition: color 0.3s;}
+        /* padding-bottom besar (50vh) supaya baris teks terakhir bisa terus discroll sampai ke separuh atas layar */
+        .reading-area { padding: 20px 15px 50vh 15px; min-height: 50vh; font-size: var(--font-size); text-align: justify; color: var(--custom-color, var(--text)); transition: color 0.3s;}
         .book-title { font-size: 1.6em; font-weight: bold; color: var(--primary); margin: 30px 0 15px 0; border-bottom: 2px solid var(--border); padding-bottom: 5px; display: block; width: 100%;}
         
         .verse-num { font-size: 0.65em; font-weight: bold; color: var(--primary); margin-right: 4px; vertical-align: super; cursor: pointer; text-decoration: underline; padding: 0 2px;}
@@ -127,7 +130,7 @@
         #log-viewer.hidden { display: none; }
         #log-viewer .nav-summary-row { border-radius: 0; flex-shrink: 0; position: sticky; top: 0; z-index: 10; }
         #log-viewer .nav-full-menu.open { flex-shrink: 0; }
-        .viewer-body { flex: 1; padding: 20px 15px; text-align: justify; }
+        .viewer-body { flex: 1; padding: 20px 15px 50vh 15px; text-align: justify; }
     </style>
 </head>
 <body class="font-apple" data-theme="light-default">
@@ -137,7 +140,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 15.25</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 16.02</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -216,7 +219,7 @@
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
-                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span id="search-ref-title">Pencarian Kosong...</span></span>
+                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span class="theme-name-label">Terang Default</span><span id="search-ref-title">Pencarian Kosong...</span></span>
                 <span class="nav-user-title" id="search-user-title">👤 -</span>
                 <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
@@ -243,6 +246,11 @@
                 </div>
                 <p style="font-size:11px; color:gray; margin:2px 0 8px 0;">Isi hanya "Ayat Awal". Tombol di samping: <b>1️⃣ Satu Ayat</b> = hanya 1 ayat itu saja (mis. Filipi 4:4), tekan untuk ganti ke <b>🔢 Semua Ayat</b> = dari ayat itu sampai akhir pasal.</p>
                 <button class="icon-btn" style="background:var(--primary); color:white; width: 100%; margin: 10px 0;" onclick="eksekusiPencarian()">🔍 Eksekusi Pencarian</button>
+
+                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">📑 Atau Cari dari Referensi Lengkap</div>
+                <input type="text" id="search-referensi" placeholder="mis. Filipi 1:1-2,4,7;2:3-4">
+                <p style="font-size:11px; color:gray; margin:2px 0 8px 0;">Boleh campur beberapa ayat/rentang & pasal sekaligus, dipisah koma "," (ayat/rentang) dan titik-koma ";" (ganti pasal). Contoh "Filipi 1:1-2,4,7;2:3-4" akan menampilkan Filipi 1:1,2,4,7 dan 2:3,4.</p>
+                <button class="icon-btn" style="background:#5856d6; color:white; width: 100%; margin: 0 0 10px 0;" onclick="eksekusiPencarianReferensi()">📑 Cari dari Referensi</button>
 
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🗣️ Tampilan & Suara</div>
                 <div class="icon-bar">
@@ -316,7 +324,7 @@
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
-                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span id="read-ref-title">Mempersiapkan...</span></span>
+                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span class="theme-name-label">Terang Default</span><span id="read-ref-title">Mempersiapkan...</span></span>
                 <span class="nav-user-title" id="read-user-title">👤 -</span>
                 <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
@@ -413,7 +421,7 @@
             </div>
             <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
-                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span id="log-ref-title">🗓️ Daftar Jadwal</span></span>
+                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span class="theme-name-label">Terang Default</span><span id="log-ref-title">🗓️ Daftar Jadwal</span></span>
                 <span class="nav-user-title" id="log-user-title">👤 -</span>
                 <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
@@ -424,6 +432,24 @@
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🗓️ Tentang Jadwal</div>
                 <p style="font-size:13px; margin: 4px 0 10px 0;">Simpan ayat/pasal pilihan Anda ke sebuah Jadwal bernama (misal "SPR 21 Juli 2026", "Anak 25 Mei 2026", "CGM 22 Jan 2026") dari Mode Baca atau Mode Cari. Setiap Jadwal bisa berisi banyak ayat tersimpan (misal Filipi 1:10, Matius 1:1-12, dst), lengkap dengan isi ayatnya. Klik salah satu ayat untuk langsung tampil cepat tanpa perlu keluar.</p>
                 <button class="icon-btn" style="background:var(--primary); color:white; width:100%;" onclick="muatDaftarLog()">🔄 Muat Ulang Daftar Jadwal</button>
+
+                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:10px;">🗣️ Tampilan</div>
+                <div class="icon-bar">
+                    <button class="icon-btn" onclick="ubahFont(2)">A➕</button>
+                    <button class="icon-btn" onclick="ubahFont(-2)">A➖</button>
+                    <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
+                    <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
+                    <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
+                </div>
+                <div class="icon-bar">
+                    <select class="icon-btn font-selector" style="flex:1;" onchange="gantiGayaFontGlobal(this.value)">
+                        <option value="font-apple">Apple</option><option value="font-roboto">Roboto</option><option value="font-arial">Arial</option>
+                        <option value="font-verdana">Verdana</option><option value="font-tahoma">Tahoma</option><option value="font-courier">Courier</option><option value="font-comic">Comic</option>
+                    </select>
+                    <select class="icon-btn color-selector" style="flex:1;" onchange="gantiWarnaFontGlobal(this.value)">
+                        <option value="">Warna Font Default</option><option value="#ff3b30">Merah</option><option value="#007aff">Biru</option><option value="#ffcc00">Kuning</option><option value="#000000">Hitam</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -481,7 +507,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHCjD5TwV8Fy7bnLFJjwLevZBxR501Qn2vAR9NlLYZa0bFC0xLPAIrfGIHvG98fhqm8g/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxR2iJLiOC0DjUlmDqX2olqOCTLkNQdQ4Q00xsV2AxJ4zCB8g_wGvnSSlfB8YNndpnZKg/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -501,6 +527,7 @@
 
     // State untuk fitur Simpan Log
     let lastAyatRead = null, lastAyatSearch = null;
+    let lastSearchRefSpec = null; // { verse_spec: "1:1-2,4,7;2:3-4", spec_type: 'satu'|'sebagian'|'penuh' } saat hasil dari Cari Referensi
     let savedLogs = [];
     let currentLogItems = [], currentLogId = null, currentLogName = "";
     let selectedItemIdx = new Set();
@@ -617,6 +644,22 @@
         let vStart = Math.min(...arr.map(a => a.v)), vEnd = Math.max(...arr.map(a => a.v));
         let refLabel = formatRefLabel(bookName, chapter, vStart, vEnd);
 
+        // Tentukan langsung apakah ini hanya 1 ayat, sebagian ayat (referensi campuran/rentang parsial),
+        // atau seluruh pasal -- supaya saat disimpan ke Jadwal, jenisnya langsung diketahui.
+        let specType, verseSpec = null;
+        if (pageId === 'search-info' && lastSearchRefSpec) {
+            specType = lastSearchRefSpec.spec_type;
+            verseSpec = lastSearchRefSpec.verse_spec;
+        } else if (Number(vStart) === Number(vEnd)) {
+            specType = 'satu';
+        } else if (pageId === 'read-info') {
+            specType = 'penuh'; // Bacaan harian selalu 1 pasal penuh
+        } else if (searchVerseMode === 'all' && Number(vStart) === 1) {
+            specType = 'penuh';
+        } else {
+            specType = 'sebagian';
+        }
+
         let daftarNama = savedLogs.map(l => l.log_name).join(", ") || "(belum ada)";
         let defaultName = `SPR ${new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date())}`;
         let logName = prompt(`Simpan "${refLabel}" ke Jadwal.\nKetik nama Jadwal baru (misal "SPR 21 Juli 2026"), atau ketik persis nama Jadwal yang sudah ada untuk menambah ayat ini ke dalamnya.\n\nJadwal yang sudah ada: ${daftarNama}`, defaultName);
@@ -627,7 +670,8 @@
             book_number: bn, book_name: bookName, chapter: chapter,
             verse_start: vStart, verse_end: vEnd,
             languages: getSelectedLangs(pageId === 'read-info' ? 'read' : 'search'),
-            ayat_text: arr
+            ayat_text: arr,
+            spec_type: specType, verse_spec: verseSpec
         };
 
         try {
@@ -706,19 +750,25 @@
         const box = document.getElementById('log-list-area');
         let html = `<button class="icon-btn" style="margin-bottom:10px;" onclick="muatDaftarLog()">◀ Kembali ke Daftar Jadwal</button>
             <h3 style="margin:0 0 5px 0;">${currentLogName}</h3>
-            <p style="font-size:12px; color:gray; margin-top:0;">Centang ayat-ayat yang ingin ditampilkan bersama dalam satu layar (boleh pilih semua), atau langsung tekan "Tampilkan Satu-satu" untuk melihat semua ayat berurutan (full layar).</p>`;
+            <p style="font-size:12px; color:gray; margin-top:0;">Klik di mana saja pada baris ayat untuk mencentang/batal, boleh pilih semua ayat, atau langsung tekan "Tampilkan Satu-satu" untuk melihat semua ayat berurutan (full layar).</p>`;
 
         if (currentLogItems.length === 0) {
             html += "<i>Jadwal ini masih kosong.</i>";
         } else {
+            html += `<div class="icon-bar" style="margin-bottom:5px;">
+                <button class="icon-btn" style="background:var(--primary); color:white;" onclick="toggleSelectAllLog()">☑️ Pilih Semua / Batal Semua</button>
+            </div>`;
             currentLogItems.forEach((it, idx) => {
                 let ref = it.ref;
-                let label = `${formatRefLabel(ref.book_name, ref.chapter, ref.verse_start, ref.verse_end)} (${(ref.languages || []).join('+').toUpperCase()})`;
-                html += `<div class="log-item-card">
-                    <input type="checkbox" onchange="toggleItemSelect(${idx}, this.checked, this)">
-                    <span style="flex:1;">${idx + 1}. ${label}</span>
-                    <button style="width:auto; padding:8px 12px; font-size:12px;" onclick="mulaiViewer(${idx}, 'satu')">👁️ Lihat</button>
-                    <button style="width:auto; background:#ff3b30; padding:8px 10px; font-size:12px;" onclick="hapusItemLog(${idx})">🗑️</button>
+                let refDisplay = ref.verse_spec ? `${ref.book_name} ${ref.verse_spec}` : formatRefLabel(ref.book_name, ref.chapter, ref.verse_start, ref.verse_end);
+                let label = `${refDisplay} (${(ref.languages || []).join('+').toUpperCase()})`;
+                let badge = specTypeBadge(ref);
+                let checked = selectedItemIdx.has(idx) ? 'checked' : '';
+                html += `<div class="log-item-card" style="cursor:pointer;" onclick="toggleItemRowClick(event, ${idx})">
+                    <input type="checkbox" id="chk-log-${idx}" ${checked} onclick="event.stopPropagation();" onchange="toggleItemSelect(${idx}, this.checked, this)">
+                    <span style="flex:1;">${idx + 1}. ${label} ${badge}</span>
+                    <button style="width:auto; padding:8px 12px; font-size:12px;" onclick="event.stopPropagation(); mulaiViewer(${idx}, 'satu')">👁️ Lihat</button>
+                    <button style="width:auto; background:#ff3b30; padding:8px 10px; font-size:12px;" onclick="event.stopPropagation(); hapusItemLog(${idx})">🗑️</button>
                 </div>`;
             });
             html += `<div class="icon-bar" style="margin-top:15px;">
@@ -729,9 +779,36 @@
         box.innerHTML = html;
     }
 
+    // Badge kecil penanda apakah item Jadwal ini hanya 1 ayat, sebagian ayat (referensi campuran), atau seluruh pasal
+    function specTypeBadge(ref) {
+        if (ref.spec_type === 'satu') return '<span style="font-size:11px; opacity:0.7;">🔹 1 Ayat</span>';
+        if (ref.spec_type === 'penuh') return '<span style="font-size:11px; opacity:0.7;">🔷 Seluruh Pasal</span>';
+        if (ref.spec_type === 'sebagian') return '<span style="font-size:11px; opacity:0.7;">🔸 Sebagian Ayat</span>';
+        return '';
+    }
+
+    // Klik di mana saja pada baris (kecuali tombol Lihat/Hapus) akan mencentang/batal checkbox baris itu
+    function toggleItemRowClick(evt, idx) {
+        const chk = document.getElementById(`chk-log-${idx}`);
+        if (!chk) return;
+        chk.checked = !chk.checked;
+        toggleItemSelect(idx, chk.checked, chk);
+    }
+
     function toggleItemSelect(idx, checked, el) {
         if (checked) selectedItemIdx.add(idx);
         else selectedItemIdx.delete(idx);
+    }
+
+    // Tombol "Pilih Semua / Batal Semua": kalau belum semua tercentang -> centang semua; kalau sudah semua -> batal semua
+    function toggleSelectAllLog() {
+        const semuaTerpilih = currentLogItems.length > 0 && selectedItemIdx.size === currentLogItems.length;
+        if (semuaTerpilih) {
+            selectedItemIdx.clear();
+        } else {
+            currentLogItems.forEach((it, idx) => selectedItemIdx.add(idx));
+        }
+        renderDaftarItemLog();
     }
 
     async function hapusItemLog(idx) {
@@ -945,9 +1022,16 @@
         document.body.style.setProperty('--font-size', currentFontSize + 'px'); 
     }
     
+    // Label nama tema (Indonesia) yang tampil di navigasi 1 baris, di sebelah titik warna tema
+    const THEME_LABELS = {
+        'light-default': 'Terang Default', 'light-sepia': 'Sepia Klasik', 'light-mint': 'Hijau Mint', 'light-sky': 'Biru Langit', 'light-peach': 'Peach Hangat',
+        'dark-default': 'Gelap Default', 'dark-ocean': 'Samudera Biru', 'dark-dracula': 'Dracula (Ungu)', 'dark-forest': 'Hutan Gelap', 'dark-charcoal': 'Abu-abu Arang'
+    };
+
     function gantiTemaGlobal(tema) { 
         document.body.setAttribute('data-theme', tema); 
         document.querySelectorAll('.theme-selector').forEach(el => el.value = tema);
+        document.querySelectorAll('.theme-name-label').forEach(el => el.innerText = THEME_LABELS[tema] || tema);
         document.getElementById('modal-theme').classList.add('hidden'); // Tutup modal otomatis setelah memilih
     }
     
@@ -1210,7 +1294,8 @@
         const box = document.getElementById('search-results');
         box.innerHTML = "<h3>⏳ Sedang mencari secepat kilat...</h3>";
         tutupSemuaNavMenu();
-        
+        lastSearchRefSpec = null; // pencarian sederhana (bukan referensi campuran), reset penanda referensi
+
         let targetLangs = getSelectedLangs('search');
         try {
             const res = await fetch(SCRIPT_URL, { 
@@ -1230,6 +1315,97 @@
             }
         } catch(e) { 
             box.innerHTML = "<h3 style='color:red;'>Pencarian Gagal: Masalah koneksi internet/CORS.</h3>"; 
+        }
+    }
+
+    // =====================================================================
+    // PENCARIAN REFERENSI LENGKAP, mis. "Filipi 1:1-2,4,7;2:3-4"
+    // Format: NamaKitab lalu pasal:ayat(,ayat|rentang)*;pasal:ayat(,ayat|rentang)*...
+    // =====================================================================
+    function parseReferensiAlkitab(teks) {
+        teks = (teks || "").trim();
+        if (!teks) return null;
+
+        const langSelected = document.getElementById('lang1-search').value || 'ind';
+        const books = bookData[langSelected] || bookData['ind'];
+
+        // Cari nama kitab dengan kecocokan awal teks TERPANJANG (supaya "1 Korintus" tidak salah kena "Korintus" dsb)
+        let bestMatch = null, bestLen = 0;
+        books.forEach((bookName, idx) => {
+            let bn = bookName.trim().toLowerCase();
+            if (teks.toLowerCase().indexOf(bn) === 0 && bn.length > bestLen) {
+                bestMatch = { book_number: idx + 1, book_name: bookName };
+                bestLen = bn.length;
+            }
+        });
+        if (!bestMatch) return null;
+
+        let sisa = teks.substring(bestLen).trim();
+        if (!sisa) return null;
+
+        // sisa contoh: "1:1-2,4,7;2:3-4"
+        let segments = [];
+        let totalVerses = 0;
+        sisa.split(';').forEach(bagianPasal => {
+            bagianPasal = bagianPasal.trim();
+            if (!bagianPasal) return;
+            let [chapterStr, ayatStr] = bagianPasal.split(':');
+            let chapter = parseInt(chapterStr, 10);
+            if (!chapter || !ayatStr) return;
+
+            let ranges = [];
+            ayatStr.split(',').forEach(tok => {
+                tok = tok.trim();
+                if (!tok) return;
+                if (tok.indexOf('-') !== -1) {
+                    let [s, e] = tok.split('-').map(n => parseInt(n, 10));
+                    if (s && e) { ranges.push([s, e]); totalVerses += (e - s + 1); }
+                } else {
+                    let v = parseInt(tok, 10);
+                    if (v) { ranges.push([v, v]); totalVerses += 1; }
+                }
+            });
+            if (ranges.length) segments.push({ chapter: chapter, ranges: ranges });
+        });
+
+        if (segments.length === 0) return null;
+        return { book_number: bestMatch.book_number, book_name: bestMatch.book_name, segments: segments, verse_spec: sisa, total_verses: totalVerses };
+    }
+
+    async function eksekusiPencarianReferensi() {
+        const teks = document.getElementById('search-referensi').value;
+        const parsed = parseReferensiAlkitab(teks);
+        if (!parsed) return alert('Format referensi tidak dikenali. Contoh yang benar: "Filipi 1:1-2,4,7;2:3-4"');
+
+        const box = document.getElementById('search-results');
+        box.innerHTML = "<h3>⏳ Sedang mencari secepat kilat...</h3>";
+        tutupSemuaNavMenu();
+
+        let targetLangs = getSelectedLangs('search');
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "searchReference", book_number: parsed.book_number, segments: parsed.segments, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP })
+            });
+            const responseText = await res.text();
+            try {
+                const data = JSON.parse(responseText);
+                if (data.status === "error") throw new Error(data.message);
+
+                // Tandai spec_type: 1 ayat saja atau sebagian ayat (referensi campuran)
+                lastSearchRefSpec = { verse_spec: parsed.verse_spec, spec_type: (parsed.total_verses === 1 ? 'satu' : 'sebagian') };
+                renderEreaderGrouped(data.ayat, 'search-results', 'search-info');
+
+                // Referensi campuran bisa melintasi beberapa pasal sekaligus (mis. "1:1-2,4,7;2:3-4"),
+                // jadi judul navigasi 1 baris memakai teks referensi persis apa yang diketik, bukan hasil min/max ayat.
+                let selectedLangsArray = getSelectedLangs('search');
+                document.getElementById('search-ref-title').innerText = buildRefText('search-info', `${parsed.book_name} ${parsed.verse_spec}`, selectedLangsArray);
+            } catch (err) {
+                console.error("Respon Server:", responseText);
+                box.innerHTML = `<h3 style='color:red;'>Pencarian Gagal: ${err.message || "Pastikan SCRIPT_URL sudah benar."}</h3>`;
+            }
+        } catch (e) {
+            box.innerHTML = "<h3 style='color:red;'>Pencarian Gagal: Masalah koneksi internet/CORS.</h3>";
         }
     }
 
