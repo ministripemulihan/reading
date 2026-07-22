@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Reader Alkitab Pro</title>
+    <title>E-Reader Alkitab Online</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -97,7 +97,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 Login E-Bible</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;"> pencarian dan multibahasa</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;"> pencarian dan multi bahasa ver 10</h4>
         
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
@@ -156,9 +156,9 @@
                     <span>🔍</span>
                     <span id="search-info-title">Pencarian</span> | 
                     <span id="search-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
-                    <span id="search-info-verses">0 Ayat</span> |
+                    <span id="search-info-verses">0 Ayat</span> |  <!-- PASTIKAN BARIS INI ADA -->
                     <span id="search-info-words">0 Kata</span>
-                </div>
+                 </div>
                 <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
                     <button class="btn-signout" onclick="logout()">Sign Out</button>
                     <button class="btn-triangle" id="btn-toggle-search" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">▼</button>
@@ -508,12 +508,20 @@
         let arr = [l1]; if(l2) arr.push(l2); if(l3) arr.push(l3); return arr;
     }
 
-    function renderEreaderGrouped(ayatArray, containerId, pageId) {
+function renderEreaderGrouped(ayatArray, containerId, pageId) {
         const box = document.getElementById(containerId);
+        
+        // 1. Jika data kosong / tidak ditemukan
         if (!ayatArray || ayatArray.length === 0) {
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Ayat tidak ditemukan.</h3>";
-            document.getElementById(`${pageId}-info-words`).innerText = "0 Kata";
-            document.getElementById(`${pageId}-info-verses`).innerText = "0 Ayat";
+            
+            // Gunakan "if" agar kebal error jika elemen HTML-nya belum dibuat
+            let elWords = document.getElementById(`${pageId}-info-words`);
+            if (elWords) elWords.innerText = "0 Kata";
+            
+            let elVerses = document.getElementById(`${pageId}-info-verses`);
+            if (elVerses) elVerses.innerText = "0 Ayat";
+            
             return;
         }
 
@@ -527,7 +535,7 @@
             
             if (!grouped[key]) {
                 grouped[key] = { header: header, v: a.v, texts: {}, note: a.n };
-                verseCount++; // Hitung jumlah ayat unik
+                verseCount++; 
             }
             grouped[key].texts[a.lang] = a.t;
             wordCount += a.t.trim().split(/\s+/).length;
@@ -554,13 +562,23 @@
             
             htmlOut += `</div>`;
         }
+        
         box.innerHTML = htmlOut;
         
+        // 2. Update Navigasi UI dengan aman (Tahan Banting)
         let langs = getSelectedLangs(pageId === 'read-info' ? 'read' : 'search').join(", ").toUpperCase();
-        document.getElementById(`${pageId}-info-title`).innerText = `${firstInfo}-${lastInfo}`;
-        document.getElementById(`${pageId}-info-lang`).innerText = langs;
-        document.getElementById(`${pageId}-info-verses`).innerText = `${verseCount} Ayat`;
-        document.getElementById(`${pageId}-info-words`).innerText = `${wordCount} Kata`;
+        
+        let elTitle = document.getElementById(`${pageId}-info-title`);
+        if (elTitle) elTitle.innerText = `${firstInfo}-${lastInfo}`;
+        
+        let elLang = document.getElementById(`${pageId}-info-lang`);
+        if (elLang) elLang.innerText = langs;
+        
+        let elVerses = document.getElementById(`${pageId}-info-verses`);
+        if (elVerses) elVerses.innerText = `${verseCount} Ayat`;
+        
+        let elWords = document.getElementById(`${pageId}-info-words`);
+        if (elWords) elWords.innerText = `${wordCount} Kata`;
     }
 
     async function prosesLogin() {
