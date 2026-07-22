@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Reader Alkitab Online versi stabil</title>
+    <title>E-Reader Alkitab Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -29,7 +29,6 @@
         body.font-verdana { font-family: Verdana, Geneva, sans-serif; }
         body.font-tahoma { font-family: Tahoma, Geneva, sans-serif; }
 
-        /* Hardcode Gambar Background sesuai link Drive Anda */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-image: url('https://drive.google.com/uc?export=view&id=1KJFjezDcxNtIfiPaoUCBA7bgIo8HSfP8');
@@ -40,18 +39,23 @@
 
         body { background-color: var(--bg); color: var(--text); margin: 0; padding: 0; font-size: var(--font-size); line-height: 1.8; transition: 0.3s; }
         
-        .container { max-width: 800px; margin: auto; padding: 10px; transition: max-width 0.3s ease; }
-        .container.full-width { max-width: 100%; padding: 5px; } 
+        /* PENGATURAN LEBAR LAYAR */
+        .container { max-width: 800px; margin: auto; padding: 10px; transition: max-width 0.4s ease; }
+        .container.full-width { max-width: 100%; padding: 10px; } 
+        .container.mobile-width { max-width: 420px; padding: 5px; } /* Ukuran Portrait HP */
+        
         .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
         input, select, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 15px; outline: none; box-sizing: border-box;}
         button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
+        /* PENGATURAN NAVIGASI BAR */
         .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
-        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; font-size: 12px; cursor: pointer; gap: 8px;}
+        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; font-size: 13px; cursor: pointer; gap: 8px;}
         .nav-summary-info { flex: 1; white-space: nowrap; overflow-x: auto; scrollbar-width: none; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center;}
         .nav-summary-info::-webkit-scrollbar { display: none; }
+        .nav-separator { color: gray; font-weight: normal; margin: 0 2px;}
         
         .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 11px; padding: 0; flex-shrink: 0;}
         .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 4px 8px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
@@ -81,7 +85,6 @@
         .reading-area.mode-baris .verse-group { display: block; margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 10px;}
         .reading-area.mode-baris .verse-item { display: block; margin-bottom: 8px; }
 
-        /* Highlight seluruh baris saat dibaca */
         .highlight-tts { background-color: rgba(255, 235, 59, 0.4) !important; box-shadow: 0 0 5px rgba(255, 235, 59, 0.5); padding: 5px; border-radius: 5px; }
 
         .hidden { display: none !important; }
@@ -96,8 +99,8 @@
     
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
-        <h2 style="text-align: center; margin-bottom: 5px;">📖 Login E-Bible</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;"> pencarian dan multi bahasa ver 10</h4>
+        <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Indonesia</h2>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">Fast Search Edition ver 10:16</h4>
         
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
@@ -151,14 +154,15 @@
     <!-- PENCARIAN -->
     <div id="search-page" class="hidden">
         <div class="top-nav-bar">
+            <!-- BAR NAVIGASI SESUAI INSTRUKSI -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">
                 <div class="nav-summary-info">
-                    <span>🔍</span>
-                    <span id="search-info-title">Pencarian</span> | 
-                    <span id="search-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
-                    <span id="search-info-verses">0 Ayat</span> |  <!-- PASTIKAN BARIS INI ADA -->
+                    <span id="search-info-title">Pencarian Kosong...</span>
+                    <span class="nav-separator">|</span>
                     <span id="search-info-words">0 Kata</span>
-                 </div>
+                    <span class="nav-separator">|</span>
+                    <span id="search-info-verses">0 Ayat</span>
+                </div>
                 <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
                     <button class="btn-signout" onclick="logout()">Sign Out</button>
                     <button class="btn-triangle" id="btn-toggle-search" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">▼</button>
@@ -173,7 +177,7 @@
                     <select id="lang3-search" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
                 </div>
 
-                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔍 Navigasi Pencarian (< 3 Detik)</div>
+                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔍 Navigasi Pencarian</div>
                 <div style="display:flex; gap:10px;">
                     <select id="search-book" style="flex:2;"></select>
                     <input type="number" id="search-chapter" placeholder="Pasal" value="1" style="flex:1;">
@@ -211,7 +215,6 @@
                     </select>
                 </div>
                 
-                <!-- Progress bar untuk Artikulasi / Kecepatan -->
                 <div class="icon-bar">
                     <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label-search">Kec: 1.0 | Art: 1.0</span>
                     <input type="range" id="voice-speed-search" min="0.5" max="2.5" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('search')">
@@ -222,7 +225,7 @@
 
                 <hr style="border-color: var(--border); margin: 10px 0;">
                 <div class="icon-bar">
-                    <button class="icon-btn" onclick="toggleFullScreenAPI()">⛶ Fullscreen</button>
+                    <button class="icon-btn" onclick="toggleLebarLayar()">📱/💻 Ubah Ukuran Layar</button>
                     <button class="icon-btn" onclick="salinTeks('search-results')">📋 Copy</button>
                     <button class="icon-btn" style="background:#5856d6; color:white;" onclick="bukaPembacaan()">📖 Ke Pembacaan</button>
                 </div>
@@ -241,13 +244,14 @@
             <!-- Progress Keberhasilan Banner -->
             <div id="reading-progress-banner" class="progress-banner hidden">Progress Membaca: 0%</div>
             
+            <!-- BAR NAVIGASI SESUAI INSTRUKSI -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">
                 <div class="nav-summary-info">
-                    <span>📖</span>
-                    <span id="read-info-title">Memuat...</span> | 
-                    <span id="read-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
-                    <span id="read-info-verses">0 Ayat</span> |
+                    <span id="read-info-title">Mempersiapkan...</span>
+                    <span class="nav-separator">|</span>
                     <span id="read-info-words">0 Kata</span>
+                    <span class="nav-separator">|</span>
+                    <span id="read-info-verses">0 Ayat</span>
                 </div>
                 <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
                     <button class="btn-signout" onclick="logout()">Sign Out</button>
@@ -308,7 +312,7 @@
 
                 <hr style="border-color: var(--border); margin: 10px 0;">
                 <div class="icon-bar">
-                    <button class="icon-btn" onclick="toggleFullScreenAPI()">⛶ Fullscreen</button>
+                    <button class="icon-btn" onclick="toggleLebarLayar()">📱/💻 Ubah Ukuran Layar</button>
                     <button class="icon-btn" onclick="salinTeks('reading-content')">📋 Copy</button>
                     <button class="icon-btn" style="background:#5856d6; color:white;" onclick="bukaPencarian()">🔍 Ke Pencarian</button>
                 </div>
@@ -325,7 +329,7 @@
 </div>
 
 <script>
-    // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG BARU
+    // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0qBKhkfI9u80ex4gihI69je1JIWlIuALp9POsUTkVbHsNAAV0scOJ9BxB9kTBL228Sw/exec';
     
     let userSession = {};
@@ -338,6 +342,9 @@
     let verseQueue = [];
     let isReading = false;
     let currentVerseIndex = 0;
+    
+    // Status Mode Lebar Layar: 0 = Default(800px), 1 = Laptop(Full Width), 2 = Portrait HP(420px)
+    let currentLayoutMode = 0; 
 
     const bookData = {
         ind: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matius","Markus","Lukas","Yohanes","Kisah Rasul-rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus","Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"],
@@ -441,7 +448,6 @@
 
         hapusHighlight();
         let elTeks = verseQueue[currentVerseIndex];
-        // Memastikan highlight menyala untuk seluruh baris (verse-group)
         elTeks.closest('.verse-group').classList.add('highlight-tts');
 
         let msg = new SpeechSynthesisUtterance(elTeks.innerText);
@@ -466,15 +472,21 @@
         document.querySelectorAll('.highlight-tts').forEach(el => el.classList.remove('highlight-tts')); 
     }
 
-    // Fungsi Fullscreen Asli
-    function toggleFullScreenAPI() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                alert(`Gagal fullscreen: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
+    // FUNGSI TOGGLE UKURAN LAYAR YANG BARU
+    function toggleLebarLayar() {
+        const container = document.getElementById('main-container');
+        
+        // Memutar 3 Status: 0 -> 1 -> 2 -> 0 dst...
+        currentLayoutMode = (currentLayoutMode + 1) % 3; 
+        
+        container.classList.remove('full-width', 'mobile-width');
+        
+        if (currentLayoutMode === 1) {
+            container.classList.add('full-width'); // Lebar Selebar Laptop
+        } else if (currentLayoutMode === 2) {
+            container.classList.add('mobile-width'); // Lebar Selebar Portrait HP
         }
+        // Jika status === 0, biarkan kosong agar kembali ke default CSS (.container max 800px)
     }
 
     function toggleModeBaris() {
@@ -508,38 +520,32 @@
         let arr = [l1]; if(l2) arr.push(l2); if(l3) arr.push(l3); return arr;
     }
 
-function renderEreaderGrouped(ayatArray, containerId, pageId) {
+    // RENDERING & UPDATE DATA KE NAVIGASI YANG KOKOH
+    function renderEreaderGrouped(ayatArray, containerId, pageId) {
         const box = document.getElementById(containerId);
         
-        // 1. Jika data kosong / tidak ditemukan
         if (!ayatArray || ayatArray.length === 0) {
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Ayat tidak ditemukan.</h3>";
-            
-            // Gunakan "if" agar kebal error jika elemen HTML-nya belum dibuat
-            let elWords = document.getElementById(`${pageId}-info-words`);
-            if (elWords) elWords.innerText = "0 Kata";
-            
-            let elVerses = document.getElementById(`${pageId}-info-verses`);
-            if (elVerses) elVerses.innerText = "0 Ayat";
-            
+            if (document.getElementById(`${pageId}-info-title`)) document.getElementById(`${pageId}-info-title`).innerText = "Pencarian Kosong";
+            if (document.getElementById(`${pageId}-info-words`)) document.getElementById(`${pageId}-info-words`).innerText = "0 Kata";
+            if (document.getElementById(`${pageId}-info-verses`)) document.getElementById(`${pageId}-info-verses`).innerText = "0 Ayat";
             return;
         }
 
-        let grouped = {}, currentHeader = "", htmlOut = "", wordCount = 0, firstInfo = "", lastInfo = "";
+        let grouped = {}, currentHeader = "", htmlOut = "", wordCount = 0;
         let verseCount = 0;
 
-        ayatArray.forEach((a, index) => {
-            if(index === 0) firstInfo = `${a.b} ${a.c}:${a.v}`;
-            lastInfo = a.v;
+        // Ambil bahasa pilihan pertama (lang1) untuk prioritas nama kitab pada Judul Bar
+        let primaryLang = getSelectedLangs(pageId === 'read-info' ? 'read' : 'search')[0];
+
+        ayatArray.forEach((a) => {
             let header = `${a.b} ${a.c}`, key = a.id || `${header}-${a.v}`; 
-            
             if (!grouped[key]) {
                 grouped[key] = { header: header, v: a.v, texts: {}, note: a.n };
                 verseCount++; 
             }
             grouped[key].texts[a.lang] = a.t;
             wordCount += a.t.trim().split(/\s+/).length;
-            
             if(a.n && !grouped[key].note) grouped[key].note = a.n;
         });
 
@@ -559,20 +565,25 @@ function renderEreaderGrouped(ayatArray, containerId, pageId) {
             if(g.note) {
                 htmlOut += `<div id="note-${key}" class="verse-note">💡 <b>Catatan:</b> ${g.note}</div>`;
             }
-            
             htmlOut += `</div>`;
         }
         
         box.innerHTML = htmlOut;
         
-        // 2. Update Navigasi UI dengan aman (Tahan Banting)
-        let langs = getSelectedLangs(pageId === 'read-info' ? 'read' : 'search').join(", ").toUpperCase();
+        // PENGATURAN TEKS NAVIGASI BAR
+        // Dapatkan nama kitab dari array data yang memiliki bahasa primaryLang (Misal jika CHS, akan keluar nama CHS)
+        let primaryVerse = ayatArray.find(a => a.lang === primaryLang) || ayatArray[0];
         
+        let bookName = primaryVerse.b;
+        let chapterNumber = primaryVerse.c;
+        let minV = Math.min(...ayatArray.map(a => a.v));
+        let maxV = Math.max(...ayatArray.map(a => a.v));
+        
+        // Format: Nama Kitab Pasal : Ayat Awal - Ayat Akhir
+        let titleFormat = `${bookName} ${chapterNumber} : ${minV} - ${maxV}`;
+
         let elTitle = document.getElementById(`${pageId}-info-title`);
-        if (elTitle) elTitle.innerText = `${firstInfo}-${lastInfo}`;
-        
-        let elLang = document.getElementById(`${pageId}-info-lang`);
-        if (elLang) elLang.innerText = langs;
+        if (elTitle) elTitle.innerText = titleFormat;
         
         let elVerses = document.getElementById(`${pageId}-info-verses`);
         if (elVerses) elVerses.innerText = `${verseCount} Ayat`;
@@ -626,7 +637,6 @@ function renderEreaderGrouped(ayatArray, containerId, pageId) {
         actualHariKe = diffDays + 1; 
         currentHariKe = actualHariKe > 0 ? actualHariKe : 1;
         
-        // Ambil target hari dari pilihan plan
         const planOptions = document.getElementById('set-plan').options;
         for (let i = 0; i < planOptions.length; i++) {
             if (planOptions[i].value === userSession.plan) {
@@ -662,7 +672,7 @@ function renderEreaderGrouped(ayatArray, containerId, pageId) {
             let payload = userSession.plan === "Amsal 1 Bulan" ? { action: "searchSpesific", book_number: 20, chapter: currentHariKe, languages: targetLangs } : { action: "getReading", plan: userSession.plan, hari_ke: currentHariKe, languages: targetLangs };
             
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const responseText = await res.text(); // Ambil bentuk Teks dulu untuk cegah error JSON parsing
+            const responseText = await res.text();
             
             try {
                 const data = JSON.parse(responseText);
@@ -672,13 +682,13 @@ function renderEreaderGrouped(ayatArray, containerId, pageId) {
                 renderEreaderGrouped(data.ayat, 'reading-content', 'read-info');
             } catch (err) {
                 console.error("Respon Server:", responseText);
-                box.innerHTML = `<h3 style='text-align:center; color:red;'>Gagal: ${err.message || "Data dari server tidak valid (Cek Console F12)."}</h3>`;
+                box.innerHTML = `<h3 style='text-align:center; color:red;'>Gagal: ${err.message || "Data dari server tidak valid."}</h3>`;
             }
         } catch(e) { 
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Koneksi Terputus atau SCRIPT_URL salah.</h3>"; 
         }
     }
-    
+
     async function eksekusiPencarian() {
         const targetBookNum = document.getElementById('search-book').value; 
         const chapter = document.getElementById('search-chapter').value;
@@ -686,7 +696,7 @@ function renderEreaderGrouped(ayatArray, containerId, pageId) {
         if(!chapter) return alert("Pasal wajib diisi!");
         
         const box = document.getElementById('search-results');
-        box.innerHTML = "<h3>⏳ Sedang mencari secepat kilat (<3 detik)...</h3>";
+        box.innerHTML = "<h3>⏳ Sedang mencari secepat kilat...</h3>";
         tutupSemuaNavMenu();
         
         let targetLangs = getSelectedLangs('search');
@@ -704,7 +714,7 @@ function renderEreaderGrouped(ayatArray, containerId, pageId) {
                 renderEreaderGrouped(data.ayat, 'search-results', 'search-info');
             } catch (err) {
                 console.error("Respon Server:", responseText);
-                box.innerHTML = `<h3 style='color:red;'>Pencarian Gagal: ${err.message || "Pastikan SCRIPT_URL sudah diperbarui."}</h3>`;
+                box.innerHTML = `<h3 style='color:red;'>Pencarian Gagal: ${err.message || "Pastikan SCRIPT_URL sudah benar."}</h3>`;
             }
         } catch(e) { 
             box.innerHTML = "<h3 style='color:red;'>Pencarian Gagal: Masalah koneksi internet/CORS.</h3>"; 
@@ -717,7 +727,6 @@ function renderEreaderGrouped(ayatArray, containerId, pageId) {
         hentikanSuara();
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
         
-        // Simpan progress ke App Script
         try {
             await fetch(SCRIPT_URL, { 
                 method: 'POST', 
