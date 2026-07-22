@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>17.50 E-Bible </title>
+    <title>17.56 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -140,7 +140,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.50</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.56</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -253,9 +253,9 @@
                 <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🌐 Bandingkan Bahasa</div>
                 <div class="icon-bar">
-                    <select id="lang1-search" class="icon-btn" onchange="sinkronisasiBukuPencarian()"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
-                    <select id="lang2-search" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
-                    <select id="lang3-search" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
+                    <select id="lang1-search" class="icon-btn" onchange="sinkronisasiBukuPencarian()"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">rv Ind</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
+                    <select id="lang2-search" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">rv Ind</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
+                    <select id="lang3-search" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">rv Ind</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
                 </div>
 
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔍 Navigasi Pencarian</div>
@@ -372,9 +372,9 @@
                 
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:10px;">🌐 Bandingkan Bahasa</div>
                 <div class="icon-bar">
-                    <select id="lang1-read" class="icon-btn"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
-                    <select id="lang2-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
-                    <select id="lang3-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
+                    <select id="lang1-read" class="icon-btn"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">rv Ind</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
+                    <select id="lang2-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">rv Ind</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
+                    <select id="lang3-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">rv Ind</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
                 </div>
                 <button class="icon-btn" style="background:var(--primary); color:white; width:100%; margin: 10px 0;" onclick="muatAyatServer()">🔄 Muat Ulang Bahasa</button>
 
