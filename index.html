@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Reader Alkitab Online ver 11:27</title>
+    <title>E-Reader Alkitab Online ver 11:42</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -54,8 +54,11 @@
         .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
         .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--btn-bg); font-weight: bold; cursor: pointer; gap: 8px;}
         
-        .nav-summary-info { flex: 1 1 auto; overflow: hidden; white-space: nowrap; }
-        .nav-summary-info span { display: block; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+        .nav-summary-info { flex: 1 1 auto; overflow: hidden; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+        .nav-summary-info span { display: inline-block; overflow: hidden; text-overflow: ellipsis; font-size: 13px; white-space: nowrap; }
+
+        /* Titik warna yang otomatis mengikuti warna primary tema aktif */
+        .theme-dot { width: 10px; height: 10px; min-width: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 4px var(--primary); flex-shrink: 0; }
         
         .nav-summary-actions { flex: 0 0 auto; display: flex; gap: 6px; align-items: center;}
         
@@ -113,10 +116,18 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 11:27</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 11:42</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
+        <label style="font-size: 13px; color: gray; margin-top: 8px; display:block;">Bahasa Default:</label>
+        <select id="login-language">
+            <option value="ind">Indonesia (ind)</option>
+            <option value="chs">Chinese (chs)</option>
+            <option value="eng">English (eng)</option>
+            <option value="kjv">KJV</option>
+            <option value="jawa">Jawa</option>
+        </select>
         <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px; margin-top: 15px;">Masuk Aplikasi</button>
     </div>
 
@@ -169,6 +180,7 @@
             <!-- BAR NAVIGASI (AMAN DARI KEPOTONG LAYAR KECIL) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">
                 <div class="nav-summary-info">
+                    <span class="theme-dot" title="Warna tema aktif"></span>
                     <span id="search-info-title">Pencarian Kosong...</span>
                 </div>
                 <div class="nav-summary-actions" onclick="event.stopPropagation()">
@@ -262,6 +274,7 @@
             <!-- BAR NAVIGASI (AMAN DARI KEPOTONG LAYAR KECIL) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">
                 <div class="nav-summary-info">
+                    <span class="theme-dot" title="Warna tema aktif"></span>
                     <span id="read-info-title">Mempersiapkan...</span>
                 </div>
                 <div class="nav-summary-actions" onclick="event.stopPropagation()">
@@ -348,7 +361,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzd7MER9MMRKiy1Jy4xMeY9jj34lSrKJVqblhHV0CDVUlSpBm94n-PUqFnRSdQYG0Kftw/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWQc1mTa2q5c4nMoN8C1a7KJMteR-gTVx5oc9MU5CK8zD6lcQcBM98gmDhSSXIXM6hyQ/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -406,6 +419,7 @@
         document.getElementById('read-page').classList.add('hidden');
         document.getElementById('search-page').classList.remove('hidden');
         sinkronisasiBukuPencarian();
+        document.getElementById('search-info-title').innerText = buildNavInfoText('search-info', 'Silakan atur parameter pencarian');
     }
 
     function bukaPembacaan() {
@@ -413,6 +427,7 @@
         tutupSemuaNavMenu();
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('read-page').classList.remove('hidden');
+        document.getElementById('read-info-title').innerText = buildNavInfoText('read-info', 'Mempersiapkan bacaan...');
         kalkulasiTanggal(); 
     }
 
@@ -588,7 +603,8 @@
         
         if (!ayatArray || ayatArray.length === 0) {
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Ayat tidak ditemukan.</h3>";
-            if (document.getElementById(`${pageId}-info-title`)) document.getElementById(`${pageId}-info-title`).innerText = "Pencarian Kosong";
+            let elEmpty = document.getElementById(`${pageId}-info-title`);
+            if (elEmpty) elEmpty.innerText = buildNavInfoText(pageId, null);
             return;
         }
 
@@ -631,7 +647,7 @@
         
         box.innerHTML = htmlOut;
         
-        // PENGATURAN TEKS NAVIGASI BAR 1 BARIS: Format -> Nama Kitab Pasal : Ayat Awal - Ayat Akhir
+        // PENGATURAN TEKS NAVIGASI BAR 1 BARIS: nama login | mode | bahasa | Kitab Pasal : Ayat
         let primaryVerse = ayatArray.find(a => a.lang === primaryLang) || ayatArray[0];
         
         let bookName = primaryVerse.b;
@@ -639,10 +655,21 @@
         let minV = Math.min(...ayatArray.map(a => a.v));
         let maxV = Math.max(...ayatArray.map(a => a.v));
         
-        let titleFormat = `${bookName} ${chapterNumber} : ${minV} - ${maxV}`;
+        let refText = `${bookName} ${chapterNumber} : ${minV} - ${maxV}`;
+        let titleFormat = buildNavInfoText(pageId, refText, selectedLangsArray);
 
         let elTitle = document.getElementById(`${pageId}-info-title`);
         if (elTitle) elTitle.innerText = titleFormat;
+    }
+
+    // Menyusun teks 1 baris navigasi: 👤 nama login | fitur (mode baca/cari) | 🌐 bahasa | kitab pasal:ayat
+    function buildNavInfoText(pageId, refText, langsArray) {
+        let modeLabel = pageId === 'read-info' ? '📖 Mode Baca' : '🔍 Mode Cari';
+        let userLabel = userSession.username || '-';
+        let langs = langsArray || getSelectedLangs(pageId === 'read-info' ? 'read' : 'search');
+        let langLabel = langs.filter(Boolean).join('+').toUpperCase();
+        let ref = refText || 'Belum ada data';
+        return `👤 ${userLabel} • ${modeLabel} • 🌐 ${langLabel} • ${ref}`;
     }
 
     async function prosesLogin() {
@@ -733,7 +760,9 @@
         
         let targetLangs = getSelectedLangs('read');
         try {
-            let payload = userSession.plan === "Amsal 1 Bulan" ? { action: "searchSpesific", book_number: 20, chapter: currentHariKe, languages: targetLangs } : { action: "getReading", plan: userSession.plan, hari_ke: currentHariKe, languages: targetLangs };
+            let payload = userSession.plan === "Amsal 1 Bulan"
+                ? { action: "searchSpesific", book_number: 20, chapter: currentHariKe, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP }
+                : { action: "getReading", plan: userSession.plan, hari_ke: currentHariKe, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP };
             
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
             const responseText = await res.text();
@@ -767,7 +796,7 @@
         try {
             const res = await fetch(SCRIPT_URL, { 
                 method: 'POST', 
-                body: JSON.stringify({ action: "searchSpesific", book_number: targetBookNum, chapter: chapter, verse_start: vStart, verse_end: vEnd, languages: targetLangs }) 
+                body: JSON.stringify({ action: "searchSpesific", book_number: targetBookNum, chapter: chapter, verse_start: vStart, verse_end: vEnd, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP }) 
             });
             const responseText = await res.text();
             
