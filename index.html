@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Reader Alkitab Online ver 13:57</title>
+    <title>14.50 E-Bible Online</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -50,33 +50,33 @@
         button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
-        /* PENGATURAN NAVIGASI BAR: SEMUA INFO & TOMBOL WAJIB TAMPIL PENUH, TIDAK ADA YANG TERPOTONG */
+        /* PENGATURAN NAVIGASI BAR: 1 BARIS (maksimal 2 baris di layar sempit), tidak pernah terpotong/ellipsis */
         .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: visible;}
-        .nav-summary-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 10px; background: var(--btn-bg); font-weight: bold; cursor: pointer; gap: 8px; row-gap: 8px; }
 
-        /* PERBAIKAN: info (nama kitab, pasal, ayat, bahasa, username) dibiarkan wrap ke baris berikutnya, TIDAK dipotong ellipsis */
-        .nav-summary-info { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; overflow: visible; white-space: normal; }
-        .nav-summary-info span { display: inline-block; overflow: visible; text-overflow: unset; font-size: 13px; white-space: normal; word-break: break-word; }
+        /* Baris ringkas: [kitab pasal:ayat-ayat (bahasa)] paling depan -> [user] -> [tema] -> [pin] -> [panah] paling belakang.
+           flex:0 0 auto pada semua item (bukan 100%) supaya browser memadatkan semuanya dalam 1 baris,
+           dan hanya pindah ke baris ke-2 kalau memang benar-benar tidak muat (bukan dipotong/ellipsis). */
+        .nav-summary-row { display: flex; flex-wrap: wrap; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; cursor: pointer; gap: 6px 10px; row-gap: 6px; }
+
+        .nav-ref-title { flex: 1 1 auto; min-width: 140px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: visible; }
+        .nav-user-title { flex: 0 0 auto; font-size: 12px; font-weight: 600; opacity: 0.75; white-space: nowrap; }
 
         /* Titik warna yang otomatis mengikuti warna primary tema aktif */
-        .theme-dot { width: 10px; height: 10px; min-width: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 4px var(--primary); flex-shrink: 0; }
-
-        /* PERBAIKAN: semua tombol aksi dibiarkan wrap (turun baris) kalau layar sempit, tidak pernah discroll/hilang/terpotong */
-        .nav-summary-actions { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; max-width: 100%; overflow: visible; justify-content: flex-start; }
+        .theme-dot { width: 9px; height: 9px; min-width: 9px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 4px var(--primary); flex-shrink: 0; }
 
         /* TAB MENU UTAMA: Cari / Baca / Jadwal - tampil sama & konsisten di ketiga halaman */
         .nav-tabs { display: flex; gap: 6px; padding: 8px 8px 0 8px; }
         .nav-tab-btn { flex: 1; text-align: center; padding: 10px 6px; border-radius: 10px 10px 0 0; background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); border-bottom: none; font-weight: 700; font-size: 14px; cursor: pointer; opacity: 0.7; }
         .nav-tab-btn.active-tab { background: var(--primary); color: #fff; opacity: 1; }
-        
-        .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 11px; padding: 0; flex-shrink: 0;}
-        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 6px 8px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
-        .btn-icon-top { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px; font-size: 14px; cursor: pointer; flex-shrink: 0;}
 
-        /* TOMBOL PIN (paling kanan navigasi 1 baris): ON = baris navigasi menempel di atas saat discroll */
-        .btn-pin { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px; font-size: 14px; cursor: pointer; flex-shrink: 0;}
-        .btn-pin.active-pin { background: var(--primary); color: white; border-color: var(--primary); }
-        .nav-summary-row.sticky-active { position: sticky; top: 0; z-index: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .nav-chevron { flex: 0 0 auto; width: 18px; text-align: center; font-size: 11px; opacity: 0.6; }
+        .btn-signout { background: #ff3b30; color: white; border-radius: 8px; padding: 10px; font-size: 14px; border: none; cursor: pointer; width: 100%; }
+        .btn-icon-top { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 14px; cursor: pointer; flex: 0 0 auto; line-height: 1; }
+
+        /* TOMBOL PIN: ON = baris navigasi 1 baris menempel tetap di atas layar walau discroll, sampai di-klik lagi (un-pin) */
+        .btn-pin { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 14px; cursor: pointer; flex: 0 0 auto; line-height: 1; }
+        .btn-pin.active-pin { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,0,0,0.05); }
+        .nav-summary-row.sticky-active { position: sticky; top: 0; z-index: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.18); border-radius: 0 0 10px 10px; }
 
         .nav-full-menu { display: none; padding: 15px; background: var(--bg); border-top: 1px solid var(--border); }
         .nav-full-menu.open { display: flex; flex-direction: column; gap: 10px; }
@@ -139,7 +139,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 13.57</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 14.50</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -216,21 +216,17 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal" onclick="bukaLog()">🗓️ Jadwal</button>
             </div>
-            <!-- BAR NAVIGASI (AMAN DARI KEPOTONG LAYAR KECIL) -->
-            <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">
-                <div class="nav-summary-info">
-                    <span class="theme-dot" title="Warna tema aktif"></span>
-                    <span id="search-info-title">Pencarian Kosong...</span>
-                </div>
-                <div class="nav-summary-actions" onclick="event.stopPropagation()">
-                    <button class="btn-icon-top" onclick="document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨 Tema</button>
-                    <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
-                    <button class="btn-triangle" id="btn-toggle-search" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">▼</button>
-                    <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
-                </div>
+            <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
+            <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
+                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span id="search-ref-title">Pencarian Kosong...</span></span>
+                <span class="nav-user-title" id="search-user-title">👤 -</span>
+                <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-search">▼</span>
             </div>
             
             <div class="nav-full-menu" id="search-menu">
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🌐 Bandingkan Bahasa</div>
                 <div class="icon-bar">
                     <select id="lang1-search" class="icon-btn" onchange="sinkronisasiBukuPencarian()"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
@@ -319,21 +315,17 @@
                 <button type="button" class="nav-tab-btn active-tab" id="tab-baca-2" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal-2" onclick="bukaLog()">🗓️ Jadwal</button>
             </div>
-            <!-- BAR NAVIGASI (AMAN DARI KEPOTONG LAYAR KECIL) -->
-            <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">
-                <div class="nav-summary-info">
-                    <span class="theme-dot" title="Warna tema aktif"></span>
-                    <span id="read-info-title">Mempersiapkan...</span>
-                </div>
-                <div class="nav-summary-actions" onclick="event.stopPropagation()">
-                    <button class="btn-icon-top" onclick="document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨 Tema</button>
-                    <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
-                    <button class="btn-triangle" id="btn-toggle-read" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">▼</button>
-                    <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
-                </div>
+            <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
+            <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
+                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span id="read-ref-title">Mempersiapkan...</span></span>
+                <span class="nav-user-title" id="read-user-title">👤 -</span>
+                <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-read">▼</span>
             </div>
             
             <div class="nav-full-menu" id="read-menu">
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">⚙️ Navigasi Hari</div>
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="gantiHari(-1)">◀ Prev</button>
@@ -420,19 +412,16 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-3" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-jadwal-3" onclick="bukaLog()">🗓️ Jadwal</button>
             </div>
-            <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'btn-toggle-log')">
-                <div class="nav-summary-info">
-                    <span class="theme-dot" title="Warna tema aktif"></span>
-                    <span id="log-info-title">🗓️ Jadwal</span>
-                </div>
-                <div class="nav-summary-actions" onclick="event.stopPropagation()">
-                    <button class="btn-icon-top" onclick="document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨 Tema</button>
-                    <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
-                    <button class="btn-triangle" id="btn-toggle-log" onclick="toggleNavMenu('log-menu', 'btn-toggle-log')">▼</button>
-                    <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
-                </div>
+            <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
+            <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
+                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span id="log-ref-title">🗓️ Daftar Jadwal</span></span>
+                <span class="nav-user-title" id="log-user-title">👤 -</span>
+                <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-log">▼</span>
             </div>
             <div class="nav-full-menu" id="log-menu">
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🗓️ Tentang Jadwal</div>
                 <p style="font-size:13px; margin: 4px 0 10px 0;">Simpan ayat/pasal pilihan Anda ke sebuah Jadwal bernama (misal "SPR 21 Juli 2026", "Anak 25 Mei 2026", "CGM 22 Jan 2026") dari Mode Baca atau Mode Cari. Setiap Jadwal bisa berisi banyak ayat tersimpan (misal Filipi 1:10, Matius 1:1-12, dst), lengkap dengan isi ayatnya. Klik salah satu ayat untuk langsung tampil cepat tanpa perlu keluar.</p>
                 <button class="icon-btn" style="background:var(--primary); color:white; width:100%;" onclick="muatDaftarLog()">🔄 Muat Ulang Daftar Jadwal</button>
@@ -463,7 +452,7 @@
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHCjD5TwV8Fy7bnLFJjwLevZBxR501Qn2vAR9NlLYZa0bFC0xLPAIrfGIHvG98fhqm8g/exec';
-    
+                       
     let userSession = {};
     let currentHariKe = 1;
     let actualHariKe = 1; 
@@ -542,11 +531,11 @@
 
     function tutupSemuaNavMenu() {
         document.getElementById('search-menu').classList.remove('open');
-        document.getElementById('btn-toggle-search').innerText = "▼";
+        document.getElementById('chevron-search').innerText = "▼";
         document.getElementById('read-menu').classList.remove('open');
-        document.getElementById('btn-toggle-read').innerText = "▼";
+        document.getElementById('chevron-read').innerText = "▼";
         document.getElementById('log-menu').classList.remove('open');
-        document.getElementById('btn-toggle-log').innerText = "▼";
+        document.getElementById('chevron-log').innerText = "▼";
     }
 
     function bukaPencarian() {
@@ -557,7 +546,8 @@
         document.getElementById('log-page').classList.add('hidden');
         document.getElementById('search-page').classList.remove('hidden');
         sinkronisasiBukuPencarian();
-        document.getElementById('search-info-title').innerText = buildNavInfoText('search-info', 'Silakan atur parameter pencarian');
+        document.getElementById('search-ref-title').innerText = buildRefText('search-info', 'Silakan atur parameter pencarian');
+        updateUserLabel('search');
     }
 
     function bukaPembacaan() {
@@ -567,7 +557,8 @@
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('log-page').classList.add('hidden');
         document.getElementById('read-page').classList.remove('hidden');
-        document.getElementById('read-info-title').innerText = buildNavInfoText('read-info', 'Mempersiapkan bacaan...');
+        document.getElementById('read-ref-title').innerText = buildRefText('read-info', 'Mempersiapkan bacaan...');
+        updateUserLabel('read');
         kalkulasiTanggal(); 
     }
 
@@ -584,6 +575,7 @@
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('read-page').classList.add('hidden');
         document.getElementById('log-page').classList.remove('hidden');
+        updateUserLabel('log');
         muatDaftarLog();
     }
 
@@ -633,7 +625,8 @@
             if (data.status !== "success") { box.innerHTML = `<p style='color:red;'>${data.message}</p>`; return; }
 
             savedLogs = data.logs;
-            document.getElementById('log-info-title').innerText = `👤 ${userSession.username || '-'} • 🗓️ Jadwal • ${savedLogs.length} tersimpan`;
+            document.getElementById('log-ref-title').innerText = `🗓️ Daftar Jadwal • ${savedLogs.length} tersimpan`;
+            updateUserLabel('log');
 
             if (savedLogs.length === 0) {
                 box.innerHTML = "<i>Belum ada Jadwal tersimpan. Buka Mode Baca atau Mode Cari, lalu tekan tombol \"🔖 Simpan ke Jadwal\" untuk menyimpan ayat/pasal.</i>";
@@ -671,7 +664,8 @@
 
             currentLogItems = data.items; currentLogId = logId; currentLogName = data.log_name;
             selectedItemIdx = new Set();
-            document.getElementById('log-info-title').innerText = `👤 ${userSession.username || '-'} • 🔖 ${data.log_name} • ${currentLogItems.length} ayat`;
+            document.getElementById('log-ref-title').innerText = `🔖 ${data.log_name} • ${currentLogItems.length} ayat`;
+            updateUserLabel('log');
             renderDaftarItemLog();
         } catch (e) {
             box.innerHTML = "<p style='color:red;'>Gagal memuat isi log (masalah koneksi).</p>";
@@ -1011,8 +1005,10 @@
         
         if (!ayatArray || ayatArray.length === 0) {
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Ayat tidak ditemukan.</h3>";
-            let elEmpty = document.getElementById(`${pageId}-info-title`);
-            if (elEmpty) elEmpty.innerText = buildNavInfoText(pageId, null);
+            let prefix = pageId === 'read-info' ? 'read' : 'search';
+            let elEmpty = document.getElementById(`${prefix}-ref-title`);
+            if (elEmpty) elEmpty.innerText = buildRefText(pageId, null);
+            updateUserLabel(prefix);
             return;
         }
 
@@ -1025,7 +1021,7 @@
         // Simpan hasil terakhir untuk dipakai fitur "Simpan ke Jadwal"
         if (pageId === 'read-info') lastAyatRead = ayatArray; else lastAyatSearch = ayatArray;
         
-        // PENGATURAN TEKS NAVIGASI BAR 1 BARIS: nama login | mode | bahasa | Kitab Pasal : Ayat
+        // PENGATURAN TEKS NAVIGASI BAR 1 BARIS: Kitab Pasal:AyatAwal-AyatAkhir (Bahasa) WAJIB paling depan, user paling belakang
         let primaryVerse = ayatArray.find(a => a.lang === primaryLang) || ayatArray[0];
         
         let bookName = primaryVerse.b;
@@ -1034,20 +1030,26 @@
         let maxV = Math.max(...ayatArray.map(a => a.v));
         
         let refText = `${bookName} ${chapterNumber} : ${minV} - ${maxV}`;
-        let titleFormat = buildNavInfoText(pageId, refText, selectedLangsArray);
+        let refFormat = buildRefText(pageId, refText, selectedLangsArray);
 
-        let elTitle = document.getElementById(`${pageId}-info-title`);
-        if (elTitle) elTitle.innerText = titleFormat;
+        let prefix = pageId === 'read-info' ? 'read' : 'search';
+        let elTitle = document.getElementById(`${prefix}-ref-title`);
+        if (elTitle) elTitle.innerText = refFormat;
+        updateUserLabel(prefix);
     }
 
-    // Menyusun teks 1 baris navigasi: 👤 nama login | fitur (mode baca/cari) | 🌐 bahasa | kitab pasal:ayat
-    function buildNavInfoText(pageId, refText, langsArray) {
-        let modeLabel = pageId === 'read-info' ? '📖 Mode Baca' : '🔍 Mode Cari';
-        let userLabel = userSession.username || '-';
+    // Menyusun teks navigasi 1 baris bagian DEPAN: nama kitab, pasal, ayat awal-akhir, dan bahasa (WAJIB selalu tampil penuh)
+    function buildRefText(pageId, refText, langsArray) {
         let langs = langsArray || getSelectedLangs(pageId === 'read-info' ? 'read' : 'search');
         let langLabel = langs.filter(Boolean).join('+').toUpperCase();
-        let ref = refText || 'Belum ada data';
-        return `👤 ${userLabel} • ${modeLabel} • 🌐 ${langLabel} • ${ref}`;
+        let ref = refText || (pageId === 'read-info' ? 'Mempersiapkan bacaan...' : 'Pencarian Kosong...');
+        return langLabel ? `📖 ${ref} (${langLabel})` : `📖 ${ref}`;
+    }
+
+    // Label user login yang tampil di bagian BELAKANG navigasi 1 baris (setelah info kitab/pasal/ayat)
+    function updateUserLabel(prefix) {
+        const el = document.getElementById(`${prefix}-user-title`);
+        if (el) el.innerText = `👤 ${userSession.username || '-'}`;
     }
 
     async function prosesLogin() {
@@ -1069,6 +1071,7 @@
                 userSession = out.data;
                 historyHariKe = (userSession.history || "").split(',').map(s => s.trim()).filter(Boolean).map(Number);
                 document.getElementById('login-page').classList.add('hidden');
+                updateUserLabel('search'); updateUserLabel('read'); updateUserLabel('log');
                 
                 if (!userSession.plan || !userSession.start_date) {
                     document.getElementById('settings-page').classList.remove('hidden');
