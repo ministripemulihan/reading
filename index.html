@@ -27,10 +27,12 @@
         body.font-courier { font-family: 'Courier New', Courier, monospace; }
         body.font-arial { font-family: Arial, Helvetica, sans-serif; }
         body.font-verdana { font-family: Verdana, Geneva, sans-serif; }
+        body.font-tahoma { font-family: Tahoma, Geneva, sans-serif; }
 
+        /* Hardcode Gambar Background sesuai link Drive Anda */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url('https://drive.google.com/uc?export=view&id=1c7K5b2okVGA9OWcdL03sVbhF9s5OMjE2');
+            background-image: url('https://drive.google.com/uc?export=view&id=1KJFjezDcxNtIfiPaoUCBA7bgIo8HSfP8');
             background-size: cover; background-position: center; background-attachment: fixed;
             z-index: -1; opacity: 0.12; transition: opacity 0.3s;
         }
@@ -47,7 +49,7 @@
         button:hover { opacity: 0.9; }
         
         .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
-        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; font-size: 13px; cursor: pointer; gap: 8px;}
+        .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; font-size: 12px; cursor: pointer; gap: 8px;}
         .nav-summary-info { flex: 1; white-space: nowrap; overflow-x: auto; scrollbar-width: none; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center;}
         .nav-summary-info::-webkit-scrollbar { display: none; }
         
@@ -69,20 +71,23 @@
         .verse-note.open { display: block; }
 
         body.force-bold .reading-area { font-weight: bold; }
+        body.force-italic .reading-area { font-style: italic; }
         body.force-underline .verse-text { text-decoration: underline; }
         
-        .verse-group { margin-bottom: 10px; display: inline-block; width: 100%; }
+        .verse-group { margin-bottom: 10px; display: inline-block; width: 100%; transition: background 0.3s; border-radius: 5px;}
         .verse-item { display: inline; margin-right: 6px; transition: 0.3s; border-radius: 4px; }
         .lang-badge { font-size: 10px; background: var(--primary); color: white; padding: 2px 5px; border-radius: 4px; margin-right: 4px; vertical-align: middle; text-transform: uppercase;}
         
         .reading-area.mode-baris .verse-group { display: block; margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 10px;}
         .reading-area.mode-baris .verse-item { display: block; margin-bottom: 8px; }
 
-        .highlight-tts { background-color: #ffeb3b !important; color: #000000 !important; font-weight: 800 !important; box-shadow: 0 0 5px #ffeb3b; padding: 2px 4px; }
+        /* Highlight seluruh baris saat dibaca */
+        .highlight-tts { background-color: rgba(255, 235, 59, 0.4) !important; box-shadow: 0 0 5px rgba(255, 235, 59, 0.5); padding: 5px; border-radius: 5px; }
 
         .hidden { display: none !important; }
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
         .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; margin-top: 10vh;}
+        .progress-banner { background: #34c759; color: white; text-align: center; font-weight: bold; padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 14px;}
     </style>
 </head>
 <body class="font-apple" data-theme="light-default">
@@ -92,7 +97,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 Login E-Reader Pro</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 28.0 (Fully Fixed)</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">Fast Search < 3 Detik Edition</h4>
         
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
@@ -126,15 +131,18 @@
         <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px; margin-top: 15px;">Masuk Aplikasi</button>
     </div>
 
-    <!-- SETTINGS -->
+    <!-- SETTINGS PLAN -->
     <div id="settings-page" class="modal hidden">
         <div class="modal-content card">
             <h2 style="text-align: center;">⚙️ Pilih Rencana</h2>
             <select id="set-plan">
-                <option value="Amsal 1 Bulan">Kitab Amsal (1 Bulan)</option>
-                <option value="PB 1 Bulan">Perjanjian Baru (1 Bulan)</option>
+                <option value="Amsal 1 Bulan" data-days="31">Kitab Amsal (1 Bulan)</option>
+                <option value="PB 1 Bulan" data-days="30">Perjanjian Baru (1 Bulan)</option>
+                <option value="PL 1 Bulan" data-days="30">Perjanjian Lama (1 Bulan)</option>
+                <option value="Alkitab 1 Tahun" data-days="365">Alkitab (1 Tahun)</option>
+                <option value="Alkitab 2 Tahun" data-days="730">Alkitab (2 Tahun)</option>
             </select>
-            <label>Tanggal Mulai:</label>
+            <label>Tanggal Mulai Pembacaan:</label>
             <input type="date" id="set-date">
             <button onclick="simpanSetting()">Mulai Baca</button>
         </div>
@@ -148,6 +156,7 @@
                     <span>🔍</span>
                     <span id="search-info-title">Pencarian</span> | 
                     <span id="search-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
+                    <span id="search-info-verses">0 Ayat</span> |
                     <span id="search-info-words">0 Kata</span>
                 </div>
                 <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
@@ -164,10 +173,10 @@
                     <select id="lang3-search" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option></select>
                 </div>
 
-                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔍 Navigasi Pencarian</div>
+                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔍 Navigasi Pencarian (< 3 Detik)</div>
                 <div style="display:flex; gap:10px;">
                     <select id="search-book" style="flex:2;"></select>
-                    <input type="number" id="search-chapter" placeholder="Pasal" value="5" style="flex:1;">
+                    <input type="number" id="search-chapter" placeholder="Pasal" value="1" style="flex:1;">
                 </div>
                 <div style="display:flex; gap:10px;">
                     <input type="number" id="search-verse-start" placeholder="Ayat Awal" value="1" style="flex:1;">
@@ -175,18 +184,20 @@
                 </div>
                 <button class="icon-btn" style="background:var(--primary); color:white; width: 100%; margin: 10px 0;" onclick="eksekusiPencarian()">🔍 Eksekusi Pencarian</button>
 
-                <div style="font-size: 12px; font-weight: bold; color: gray;">🗣️ Suara & Visual</div>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">🗣️ Tampilan & Suara</div>
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="ubahFont(2)">A➕</button>
                     <button class="icon-btn" onclick="ubahFont(-2)">A➖</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
+                    <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
                     <button class="icon-btn" onclick="toggleModeBaris()">¶</button>
                 </div>
                 
                 <div class="icon-bar">
                     <select class="icon-btn font-selector" style="flex:1;" onchange="gantiGayaFontGlobal(this.value)">
-                        <option value="font-apple">Apple</option><option value="font-roboto">Roboto</option><option value="font-arial">Arial</option><option value="font-verdana">Verdana</option><option value="font-courier">Courier</option><option value="font-comic">Comic</option>
+                        <option value="font-apple">Apple</option><option value="font-roboto">Roboto</option><option value="font-arial">Arial</option>
+                        <option value="font-verdana">Verdana</option><option value="font-tahoma">Tahoma</option><option value="font-courier">Courier</option><option value="font-comic">Comic</option>
                     </select>
                     <select class="icon-btn color-selector" style="flex:1;" onchange="gantiWarnaFontGlobal(this.value)">
                         <option value="">Warna Default</option><option value="#ff3b30">Merah</option><option value="#007aff">Biru</option><option value="#ffcc00">Kuning</option><option value="#000000">Hitam</option>
@@ -200,8 +211,9 @@
                     </select>
                 </div>
                 
+                <!-- Progress bar untuk Artikulasi / Kecepatan -->
                 <div class="icon-bar">
-                    <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label-search">K: 1.0 | A: 1.0</span>
+                    <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label-search">Kec: 1.0 | Art: 1.0</span>
                     <input type="range" id="voice-speed-search" min="0.5" max="2.5" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('search')">
                     <input type="range" id="voice-pitch-search" min="0.1" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('search')">
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('search-results', 'search')">▶</button>
@@ -210,7 +222,7 @@
 
                 <hr style="border-color: var(--border); margin: 10px 0;">
                 <div class="icon-bar">
-                    <button class="icon-btn" onclick="toggleLebarLayar()">↔ Lebar Layar</button>
+                    <button class="icon-btn" onclick="toggleFullScreenAPI()">⛶ Fullscreen</button>
                     <button class="icon-btn" onclick="salinTeks('search-results')">📋 Copy</button>
                     <button class="icon-btn" style="background:#5856d6; color:white;" onclick="bukaPembacaan()">📖 Ke Pembacaan</button>
                 </div>
@@ -226,11 +238,15 @@
     <!-- PEMBACAAN -->
     <div id="read-page" class="hidden">
         <div class="top-nav-bar">
+            <!-- Progress Keberhasilan Banner -->
+            <div id="reading-progress-banner" class="progress-banner hidden">Progress Membaca: 0%</div>
+            
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">
                 <div class="nav-summary-info">
                     <span>📖</span>
                     <span id="read-info-title">Memuat...</span> | 
                     <span id="read-info-lang" style="color:var(--primary); text-transform:uppercase;">IND</span> | 
+                    <span id="read-info-verses">0 Ayat</span> |
                     <span id="read-info-words">0 Kata</span>
                 </div>
                 <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
@@ -255,18 +271,20 @@
                 </div>
                 <button class="icon-btn" style="background:var(--primary); color:white; width:100%; margin: 10px 0;" onclick="muatAyatServer()">🔄 Muat Ulang Bahasa</button>
 
-                <div style="font-size: 12px; font-weight: bold; color: gray;">🗣️ Suara & Visual</div>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">🗣️ Tampilan & Suara</div>
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="ubahFont(2)">A➕</button>
                     <button class="icon-btn" onclick="ubahFont(-2)">A➖</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
+                    <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
                     <button class="icon-btn" onclick="toggleModeBaris()">¶</button>
                 </div>
                 
                 <div class="icon-bar">
                     <select class="icon-btn font-selector" style="flex:1;" onchange="gantiGayaFontGlobal(this.value)">
-                        <option value="font-apple">Apple</option><option value="font-roboto">Roboto</option><option value="font-arial">Arial</option><option value="font-verdana">Verdana</option><option value="font-courier">Courier</option><option value="font-comic">Comic</option>
+                        <option value="font-apple">Apple</option><option value="font-roboto">Roboto</option><option value="font-arial">Arial</option>
+                        <option value="font-verdana">Verdana</option><option value="font-tahoma">Tahoma</option><option value="font-courier">Courier</option><option value="font-comic">Comic</option>
                     </select>
                     <select class="icon-btn color-selector" style="flex:1;" onchange="gantiWarnaFontGlobal(this.value)">
                         <option value="">Warna Default</option><option value="#ff3b30">Merah</option><option value="#007aff">Biru</option><option value="#ffcc00">Kuning</option><option value="#000000">Hitam</option>
@@ -281,7 +299,7 @@
                 </div>
                 
                 <div class="icon-bar">
-                    <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label-read">K: 1.0 | A: 1.0</span>
+                    <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label-read">Kec: 1.0 | Art: 1.0</span>
                     <input type="range" id="voice-speed-read" min="0.5" max="2.5" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('read')">
                     <input type="range" id="voice-pitch-read" min="0.1" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('read')">
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('reading-content', 'read')">▶</button>
@@ -290,7 +308,7 @@
 
                 <hr style="border-color: var(--border); margin: 10px 0;">
                 <div class="icon-bar">
-                    <button class="icon-btn" onclick="toggleLebarLayar()">↔ Lebar Layar</button>
+                    <button class="icon-btn" onclick="toggleFullScreenAPI()">⛶ Fullscreen</button>
                     <button class="icon-btn" onclick="salinTeks('reading-content')">📋 Copy</button>
                     <button class="icon-btn" style="background:#5856d6; color:white;" onclick="bukaPencarian()">🔍 Ke Pencarian</button>
                 </div>
@@ -307,18 +325,19 @@
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVpVwLsoiX9oybLdZ8R_nzQeApmPXWTWLqLx04GBGxGhACmRbbvUjMurNZf-b7Ygs9gQ/exec';
+    // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG BARU
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwx8WgGR_rzmep_XLmrxOrw_ffpB6OdAP82dkvHX4MfCYHuWBFuSxC-sG0mXuuYn_F_dQ/exec';
     
     let userSession = {};
     let currentHariKe = 1;
     let actualHariKe = 1; 
+    let totalHariPlan = 30;
     let currentFontSize = 18;
     
     let allVoices = [];
     let verseQueue = [];
     let isReading = false;
     let currentVerseIndex = 0;
-    const themeList = ["light-default","light-sepia","light-mint","light-sky","light-peach","dark-default","dark-ocean","dark-dracula","dark-forest","dark-charcoal"];
 
     const bookData = {
         ind: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matius","Markus","Lukas","Yohanes","Kisah Rasul-rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus","Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"],
@@ -398,7 +417,7 @@
     function updateSpeedLabel(page) {
         const speed = document.getElementById(`voice-speed-${page}`).value;
         const pitch = document.getElementById(`voice-pitch-${page}`).value;
-        document.getElementById(`speed-label-${page}`).innerText = `K: ${speed} | A: ${pitch}`;
+        document.getElementById(`speed-label-${page}`).innerText = `Kec: ${speed} | Art: ${pitch}`;
     }
 
     function bacakanTeks(containerId, page) {
@@ -422,7 +441,8 @@
 
         hapusHighlight();
         let elTeks = verseQueue[currentVerseIndex];
-        elTeks.parentElement.classList.add('highlight-tts');
+        // Memastikan highlight menyala untuk seluruh baris (verse-group)
+        elTeks.closest('.verse-group').classList.add('highlight-tts');
 
         let msg = new SpeechSynthesisUtterance(elTeks.innerText);
         let selIdx = document.getElementById(`voice-select-${page}`).value;
@@ -441,27 +461,48 @@
         window.speechSynthesis.cancel();
         hapusHighlight();
     }
-    function hapusHighlight() { document.querySelectorAll('.highlight-tts').forEach(el => el.classList.remove('highlight-tts')); }
+    
+    function hapusHighlight() { 
+        document.querySelectorAll('.highlight-tts').forEach(el => el.classList.remove('highlight-tts')); 
+    }
 
-    function toggleLebarLayar() { document.getElementById('main-container').classList.toggle('full-width'); }
+    // Fungsi Fullscreen Asli
+    function toggleFullScreenAPI() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                alert(`Gagal fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
     function toggleModeBaris() {
         document.getElementById('reading-content').classList.toggle('mode-baris');
         document.getElementById('search-results').classList.toggle('mode-baris');
     }
+    
     function gantiWarnaFontGlobal(warna) {
         if(warna) document.body.style.setProperty('--custom-color', warna);
         else document.body.style.removeProperty('--custom-color');
         document.querySelectorAll('.color-selector').forEach(el => el.value = warna);
     }
-    function ubahFont(val) { currentFontSize += val; document.body.style.setProperty('--font-size', currentFontSize + 'px'); }
+    
+    function ubahFont(val) { 
+        currentFontSize += val; 
+        document.body.style.setProperty('--font-size', currentFontSize + 'px'); 
+    }
+    
     function gantiTemaGlobal(tema) { 
         document.body.setAttribute('data-theme', tema); 
         document.querySelectorAll('.theme-selector').forEach(el => el.value = tema);
     }
+    
     function gantiGayaFontGlobal(kelas) { 
         document.body.className = kelas; 
         document.querySelectorAll('.font-selector').forEach(el => el.value = kelas);
     }
+    
     function getSelectedLangs(page) {
         let l1 = document.getElementById(`lang1-${page}`).value, l2 = document.getElementById(`lang2-${page}`).value, l3 = document.getElementById(`lang3-${page}`).value;
         let arr = [l1]; if(l2) arr.push(l2); if(l3) arr.push(l3); return arr;
@@ -472,17 +513,22 @@
         if (!ayatArray || ayatArray.length === 0) {
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Ayat tidak ditemukan.</h3>";
             document.getElementById(`${pageId}-info-words`).innerText = "0 Kata";
+            document.getElementById(`${pageId}-info-verses`).innerText = "0 Ayat";
             return;
         }
 
         let grouped = {}, currentHeader = "", htmlOut = "", wordCount = 0, firstInfo = "", lastInfo = "";
+        let verseCount = 0;
 
         ayatArray.forEach((a, index) => {
             if(index === 0) firstInfo = `${a.b} ${a.c}:${a.v}`;
             lastInfo = a.v;
             let header = `${a.b} ${a.c}`, key = a.id || `${header}-${a.v}`; 
             
-            if (!grouped[key]) grouped[key] = { header: header, v: a.v, texts: {}, note: a.n };
+            if (!grouped[key]) {
+                grouped[key] = { header: header, v: a.v, texts: {}, note: a.n };
+                verseCount++; // Hitung jumlah ayat unik
+            }
             grouped[key].texts[a.lang] = a.t;
             wordCount += a.t.trim().split(/\s+/).length;
             
@@ -513,6 +559,7 @@
         let langs = getSelectedLangs(pageId === 'read-info' ? 'read' : 'search').join(", ").toUpperCase();
         document.getElementById(`${pageId}-info-title`).innerText = `${firstInfo}-${lastInfo}`;
         document.getElementById(`${pageId}-info-lang`).innerText = langs;
+        document.getElementById(`${pageId}-info-verses`).innerText = `${verseCount} Ayat`;
         document.getElementById(`${pageId}-info-words`).innerText = `${wordCount} Kata`;
     }
 
@@ -525,7 +572,7 @@
         document.getElementById('lang1-read').value = defaultLang;
         sinkronisasiBukuPencarian(); 
 
-        document.getElementById('btn-login').innerText = "Memeriksa...";
+        document.getElementById('btn-login').innerText = "Memeriksa Kredensial...";
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "login", username: u, password: p }) });
             const out = await res.json();
@@ -533,33 +580,64 @@
                 userSession = out.data;
                 document.getElementById('login-page').classList.add('hidden');
                 
-                if (!userSession.plan || !userSession.start_date) document.getElementById('settings-page').classList.remove('hidden');
-                else { bukaPencarian(); }
+                if (!userSession.plan || !userSession.start_date) {
+                    document.getElementById('settings-page').classList.remove('hidden');
+                } else { 
+                    bukaPencarian(); 
+                }
             } else { alert(out.message); document.getElementById('btn-login').innerText = "Masuk Aplikasi"; }
-        } catch(e) { alert("Error Server."); document.getElementById('btn-login').innerText = "Masuk Aplikasi"; }
+        } catch(e) { alert("Error Terhubung ke Server."); document.getElementById('btn-login').innerText = "Masuk Aplikasi"; }
     }
 
     async function simpanSetting() {
-        userSession.plan = document.getElementById('set-plan').value;
+        const planSelect = document.getElementById('set-plan');
+        userSession.plan = planSelect.value;
         userSession.start_date = document.getElementById('set-date').value;
-        if (!userSession.start_date) return alert("Pilih tanggal!");
+        
+        if (!userSession.start_date) return alert("Pilih tanggal mulai!");
+        
+        document.querySelector('#settings-page button').innerText = "Menyimpan...";
         await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveSettings", username: userSession.username, plan: userSession.plan, start_date: userSession.start_date }) });
+        
         document.getElementById('settings-page').classList.add('hidden');
         bukaPencarian(); 
     }
 
     function kalkulasiTanggal() {
         const diffDays = Math.floor((new Date() - new Date(userSession.start_date)) / (1000 * 60 * 60 * 24)); 
-        actualHariKe = diffDays + 1; currentHariKe = actualHariKe;
+        actualHariKe = diffDays + 1; 
+        currentHariKe = actualHariKe > 0 ? actualHariKe : 1;
+        
+        // Ambil target hari dari pilihan plan
+        const planOptions = document.getElementById('set-plan').options;
+        for (let i = 0; i < planOptions.length; i++) {
+            if (planOptions[i].value === userSession.plan) {
+                totalHariPlan = parseInt(planOptions[i].getAttribute('data-days'));
+                break;
+            }
+        }
+        
+        updateProgressUI();
         muatAyatServer();
     }
     
-    function gantiHari(arah) { hentikanSuara(); if(currentHariKe + arah < 1) return; currentHariKe += arah; muatAyatServer(); }
-    function kembaliHariIni() { hentikanSuara(); currentHariKe = actualHariKe; muatAyatServer(); }
+    function updateProgressUI() {
+        const banner = document.getElementById('reading-progress-banner');
+        if(!userSession.plan) return;
+        
+        let percentage = Math.round((currentHariKe / totalHariPlan) * 100);
+        if (percentage > 100) percentage = 100;
+        
+        banner.innerText = `Progress: Hari ke-${currentHariKe} dari ${totalHariPlan} (${percentage}%) - ${userSession.plan}`;
+        banner.classList.remove('hidden');
+    }
+    
+    function gantiHari(arah) { hentikanSuara(); if(currentHariKe + arah < 1) return; currentHariKe += arah; updateProgressUI(); muatAyatServer(); }
+    function kembaliHariIni() { hentikanSuara(); currentHariKe = actualHariKe; updateProgressUI(); muatAyatServer(); }
 
     async function muatAyatServer() {
         const box = document.getElementById('reading-content');
-        box.innerHTML = "<h3 style='text-align:center;'>⏳ Mengunduh ayat...</h3>";
+        box.innerHTML = "<h3 style='text-align:center;'>⏳ Mengunduh ayat dari database...</h3>";
         
         let targetLangs = getSelectedLangs('read');
         try {
@@ -569,7 +647,7 @@
             
             tutupSemuaNavMenu();
             renderEreaderGrouped(data.ayat, 'reading-content', 'read-info');
-        } catch(e) { box.innerHTML = "Gagal memuat ayat."; }
+        } catch(e) { box.innerHTML = "<h3 style='text-align:center; color:red;'>Gagal memuat ayat. Cek koneksi Anda.</h3>"; }
     }
 
     async function eksekusiPencarian() {
@@ -578,7 +656,7 @@
         const vStart = document.getElementById('search-verse-start').value, vEnd = document.getElementById('search-verse-end').value;
         if(!chapter) return alert("Pasal wajib diisi!");
         
-        document.getElementById('search-results').innerHTML = "<h3>⏳ Sedang mencari...</h3>";
+        document.getElementById('search-results').innerHTML = "<h3>⏳ Sedang mencari secepat kilat (<3 detik)...</h3>";
         tutupSemuaNavMenu();
         
         let targetLangs = getSelectedLangs('search');
@@ -587,15 +665,30 @@
             const data = await res.json();
             
             renderEreaderGrouped(data.ayat, 'search-results', 'search-info');
-        } catch(e) { document.getElementById('search-results').innerHTML = "Gagal mencari."; }
+        } catch(e) { document.getElementById('search-results').innerHTML = "<h3 style='color:red;'>Pencarian Gagal.</h3>"; }
     }
 
-    function salinTeks(elId) { navigator.clipboard.writeText(document.getElementById(elId).innerText).then(() => alert("✅ Tercopy!")); }
+    function salinTeks(elId) { navigator.clipboard.writeText(document.getElementById(elId).innerText).then(() => alert("✅ Teks berhasil dicopy!")); }
     
-    function tandaiSelesai() {
+    async function tandaiSelesai() {
         hentikanSuara();
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-        setTimeout(() => alert(`🎉 Bacaan selesai!`), 500);
+        
+        // Simpan progress ke App Script
+        try {
+            await fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    action: "markRead", 
+                    username: userSession.username, 
+                    hari_ke: currentHariKe,
+                    persentase: Math.round((currentHariKe / totalHariPlan) * 100)
+                }) 
+            });
+            setTimeout(() => alert(`🎉 Bacaan Hari ke-${currentHariKe} telah direkam!`), 600);
+        } catch (e) {
+            console.log("Gagal merekam progress");
+        }
     }
 
     function logout() { hentikanSuara(); location.reload(); }
