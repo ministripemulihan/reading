@@ -96,8 +96,8 @@
     
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
-        <h2 style="text-align: center; margin-bottom: 5px;">📖 Login E-Reader Pro</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">Fast Search < 3 Detik Edition</h4>
+        <h2 style="text-align: center; margin-bottom: 5px;">📖 Login E-Bible</h2>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;"> pencarian dan multibahasa</h4>
         
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
@@ -326,7 +326,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG BARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwx8WgGR_rzmep_XLmrxOrw_ffpB6OdAP82dkvHX4MfCYHuWBFuSxC-sG0mXuuYn_F_dQ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0qBKhkfI9u80ex4gihI69je1JIWlIuALp9POsUTkVbHsNAAV0scOJ9BxB9kTBL228Sw/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -642,30 +642,55 @@
         let targetLangs = getSelectedLangs('read');
         try {
             let payload = userSession.plan === "Amsal 1 Bulan" ? { action: "searchSpesific", book_number: 20, chapter: currentHariKe, languages: targetLangs } : { action: "getReading", plan: userSession.plan, hari_ke: currentHariKe, languages: targetLangs };
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const data = await res.json();
             
-            tutupSemuaNavMenu();
-            renderEreaderGrouped(data.ayat, 'reading-content', 'read-info');
-        } catch(e) { box.innerHTML = "<h3 style='text-align:center; color:red;'>Gagal memuat ayat. Cek koneksi Anda.</h3>"; }
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const responseText = await res.text(); // Ambil bentuk Teks dulu untuk cegah error JSON parsing
+            
+            try {
+                const data = JSON.parse(responseText);
+                if (data.status === "error") throw new Error(data.message);
+                
+                tutupSemuaNavMenu();
+                renderEreaderGrouped(data.ayat, 'reading-content', 'read-info');
+            } catch (err) {
+                console.error("Respon Server:", responseText);
+                box.innerHTML = `<h3 style='text-align:center; color:red;'>Gagal: ${err.message || "Data dari server tidak valid (Cek Console F12)."}</h3>`;
+            }
+        } catch(e) { 
+            box.innerHTML = "<h3 style='text-align:center; color:red;'>Koneksi Terputus atau SCRIPT_URL salah.</h3>"; 
+        }
     }
-
+    
     async function eksekusiPencarian() {
         const targetBookNum = document.getElementById('search-book').value; 
         const chapter = document.getElementById('search-chapter').value;
         const vStart = document.getElementById('search-verse-start').value, vEnd = document.getElementById('search-verse-end').value;
         if(!chapter) return alert("Pasal wajib diisi!");
         
-        document.getElementById('search-results').innerHTML = "<h3>⏳ Sedang mencari secepat kilat (<3 detik)...</h3>";
+        const box = document.getElementById('search-results');
+        box.innerHTML = "<h3>⏳ Sedang mencari secepat kilat (<3 detik)...</h3>";
         tutupSemuaNavMenu();
         
         let targetLangs = getSelectedLangs('search');
         try {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "searchSpesific", book_number: targetBookNum, chapter: chapter, verse_start: vStart, verse_end: vEnd, languages: targetLangs }) });
-            const data = await res.json();
+            const res = await fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "searchSpesific", book_number: targetBookNum, chapter: chapter, verse_start: vStart, verse_end: vEnd, languages: targetLangs }) 
+            });
+            const responseText = await res.text();
             
-            renderEreaderGrouped(data.ayat, 'search-results', 'search-info');
-        } catch(e) { document.getElementById('search-results').innerHTML = "<h3 style='color:red;'>Pencarian Gagal.</h3>"; }
+            try {
+                const data = JSON.parse(responseText);
+                if (data.status === "error") throw new Error(data.message);
+                
+                renderEreaderGrouped(data.ayat, 'search-results', 'search-info');
+            } catch (err) {
+                console.error("Respon Server:", responseText);
+                box.innerHTML = `<h3 style='color:red;'>Pencarian Gagal: ${err.message || "Pastikan SCRIPT_URL sudah diperbarui."}</h3>`;
+            }
+        } catch(e) { 
+            box.innerHTML = "<h3 style='color:red;'>Pencarian Gagal: Masalah koneksi internet/CORS.</h3>"; 
+        }
     }
 
     function salinTeks(elId) { navigator.clipboard.writeText(document.getElementById(elId).innerText).then(() => alert("✅ Teks berhasil dicopy!")); }
