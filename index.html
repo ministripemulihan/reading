@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>18.13 E-Bible </title>
+    <title>18.34 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -109,9 +109,13 @@
         .reading-area.mode-baris .verse-item { display: block; margin-bottom: 8px; }
 
         /* MODE PARAREL SINKRONUS */
-        .reading-area.mode-parallel .verse-group { display: flex; flex-direction: row; gap: 0; border-bottom: 1px dashed var(--border); padding-bottom: 15px; margin-bottom: 15px; width: 100%; }
-        .reading-area.mode-parallel .verse-item { flex: 1; display: block; margin: 0; padding: 0 10px; border-right: 2px solid var(--custom-divider); }
+        .reading-area.mode-parallel .verse-group { display: flex; flex-direction: row; flex-wrap: wrap; gap: 0; border-bottom: 1px dashed var(--border); padding-bottom: 15px; margin-bottom: 15px; width: 100%; }
+        .reading-area.mode-parallel .verse-item { flex: 1; display: block; margin: 0; padding: 0 10px 10px 10px; border-right: 2px solid var(--custom-divider); box-sizing: border-box; }
         .reading-area.mode-parallel .verse-item:last-child { border-right: none; } /* Hilangkan border di kolom terakhir */
+
+        /* FITUR "KOLOM": paksa maksimal 2 kolom per baris di Mode Pararel (kolom ke-3, kalau ada, turun ke baris baru) */
+        .reading-area.mode-parallel.force-cols-2 .verse-item { flex: 0 1 50%; }
+        .reading-area.mode-parallel.force-cols-2 .verse-item:nth-child(2n) { border-right: none; }
         .reading-area.mode-parallel .verse-num { display: block; margin-bottom: 4px; border-bottom: 1px solid var(--border); }
         .reading-area.mode-parallel .lang-badge { display: none; } 
 
@@ -140,7 +144,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 18.13</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 18.34</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -514,6 +518,16 @@
             <button class="icon-btn" style="flex:1;" onclick="document.getElementById('modal-theme').classList.remove('hidden')">🎨 Tema</button>
         </div>
 
+        <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🧭 Navigasi Kolom (kalau ada bahasa lain)</div>
+        <div class="icon-bar">
+            <select id="kolom-select-viewer" class="icon-btn" style="flex:1;" onchange="ubahJumlahKolom(this.value, ['viewer-content'])">
+                <option value="1">1️⃣ Kolom (Seperti Sekarang)</option>
+                <option value="2">2️⃣ Kolom (Pararel)</option>
+                <option value="3">3️⃣ Kolom (Pararel Penuh)</option>
+            </select>
+        </div>
+        <p style="font-size:11px; color:gray; margin:2px 0 8px 0;">Kalau ayat/pasal ini punya lebih dari 1 bahasa, pilih di sini: <b>1️⃣ Kolom</b> = bertumpuk seperti biasa, <b>2️⃣ Kolom</b> = maksimal 2 bahasa sejajar per baris (sisanya turun ke baris baru), <b>3️⃣ Kolom</b> = semua bahasa terpilih sejajar sekaligus.</p>
+
         <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔊 Google Speech (Suara)</div>
         <div class="icon-bar">
             <select id="voice-select-viewer" class="icon-btn" style="flex:2;"></select>
@@ -534,7 +548,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxR2iJLiOC0DjUlmDqX2olqOCTLkNQdQ4Q00xsV2AxJ4zCB8g_wGvnSSlfB8YNndpnZKg/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuyHv1Rlu3exAMds8Wcs9UjUbGZa_FipuXgh5OHubFJiCKTPO4-yZtUi9xfFRwxoHEeQ/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -1165,23 +1179,62 @@
         else if (currentLayoutMode === 2) container.classList.add('mobile-width'); 
     }
 
-    function toggleModeBaris() {
-        document.getElementById('reading-content').classList.add('mode-baris');
-        document.getElementById('reading-content').classList.remove('mode-parallel');
-        document.getElementById('search-results').classList.add('mode-baris');
-        document.getElementById('search-results').classList.remove('mode-parallel');
+    // targets: array id elemen reading-area yang mau diubah. Default: Cari & Baca (perilaku lama tetap sama).
+    function toggleModeBaris(targets) {
+        (targets || ['reading-content', 'search-results']).forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.add('mode-baris');
+            el.classList.remove('mode-parallel', 'force-cols-2');
+        });
+        updateKolomLabel(targets, 1);
     }
     
-    function toggleModePararel() {
-        document.getElementById('reading-content').classList.remove('mode-baris');
-        document.getElementById('reading-content').classList.add('mode-parallel');
-        document.getElementById('search-results').classList.remove('mode-baris');
-        document.getElementById('search-results').classList.add('mode-parallel');
+    function toggleModePararel(targets) {
+        (targets || ['reading-content', 'search-results']).forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.remove('mode-baris', 'force-cols-2');
+            el.classList.add('mode-parallel');
+        });
         
         // Auto ganti layar jadi full width biar pas kolomnya banyak
         const container = document.getElementById('main-container');
         container.classList.add('full-width');
         currentLayoutMode = 1;
+        updateKolomLabel(targets, 3);
+    }
+
+    // FITUR "KOLOM": 1️⃣ Kolom = seperti sekarang/Baris (bertumpuk), 2️⃣ Kolom = Pararel dipaksa maks 2 kolom
+    // per baris, 3️⃣ Kolom = Pararel penuh (semua bahasa terpilih tampil sejajar, seperti biasa).
+    function toggleKolomPararel(targets) {
+        (targets || ['reading-content', 'search-results']).forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.remove('mode-baris');
+            el.classList.add('mode-parallel', 'force-cols-2');
+        });
+        const container = document.getElementById('main-container');
+        container.classList.add('full-width');
+        currentLayoutMode = 1;
+        updateKolomLabel(targets, 2);
+    }
+
+    // Sinkronkan label/nilai selector "Kolom" (kalau ada di halaman terkait) supaya tetap sesuai mode aktif
+    function updateKolomLabel(targets, jumlahKolom) {
+        const idMap = { 'reading-content': 'kolom-select-read', 'search-results': 'kolom-select-search', 'viewer-content': 'kolom-select-viewer' };
+        (targets || ['reading-content', 'search-results']).forEach(id => {
+            const selEl = document.getElementById(idMap[id]);
+            if (selEl) selEl.value = String(jumlahKolom);
+        });
+    }
+
+    // Dipanggil dari dropdown "Kolom" (1/2/3) di navigasi masing-masing halaman
+    function ubahJumlahKolom(jumlahKolom, targets) {
+        jumlahKolom = String(jumlahKolom);
+        if (jumlahKolom === '1') toggleModeBaris(targets);
+        else if (jumlahKolom === '2') toggleKolomPararel(targets);
+        else toggleModePararel(targets);
     }
     
     // Fitur Ganti Warna Pembatas/Border di Mode Pararel
@@ -1473,7 +1526,7 @@
         const vEnd = (searchVerseMode === 'all') ? '' : vStart;
         
         const box = document.getElementById('search-results');
-        box.innerHTML = "<h3>⏳ Pencarian ... Kolose 3:12-13 Karena itu, sebagai orang-orang pilihan Allah... kenakanlah belas kasihan, kemurahan, kerendahan hati, kelemahlembutan dan kesabaran. Sabarlah kamu seorang terhadap yang lain...    Tunggu, sedang mencari secepat kilat..."</h3>";
+        box.innerHTML = pesanTungguAcak();
         tutupSemuaNavMenu();
         lastSearchRefSpec = null; // pencarian sederhana (bukan referensi campuran), reset penanda referensi
 
@@ -1572,6 +1625,36 @@
         return groups;
     }
 
+    // FITUR "AYAT PENANTIAN": kumpulan ayat tentang kesabaran/menanti, tampil ACAK saat proses pencarian
+    // sedang berlangsung, supaya yang menunggu bisa membaca ayatnya terlebih dahulu.
+    const AYAT_PENANTIAN = [
+        { ref: "Kolose 3:12-13", teks: "Karena itu, sebagai orang-orang pilihan Allah... kenakanlah belas kasihan, kemurahan, kerendahan hati, kelemahlembutan dan kesabaran. Sabarlah kamu seorang terhadap yang lain..." },
+        { ref: "1 Tesalonika 5:14", teks: "...hiburlah mereka yang tawar hati, belalah mereka yang lemah, sabarlah terhadap semua orang." },
+        { ref: "Yakobus 5:7-8", teks: "Karena itu, saudara-saudara, bersabarlah sampai kepada kedatangan Tuhan! Sesungguhnya petani menantikan hasil yang berharga dari tanahnya..." },
+        { ref: "Mazmur 27:14", teks: "Nantikanlah TUHAN! Kuatkan dan teguhkanlah hatimu! Ya, nantikanlah TUHAN!" },
+        { ref: "Mazmur 37:7", teks: "Berdiam dirilah di hadapan TUHAN dan nantikanlah Dia..." },
+        { ref: "Yesaya 40:31", teks: "...orang-orang yang menanti-nantikan TUHAN mendapat kekuatan baru: mereka seumpama rajawali yang naik terbang dengan kekuatan sayapnya..." },
+        { ref: "Roma 8:25", teks: "Tetapi jika kita mengharapkan apa yang tidak kita lihat, kita menantikannya dengan tekun." },
+        { ref: "Roma 12:12", teks: "Bersukacitalah dalam pengharapan, sabarlah dalam kesesakan, dan bertekunlah dalam doa!" },
+        { ref: "Pengkhotbah 3:1", teks: "Untuk segala sesuatu ada masanya, untuk apapun di bawah langit ada waktunya." },
+        { ref: "Mazmur 40:1", teks: "Dengan sangat aku menantikan TUHAN; lalu Ia menyendengkan telinga-Nya kepadaku dan mendengar teriakku minta tolong." },
+        { ref: "Ratapan 3:25-26", teks: "TUHAN itu baik bagi orang yang berharap kepada-Nya, bagi jiwa yang mencari Dia. Adalah baik menanti dengan diam pertolongan TUHAN." },
+        { ref: "Galatia 6:9", teks: "Janganlah kita jemu-jemu berbuat baik, karena apabila kita tidak menjadi lemah, kita akan menuai pada waktunya." },
+        { ref: "Habakuk 2:3", teks: "...sekalipun tampaknya lambat, nantikanlah itu, sebab itu sungguh-sungguh akan datang dan tidak akan bertangguh." },
+        { ref: "Mikha 7:7", teks: "Tetapi aku ini akan menunggu-nunggu TUHAN, aku akan menanti-nantikan Allah yang menyelamatkan aku..." },
+        { ref: "Amsal 3:5-6", teks: "Percayalah kepada TUHAN dengan segenap hatimu, dan janganlah bersandar kepada pengertianmu sendiri." }
+    ];
+
+    // Membuat HTML pesan "sedang mencari" dengan satu ayat penantian yang dipilih secara acak
+    function pesanTungguAcak() {
+        const a = AYAT_PENANTIAN[Math.floor(Math.random() * AYAT_PENANTIAN.length)];
+        return `<h3>⏳ Sedang mencari, mohon tunggu sebentar...</h3>
+                <div class="log-item-card" style="display:block; font-style:italic;">
+                    <b style="font-style:normal; color: var(--primary);">📖 ${a.ref}</b>
+                    <p style="margin:6px 0 0 0;">"${a.teks}"</p>
+                </div>`;
+    }
+
     let lastMultiRefGroups = null; // hasil pencarian referensi multi-kitab terakhir, dipakai saat Simpan ke Jadwal
 
     async function eksekusiPencarianReferensi() {
@@ -1580,7 +1663,7 @@
         if (!groups.length) return alert('Format referensi tidak dikenali. Contoh yang benar: "Wahyu 1:5; 2:2-4; Matius 1:23"');
 
         const box = document.getElementById('search-results');
-        box.innerHTML = "<h3>⏳ Pencarian ... Kolose 3:12-13 Karena itu, sebagai orang-orang pilihan Allah... kenakanlah belas kasihan, kemurahan, kerendahan hati, kelemahlembutan dan kesabaran. Sabarlah kamu seorang terhadap yang lain...  Tunggu, Sedang mencari secepat kilat...</h3>";
+        box.innerHTML = pesanTungguAcak();
         tutupSemuaNavMenu();
 
         let targetLangs = getSelectedLangs('search');
