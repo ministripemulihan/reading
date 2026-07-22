@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>16:02 E-Bible </title>
+    <title>16.25 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -140,7 +140,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 16.02</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 16.25</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -205,6 +205,29 @@
             <p id="riwayat-summary" style="font-size:13px; color:gray; text-align:center; margin-top:0;"></p>
             <div id="riwayat-list" style="max-height: 50vh; overflow-y: auto; margin-top:10px;"></div>
             <button onclick="document.getElementById('modal-riwayat').classList.add('hidden')" style="background:#ff3b30; margin-top:15px;">Tutup</button>
+        </div>
+    </div>
+
+    <!-- MODAL PILIH/CARI JADWAL: dipakai untuk (1) memilih Jadwal saat menyimpan hasil Baca/Cari, dan
+         (2) melihat/mencari semua Jadwal yang pernah disimpan dari menu Cari maupun menu Jadwal -->
+    <div id="modal-jadwal-picker" class="modal hidden" onclick="this.classList.add('hidden')">
+        <div class="modal-content card" onclick="event.stopPropagation()">
+            <h3 id="jp-title" style="text-align: center; margin-top:0;">🗓️ Pilih Jadwal</h3>
+            <div id="jp-buat-baru-box">
+                <label style="font-size:12px; color:gray;">➕ Buat Jadwal Baru:</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="jp-nama-baru" placeholder="Nama Jadwal baru...">
+                    <button style="width:auto; flex:0 0 auto; padding:12px 16px;" onclick="buatJadwalBaruDariPicker()">Simpan</button>
+                </div>
+            </div>
+            <label style="font-size:12px; color:gray; margin-top:8px; display:block;">🔍 Cari Nama Jadwal (ketik nama awal / sebagian nama):</label>
+            <input type="text" id="jp-search" placeholder="Ketik untuk mencari..." oninput="renderJadwalPickerList(this.value)">
+            <div class="icon-bar" style="margin: 6px 0 4px 0;">
+                <button class="icon-btn" onclick="filterJadwalPickerTerakhir()">🕐 Terakhir Disimpan</button>
+                <button class="icon-btn" onclick="document.getElementById('jp-search').value=''; renderJadwalPickerList('');">📂 Semua Jadwal</button>
+            </div>
+            <div id="jp-list" style="max-height: 40vh; overflow-y: auto; margin-top:8px;"></div>
+            <button onclick="document.getElementById('modal-jadwal-picker').classList.add('hidden')" style="background:#ff3b30; margin-top:15px;">Tutup</button>
         </div>
     </div>
 
@@ -300,6 +323,10 @@
                 </div>
                 <div class="icon-bar">
                     <button class="icon-btn" style="background:#5856d6; color:white; width:100%;" onclick="simpanKeLog('search-info')">🔖 Simpan Hasil Pencarian ke Jadwal</button>
+                </div>
+                <div class="icon-bar">
+                    <button class="icon-btn" style="background:#34c759; color:white; flex:1;" onclick="bukaModalPilihJadwal('browse')">📂 Lihat/Cari Jadwal Tersimpan</button>
+                    <button class="icon-btn" style="background:#ff9500; color:white; flex:1;" onclick="bukaModalPilihJadwal('browse'); filterJadwalPickerTerakhir();">🕐 Terakhir Disimpan</button>
                 </div>
             </div>
         </div>
@@ -532,6 +559,7 @@
     let currentLogItems = [], currentLogId = null, currentLogName = "";
     let selectedItemIdx = new Set();
     let viewerIndex = 0, viewerMode = 'satu';
+    let currentViewerLangs = ['ind']; // bahasa item Jadwal yang sedang tampil di viewer, dipakai fitur suara Google
     
     // Deteksi IP Address dan Tipe Device untuk Disimpan ke log_pembacaan
     let userIP = "Sedang melacak...";
@@ -636,6 +664,8 @@
         muatDaftarLog();
     }
 
+    let pendingLogItem = null, pendingLogItemLabel = null;
+
     async function simpanKeLog(pageId) {
         let arr = pageId === 'read-info' ? lastAyatRead : lastAyatSearch;
         if (!arr || arr.length === 0) return alert("Belum ada ayat yang ditampilkan untuk disimpan.");
@@ -660,27 +690,116 @@
             specType = 'sebagian';
         }
 
-        let daftarNama = savedLogs.map(l => l.log_name).join(", ") || "(belum ada)";
-        let defaultName = `SPR ${new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date())}`;
-        let logName = prompt(`Simpan "${refLabel}" ke Jadwal.\nKetik nama Jadwal baru (misal "SPR 21 Juli 2026"), atau ketik persis nama Jadwal yang sudah ada untuk menambah ayat ini ke dalamnya.\n\nJadwal yang sudah ada: ${daftarNama}`, defaultName);
-        if (!logName) return;
-
         // Simpan juga isi ayatnya (bukan hanya referensinya) supaya Jadwal menyimpan teks alkitabnya sendiri
-        let item = {
+        pendingLogItem = {
             book_number: bn, book_name: bookName, chapter: chapter,
             verse_start: vStart, verse_end: vEnd,
             languages: getSelectedLangs(pageId === 'read-info' ? 'read' : 'search'),
             ayat_text: arr,
             spec_type: specType, verse_spec: verseSpec
         };
+        pendingLogItemLabel = verseSpec ? `${bookName} ${verseSpec}` : refLabel;
 
+        await bukaModalPilihJadwal('save');
+    }
+
+    // =====================================================================
+    // MODAL PILIH/CARI JADWAL -- dipakai untuk menyimpan (mode 'save') dan
+    // untuk melihat/mencari semua Jadwal yang pernah disimpan (mode 'browse'),
+    // bisa dibuka dari menu Cari maupun menu Jadwal.
+    // =====================================================================
+    let jadwalPickerMode = 'browse';
+
+    async function bukaModalPilihJadwal(mode) {
+        jadwalPickerMode = mode;
+        const modal = document.getElementById('modal-jadwal-picker');
+        const buatBaruBox = document.getElementById('jp-buat-baru-box');
+        document.getElementById('jp-title').innerText = (mode === 'save')
+            ? `🔖 Simpan "${pendingLogItemLabel || ''}" ke Jadwal`
+            : "📂 Lihat/Cari Semua Jadwal Tersimpan";
+        buatBaruBox.style.display = (mode === 'save') ? 'block' : 'none';
+        document.getElementById('jp-nama-baru').value = (mode === 'save')
+            ? `SPR ${new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date())}`
+            : '';
+        document.getElementById('jp-search').value = '';
+        modal.classList.remove('hidden');
+
+        document.getElementById('jp-list').innerHTML = "<i>⏳ Memuat daftar Jadwal...</i>";
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getLogNames", username: userSession.username }) });
+            const data = await res.json();
+            if (data.status === "success") savedLogs = data.logs;
+        } catch (e) {}
+        renderJadwalPickerList('');
+    }
+
+    function renderJadwalPickerList(filterText) {
+        const box = document.getElementById('jp-list');
+        let t = (filterText || '').trim().toLowerCase();
+        let list = !t ? savedLogs : savedLogs.filter(l => String(l.log_name).toLowerCase().indexOf(t) !== -1);
+
+        if (!savedLogs || savedLogs.length === 0) { box.innerHTML = "<i>Belum ada Jadwal tersimpan.</i>"; return; }
+        if (list.length === 0) { box.innerHTML = "<i>Tidak ada Jadwal dengan nama itu.</i>"; return; }
+
+        let html = "";
+        list.forEach(l => {
+            html += `<div class="log-item-card" style="cursor:pointer;" onclick="pilihJadwalDariPicker('${l.log_id}', '${l.log_name.replace(/'/g, "\\'")}')">
+                <div style="flex:1;">
+                    <b>${l.log_name}</b><br>
+                    <span style="font-size:12px; color:gray;">${l.jumlah_item} ayat tersimpan • ${l.tanggal}</span>
+                </div>
+            </div>`;
+        });
+        box.innerHTML = html;
+    }
+
+    // Filter cepat: hanya tampilkan Jadwal yang paling terakhir disimpan (savedLogs sudah terurut terbaru dulu)
+    function filterJadwalPickerTerakhir() {
+        document.getElementById('jp-search').value = '';
+        const box = document.getElementById('jp-list');
+        if (!savedLogs || savedLogs.length === 0) { box.innerHTML = "<i>Belum ada Jadwal tersimpan.</i>"; return; }
+        renderJadwalPickerListFromArray([savedLogs[0]]);
+    }
+    function renderJadwalPickerListFromArray(list) {
+        const box = document.getElementById('jp-list');
+        let html = "";
+        list.forEach(l => {
+            html += `<div class="log-item-card" style="cursor:pointer;" onclick="pilihJadwalDariPicker('${l.log_id}', '${l.log_name.replace(/'/g, "\\'")}')">
+                <div style="flex:1;">
+                    <b>${l.log_name}</b><br>
+                    <span style="font-size:12px; color:gray;">${l.jumlah_item} ayat tersimpan • ${l.tanggal}</span>
+                </div>
+            </div>`;
+        });
+        box.innerHTML = html;
+    }
+
+    async function pilihJadwalDariPicker(logId, logName) {
+        if (jadwalPickerMode === 'save') {
+            await eksekusiSimpanItem(logName);
+        } else {
+            document.getElementById('modal-jadwal-picker').classList.add('hidden');
+            bukaLog();
+            bukaIsiLog(logId);
+        }
+    }
+
+    async function buatJadwalBaruDariPicker() {
+        const nama = document.getElementById('jp-nama-baru').value.trim();
+        if (!nama) return alert("Isi nama Jadwal baru terlebih dahulu.");
+        await eksekusiSimpanItem(nama);
+    }
+
+    async function eksekusiSimpanItem(logName) {
+        if (!pendingLogItem) return;
         try {
             const res = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "saveLogItem", username: userSession.username, log_name: logName, item: item, device: userDevice, ip: userIP })
+                body: JSON.stringify({ action: "saveLogItem", username: userSession.username, log_name: logName, item: pendingLogItem, device: userDevice, ip: userIP })
             });
             const data = await res.json();
             if (data.status === "success") {
+                document.getElementById('modal-jadwal-picker').classList.add('hidden');
                 alert(`✅ Tersimpan ke Jadwal "${data.log_name}" (${data.items_count} ayat total).`);
             } else {
                 alert("Gagal menyimpan: " + data.message);
@@ -706,8 +825,27 @@
                 box.innerHTML = "<i>Belum ada Jadwal tersimpan. Buka Mode Baca atau Mode Cari, lalu tekan tombol \"🔖 Simpan ke Jadwal\" untuk menyimpan ayat/pasal.</i>";
                 return;
             }
-            let html = "";
-            savedLogs.forEach(l => {
+            renderDaftarJadwalList(savedLogs);
+        } catch (e) {
+            box.innerHTML = "<p style='color:red;'>Gagal memuat Jadwal (masalah koneksi).</p>";
+        }
+    }
+
+    // Render daftar nama Jadwal di halaman "Jadwal", dilengkapi kotak cari nama & filter "Terakhir Disimpan"
+    function renderDaftarJadwalList(list) {
+        const box = document.getElementById('log-list-area');
+        let html = `
+            <label style="font-size:12px; color:gray;">🔍 Cari Nama Jadwal:</label>
+            <input type="text" id="jadwal-list-search" placeholder="Ketik nama awal / sebagian nama..." value="${jadwalListFilterText}" oninput="filterDaftarJadwal(this.value)">
+            <div class="icon-bar" style="margin: 6px 0 12px 0;">
+                <button class="icon-btn" onclick="tampilkanJadwalTerakhirSaja()">🕐 Terakhir Disimpan</button>
+                <button class="icon-btn" onclick="document.getElementById('jadwal-list-search').value=''; filterDaftarJadwal('');">📂 Tampilkan Semua</button>
+            </div>`;
+
+        if (list.length === 0) {
+            html += "<i>Tidak ada Jadwal yang cocok dengan pencarian.</i>";
+        } else {
+            list.forEach(l => {
                 html += `<div class="log-item-card" style="cursor:pointer;" onclick="bukaIsiLog('${l.log_id}')">
                     <div style="flex:1;">
                         <b>${l.log_name}</b><br>
@@ -716,10 +854,27 @@
                     <button style="width:auto; background:#ff3b30; padding:8px 12px; font-size:12px;" onclick="event.stopPropagation(); hapusLog('${l.log_id}')">🗑️</button>
                 </div>`;
             });
-            box.innerHTML = html;
-        } catch (e) {
-            box.innerHTML = "<p style='color:red;'>Gagal memuat Jadwal (masalah koneksi).</p>";
         }
+        box.innerHTML = html;
+    }
+
+    let jadwalListFilterText = "";
+    // Filter daftar Jadwal berdasarkan nama (nama awal / sebagian nama), langsung saat mengetik
+    function filterDaftarJadwal(teks) {
+        jadwalListFilterText = teks || "";
+        let t = jadwalListFilterText.trim().toLowerCase();
+        let hasil = !t ? savedLogs : savedLogs.filter(l => String(l.log_name).toLowerCase().indexOf(t) !== -1);
+        renderDaftarJadwalList(hasil);
+        // Kembalikan fokus & posisi kursor ke kotak cari supaya tetap bisa lanjut mengetik
+        const inp = document.getElementById('jadwal-list-search');
+        if (inp) { inp.focus(); inp.selectionStart = inp.selectionEnd = inp.value.length; }
+    }
+
+    // Filter cepat: tampilkan hanya Jadwal yang PALING TERAKHIR disimpan (savedLogs sudah terurut terbaru dulu)
+    function tampilkanJadwalTerakhirSaja() {
+        jadwalListFilterText = "";
+        if (savedLogs.length === 0) return;
+        renderDaftarJadwalList([savedLogs[0]]);
     }
 
     async function hapusLog(logId) {
@@ -830,6 +985,7 @@
 
     function renderViewerSatu() {
         const it = currentLogItems[viewerIndex];
+        currentViewerLangs = it.ref.languages && it.ref.languages.length ? it.ref.languages : ['ind'];
         document.getElementById('viewer-title').innerText = `${it.ref.book_name} ${it.ref.chapter}:${it.ref.verse_start}-${it.ref.verse_end}`;
         document.getElementById('viewer-mode-label').innerText = `Satu-satu • ${viewerIndex + 1}/${currentLogItems.length}`;
         document.getElementById('viewer-content').innerHTML = buildAyatHtml(it.ayat, it.ref.languages && it.ref.languages.length ? it.ref.languages : ['ind']);
@@ -847,6 +1003,8 @@
         let container = document.getElementById('viewer-content');
         container.innerHTML = "";
         let titles = [];
+        let firstItem = currentLogItems[idxArray[0]];
+        currentViewerLangs = firstItem.ref.languages && firstItem.ref.languages.length ? firstItem.ref.languages : ['ind'];
         idxArray.forEach(i => {
             let it = currentLogItems[i];
             titles.push(`${it.ref.book_name} ${it.ref.chapter}:${it.ref.verse_start}-${it.ref.verse_end}`);
@@ -891,6 +1049,7 @@
         allVoices = speechSynthesis.getVoices();
         populateVoiceSelect('search');
         populateVoiceSelect('read');
+        populateVoiceSelect('viewer');
     }
 
     function populateVoiceSelect(page) {
@@ -922,6 +1081,25 @@
         
         isReading = true; currentVerseIndex = 0;
         bacaAyatSelanjutnya(page);
+    }
+
+    // Khusus viewer Jadwal: menu ini TIDAK punya kotak pilihan bahasa (lang1/2/3) sendiri seperti
+    // Cari/Baca, karena bahasa yang dipakai sudah ditentukan saat ayat itu disimpan ke Jadwal
+    // (disimpan di currentViewerLangs). Sebelumnya tombol ▶ di sini memanggil bacakanTeksViewer()
+    // yang belum pernah dibuat sama sekali -- itu sebabnya fitur suara di menu Jadwal tidak berfungsi.
+    function bacakanTeksViewer() {
+        hentikanSuara();
+        let targetSelectorIdx = document.getElementById('voice-target-viewer').value;
+        let idx = parseInt(targetSelectorIdx.replace("lang", "")) - 1;
+        let langCodeToRead = currentViewerLangs[idx];
+
+        if (!langCodeToRead) return alert("Bahasa target kolom kosong (kolom itu tidak dipakai di ayat ini).");
+
+        verseQueue = Array.from(document.querySelectorAll(`#viewer-content .verse-text[data-lang="${langCodeToRead}"]`));
+        if (verseQueue.length === 0) return alert("Belum ada teks bahasa tersebut di ayat ini.");
+
+        isReading = true; currentVerseIndex = 0;
+        bacaAyatSelanjutnya('viewer');
     }
 
     function bacaAyatSelanjutnya(page) {
