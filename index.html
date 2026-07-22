@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Reader Alkitab Online ver 11:15</title>
+    <title>E-Reader Alkitab Online ver 11:27</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -31,7 +31,8 @@
 
         body::before {
             content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url('https://drive.google.com/uc?export=view&id=1KJFjezDcxNtIfiPaoUCBA7bgIo8HSfP8');
+            /* PERBAIKAN: Format link gambar Drive terbaru agar langsung muncul */
+            background-image: url('https://lh3.googleusercontent.com/d/1KJFjezDcxNtIfiPaoUCBA7bgIo8HSfP8');
             background-size: cover; background-position: center; background-attachment: fixed;
             z-index: -1; opacity: 0.15; transition: opacity 0.3s;
         }
@@ -112,7 +113,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 11:15</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 11:27</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -347,7 +348,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEDWfCDhcpbqM4VHHlhy36UCkMTOcyE2V8-oy5pZ5Lpf9elRauckysoYooOmbg5x_vCg/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzd7MER9MMRKiy1Jy4xMeY9jj34lSrKJVqblhHV0CDVUlSpBm94n-PUqFnRSdQYG0Kftw/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -645,7 +646,9 @@
     }
 
     async function prosesLogin() {
-        const u = document.getElementById('username').value, p = document.getElementById('password').value;
+        // PERBAIKAN: Menambahkan .trim() untuk membuang spasi tak sengaja
+        const u = document.getElementById('username').value.trim(); 
+        const p = document.getElementById('password').value.trim();
         if (!u || !p) return alert("Isi Username & Password!");
         
         const defaultLang = document.getElementById('login-language').value;
@@ -666,8 +669,14 @@
                 } else { 
                     bukaPencarian(); 
                 }
-            } else { alert(out.message); document.getElementById('btn-login').innerText = "Masuk Aplikasi"; }
-        } catch(e) { alert("Error Terhubung ke Server."); document.getElementById('btn-login').innerText = "Masuk Aplikasi"; }
+            } else { 
+                alert(out.message); 
+                document.getElementById('btn-login').innerText = "Masuk Aplikasi"; 
+            }
+        } catch(e) { 
+            alert("Error Terhubung ke Server. Pastikan 'Who has access' diset ke 'Anyone' saat Deploy!"); 
+            document.getElementById('btn-login').innerText = "Masuk Aplikasi"; 
+        }
     }
 
     async function simpanSetting() {
