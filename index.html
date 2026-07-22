@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>17.56 E-Bible </title>
+    <title>18.10 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -140,7 +140,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.56</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 18.10</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -1473,11 +1473,11 @@
         const vEnd = (searchVerseMode === 'all') ? '' : vStart;
         
         const box = document.getElementById('search-results');
-        box.innerHTML = "<h3>⏳ Pencarian ... Kolose 3:12-13
-
-"Karena itu, sebagai orang-orang pilihan Allah... kenakanlah belas kasihan, kemurahan, kerendahan hati, kelemahlembutan dan kesabaran. Sabarlah kamu seorang terhadap yang lain...
-    
-    Tunggu, sedang mencari secepat kilat..."</h3>";
+        box.innerHTML = "<h3>⏳ Pencarian ... Kolose 3:12-13 
+            
+            Karena itu, sebagai orang-orang pilihan Allah... kenakanlah belas kasihan, kemurahan, kerendahan hati, kelemahlembutan dan kesabaran. Sabarlah kamu seorang terhadap yang lain... 
+                
+        Tunggu, sedang mencari secepat kilat..."</h3>";
         tutupSemuaNavMenu();
         lastSearchRefSpec = null; // pencarian sederhana (bukan referensi campuran), reset penanda referensi
 
@@ -1584,9 +1584,9 @@
         if (!groups.length) return alert('Format referensi tidak dikenali. Contoh yang benar: "Wahyu 1:5; 2:2-4; Matius 1:23"');
 
         const box = document.getElementById('search-results');
-        box.innerHTML = "<h3>⏳ Pencarian ... Kolose 3:12-13
-
-"Karena itu, sebagai orang-orang pilihan Allah... kenakanlah belas kasihan, kemurahan, kerendahan hati, kelemahlembutan dan kesabaran. Sabarlah kamu seorang terhadap yang lain...
+        box.innerHTML = "<h3>⏳ Pencarian ... Kolose 3:12-13 
+     
+       Karena itu, sebagai orang-orang pilihan Allah... kenakanlah belas kasihan, kemurahan, kerendahan hati, kelemahlembutan dan kesabaran. Sabarlah kamu seorang terhadap yang lain...
     
     Tunggu, Sedang mencari secepat kilat...</h3>";
         tutupSemuaNavMenu();
