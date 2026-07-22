@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Reader Alkitab Pro</title>
+    <title>E-Reader Alkitab Online</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -39,10 +39,9 @@
 
         body { background-color: var(--bg); color: var(--text); margin: 0; padding: 0; font-size: var(--font-size); line-height: 1.8; transition: 0.3s; }
         
-        /* PENGATURAN LEBAR LAYAR */
         .container { max-width: 800px; margin: auto; padding: 10px; transition: max-width 0.4s ease; }
         .container.full-width { max-width: 100%; padding: 10px; } 
-        .container.mobile-width { max-width: 420px; padding: 5px; } /* Ukuran Portrait HP */
+        .container.mobile-width { max-width: 420px; padding: 5px; }
         
         .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
@@ -50,15 +49,14 @@
         button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
-        /* PENGATURAN NAVIGASI BAR */
         .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
         .nav-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; font-size: 13px; cursor: pointer; gap: 8px;}
         .nav-summary-info { flex: 1; white-space: nowrap; overflow-x: auto; scrollbar-width: none; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center;}
         .nav-summary-info::-webkit-scrollbar { display: none; }
-        .nav-separator { color: gray; font-weight: normal; margin: 0 2px;}
         
         .btn-triangle { background: var(--primary); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 11px; padding: 0; flex-shrink: 0;}
-        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 4px 8px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
+        .btn-signout { background: #ff3b30; color: white; border-radius: 6px; padding: 6px 10px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0;}
+        .btn-switch-mode { background: #5856d6; color: white; border-radius: 6px; padding: 6px 10px; font-size: 12px; border: none; cursor: pointer; flex-shrink: 0; font-weight: bold;}
 
         .nav-full-menu { display: none; padding: 15px; background: var(--bg); border-top: 1px solid var(--border); }
         .nav-full-menu.open { display: flex; flex-direction: column; gap: 10px; }
@@ -78,19 +76,27 @@
         body.force-italic .reading-area { font-style: italic; }
         body.force-underline .verse-text { text-decoration: underline; }
         
+        /* DEFAULT MODE */
         .verse-group { margin-bottom: 10px; display: inline-block; width: 100%; transition: background 0.3s; border-radius: 5px;}
         .verse-item { display: inline; margin-right: 6px; transition: 0.3s; border-radius: 4px; }
         .lang-badge { font-size: 10px; background: var(--primary); color: white; padding: 2px 5px; border-radius: 4px; margin-right: 4px; vertical-align: middle; text-transform: uppercase;}
         
+        /* MODE BARIS (¶) */
         .reading-area.mode-baris .verse-group { display: block; margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 10px;}
         .reading-area.mode-baris .verse-item { display: block; margin-bottom: 8px; }
+
+        /* MODE PARAREL SINKRONUS (BARU) */
+        .reading-area.mode-parallel .verse-group { display: flex; flex-direction: row; gap: 15px; border-bottom: 1px dashed var(--border); padding-bottom: 15px; margin-bottom: 15px; width: 100%; }
+        .reading-area.mode-parallel .verse-item { flex: 1; display: block; margin: 0; }
+        .reading-area.mode-parallel .verse-num { display: block; margin-bottom: 4px; border-bottom: 1px solid var(--border); }
+        .reading-area.mode-parallel .lang-badge { display: none; } /* Sembunyikan badge karena sudah sejajar kolom */
 
         .highlight-tts { background-color: rgba(255, 235, 59, 0.4) !important; box-shadow: 0 0 5px rgba(255, 235, 59, 0.5); padding: 5px; border-radius: 5px; }
 
         .hidden { display: none !important; }
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
         .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; margin-top: 10vh;}
-        .progress-banner { background: #34c759; color: white; text-align: center; font-weight: bold; padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 14px;}
+        .progress-banner { background: #34c759; color: white; text-align: center; font-weight: bold; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);}
     </style>
 </head>
 <body class="font-apple" data-theme="light-default">
@@ -99,8 +105,8 @@
     
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
-        <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Indonesia</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">Fast Search Edition ver 10:16</h4>
+        <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">Edition 10:42</h4>
         
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <select onchange="gantiTemaGlobal(this.value)" class="theme-selector" style="font-weight: bold; flex:1; margin:0;">
@@ -154,16 +160,12 @@
     <!-- PENCARIAN -->
     <div id="search-page" class="hidden">
         <div class="top-nav-bar">
-            <!-- BAR NAVIGASI SESUAI INSTRUKSI -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">
                 <div class="nav-summary-info">
-                    <span id="search-info-title">Pencarian Kosong...</span>
-                    <span class="nav-separator">|</span>
-                    <span id="search-info-words">0 Kata</span>
-                    <span class="nav-separator">|</span>
-                    <span id="search-info-verses">0 Ayat</span>
+                    <span id="search-info-title" style="font-size: 14px; font-weight: 800;">Pencarian Kosong...</span>
                 </div>
                 <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
+                    <button class="btn-switch-mode" onclick="bukaPembacaan()">📖 Ke Pembacaan</button>
                     <button class="btn-signout" onclick="logout()">Sign Out</button>
                     <button class="btn-triangle" id="btn-toggle-search" onclick="toggleNavMenu('search-menu', 'btn-toggle-search')">▼</button>
                 </div>
@@ -195,7 +197,10 @@
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
-                    <button class="icon-btn" onclick="toggleModeBaris()">¶</button>
+                </div>
+                <div class="icon-bar">
+                    <button class="icon-btn" style="background:#007aff; color:white;" onclick="toggleModeBaris()">¶ Baris</button>
+                    <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePararel()">||| Pararel</button>
                 </div>
                 
                 <div class="icon-bar">
@@ -227,7 +232,6 @@
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="toggleLebarLayar()">📱/💻 Ubah Ukuran Layar</button>
                     <button class="icon-btn" onclick="salinTeks('search-results')">📋 Copy</button>
-                    <button class="icon-btn" style="background:#5856d6; color:white;" onclick="bukaPembacaan()">📖 Ke Pembacaan</button>
                 </div>
             </div>
         </div>
@@ -240,20 +244,17 @@
 
     <!-- PEMBACAAN -->
     <div id="read-page" class="hidden">
+        <!-- Progress Selesai/Belum -->
+        <div id="reading-progress-banner" class="progress-banner hidden">Progress Membaca: 0%</div>
+        
         <div class="top-nav-bar">
-            <!-- Progress Keberhasilan Banner -->
-            <div id="reading-progress-banner" class="progress-banner hidden">Progress Membaca: 0%</div>
-            
             <!-- BAR NAVIGASI SESUAI INSTRUKSI -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">
                 <div class="nav-summary-info">
-                    <span id="read-info-title">Mempersiapkan...</span>
-                    <span class="nav-separator">|</span>
-                    <span id="read-info-words">0 Kata</span>
-                    <span class="nav-separator">|</span>
-                    <span id="read-info-verses">0 Ayat</span>
+                    <span id="read-info-title" style="font-size: 14px; font-weight: 800;">Mempersiapkan...</span>
                 </div>
                 <div style="display: flex; gap:5px; align-items:center;" onclick="event.stopPropagation()">
+                    <button class="btn-switch-mode" onclick="bukaPencarian()">🔍 Ke Pencarian</button>
                     <button class="btn-signout" onclick="logout()">Sign Out</button>
                     <button class="btn-triangle" id="btn-toggle-read" onclick="toggleNavMenu('read-menu', 'btn-toggle-read')">▼</button>
                 </div>
@@ -282,7 +283,10 @@
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
-                    <button class="icon-btn" onclick="toggleModeBaris()">¶</button>
+                </div>
+                <div class="icon-bar">
+                    <button class="icon-btn" style="background:#007aff; color:white;" onclick="toggleModeBaris()">¶ Baris</button>
+                    <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePararel()">||| Pararel</button>
                 </div>
                 
                 <div class="icon-bar">
@@ -314,7 +318,6 @@
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="toggleLebarLayar()">📱/💻 Ubah Ukuran Layar</button>
                     <button class="icon-btn" onclick="salinTeks('reading-content')">📋 Copy</button>
-                    <button class="icon-btn" style="background:#5856d6; color:white;" onclick="bukaPencarian()">🔍 Ke Pencarian</button>
                 </div>
             </div>
         </div>
@@ -323,14 +326,14 @@
             <i>Mempersiapkan bacaan...</i>
         </div>
         
-        <button onclick="tandaiSelesai()" style="background: #34c759; color: white; padding: 18px; font-size: 18px; border-radius: 30px; margin-top: 20px;">✅ Saya Sudah Membaca Ini</button>
+        <button id="btn-tandai" onclick="tandaiSelesai()" style="background: #34c759; color: white; padding: 18px; font-size: 18px; border-radius: 30px; margin-top: 20px;">✅ Saya Sudah Membaca Ini</button>
     </div>
 
 </div>
 
 <script>
-    // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0qBKhkfI9u80ex4gihI69je1JIWlIuALp9POsUTkVbHsNAAV0scOJ9BxB9kTBL228Sw/exec';
+    // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFvpFkM7N_QbetpU6v1_nDcHDBhh2gqEbdyLEkVRhfXowda36pK9Toj7XsTSu2i7Be/exec';
     
     let userSession = {};
     let currentHariKe = 1;
@@ -343,7 +346,6 @@
     let isReading = false;
     let currentVerseIndex = 0;
     
-    // Status Mode Lebar Layar: 0 = Default(800px), 1 = Laptop(Full Width), 2 = Portrait HP(420px)
     let currentLayoutMode = 0; 
 
     const bookData = {
@@ -400,7 +402,6 @@
         bookSelect.innerHTML = '';
         
         const books = bookData[langSelected] || bookData['ind'];
-        
         books.forEach((bookName, index) => {
             bookSelect.appendChild(new Option(bookName, index + 1));
         });
@@ -472,26 +473,32 @@
         document.querySelectorAll('.highlight-tts').forEach(el => el.classList.remove('highlight-tts')); 
     }
 
-    // FUNGSI TOGGLE UKURAN LAYAR YANG BARU
     function toggleLebarLayar() {
         const container = document.getElementById('main-container');
-        
-        // Memutar 3 Status: 0 -> 1 -> 2 -> 0 dst...
         currentLayoutMode = (currentLayoutMode + 1) % 3; 
-        
         container.classList.remove('full-width', 'mobile-width');
         
-        if (currentLayoutMode === 1) {
-            container.classList.add('full-width'); // Lebar Selebar Laptop
-        } else if (currentLayoutMode === 2) {
-            container.classList.add('mobile-width'); // Lebar Selebar Portrait HP
-        }
-        // Jika status === 0, biarkan kosong agar kembali ke default CSS (.container max 800px)
+        if (currentLayoutMode === 1) container.classList.add('full-width'); 
+        else if (currentLayoutMode === 2) container.classList.add('mobile-width'); 
     }
 
     function toggleModeBaris() {
-        document.getElementById('reading-content').classList.toggle('mode-baris');
-        document.getElementById('search-results').classList.toggle('mode-baris');
+        document.getElementById('reading-content').classList.add('mode-baris');
+        document.getElementById('reading-content').classList.remove('mode-parallel');
+        document.getElementById('search-results').classList.add('mode-baris');
+        document.getElementById('search-results').classList.remove('mode-parallel');
+    }
+    
+    function toggleModePararel() {
+        document.getElementById('reading-content').classList.remove('mode-baris');
+        document.getElementById('reading-content').classList.add('mode-parallel');
+        document.getElementById('search-results').classList.remove('mode-baris');
+        document.getElementById('search-results').classList.add('mode-parallel');
+        
+        // Auto ganti layar jadi full width biar pas kolomnya banyak
+        const container = document.getElementById('main-container');
+        container.classList.add('full-width');
+        currentLayoutMode = 1;
     }
     
     function gantiWarnaFontGlobal(warna) {
@@ -520,23 +527,20 @@
         let arr = [l1]; if(l2) arr.push(l2); if(l3) arr.push(l3); return arr;
     }
 
-    // RENDERING & UPDATE DATA KE NAVIGASI YANG KOKOH
     function renderEreaderGrouped(ayatArray, containerId, pageId) {
         const box = document.getElementById(containerId);
         
         if (!ayatArray || ayatArray.length === 0) {
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Ayat tidak ditemukan.</h3>";
             if (document.getElementById(`${pageId}-info-title`)) document.getElementById(`${pageId}-info-title`).innerText = "Pencarian Kosong";
-            if (document.getElementById(`${pageId}-info-words`)) document.getElementById(`${pageId}-info-words`).innerText = "0 Kata";
-            if (document.getElementById(`${pageId}-info-verses`)) document.getElementById(`${pageId}-info-verses`).innerText = "0 Ayat";
             return;
         }
 
-        let grouped = {}, currentHeader = "", htmlOut = "", wordCount = 0;
-        let verseCount = 0;
-
-        // Ambil bahasa pilihan pertama (lang1) untuk prioritas nama kitab pada Judul Bar
-        let primaryLang = getSelectedLangs(pageId === 'read-info' ? 'read' : 'search')[0];
+        let grouped = {}, currentHeader = "", htmlOut = "", wordCount = 0, verseCount = 0;
+        
+        // Ambil array bahasa persis sesuai urutan dropdown Anda
+        let selectedLangsArray = getSelectedLangs(pageId === 'read-info' ? 'read' : 'search');
+        let primaryLang = selectedLangsArray[0]; 
 
         ayatArray.forEach((a) => {
             let header = `${a.b} ${a.c}`, key = a.id || `${header}-${a.v}`; 
@@ -554,13 +558,16 @@
             if (g.header !== currentHeader) { htmlOut += `<div class="book-title">${g.header}</div>`; currentHeader = g.header; }
             htmlOut += `<div class="verse-group">`;
             
-            for (let langCode in g.texts) {
-                htmlOut += `<div class="verse-item">
-                                <span class="verse-num" onclick="toggleNote('note-${key}')" title="Klik untuk lihat catatan">${g.v}</span>`;
-                if(Object.keys(g.texts).length > 1) htmlOut += `<span class="lang-badge">${langCode}</span>`;
-                htmlOut += `<span class="verse-text" data-lang="${langCode}">${g.texts[langCode]}</span>
-                            </div>`;
-            }
+            // Render BERDASARKAN URUTAN array dropdown (selectedLangsArray), bukan urutan acak JavaScript
+            selectedLangsArray.forEach(langCode => {
+                if (g.texts[langCode]) {
+                    htmlOut += `<div class="verse-item">
+                                    <span class="verse-num" onclick="toggleNote('note-${key}')" title="Klik untuk lihat catatan">${g.v}</span>`;
+                    if(selectedLangsArray.length > 1) htmlOut += `<span class="lang-badge">${langCode}</span>`;
+                    htmlOut += `<span class="verse-text" data-lang="${langCode}">${g.texts[langCode]}</span>
+                                </div>`;
+                }
+            });
             
             if(g.note) {
                 htmlOut += `<div id="note-${key}" class="verse-note">💡 <b>Catatan:</b> ${g.note}</div>`;
@@ -570,8 +577,7 @@
         
         box.innerHTML = htmlOut;
         
-        // PENGATURAN TEKS NAVIGASI BAR
-        // Dapatkan nama kitab dari array data yang memiliki bahasa primaryLang (Misal jika CHS, akan keluar nama CHS)
+        // PENGATURAN TEKS NAVIGASI BAR SESUAI INSTRUKSI STRICT
         let primaryVerse = ayatArray.find(a => a.lang === primaryLang) || ayatArray[0];
         
         let bookName = primaryVerse.b;
@@ -579,17 +585,11 @@
         let minV = Math.min(...ayatArray.map(a => a.v));
         let maxV = Math.max(...ayatArray.map(a => a.v));
         
-        // Format: Nama Kitab Pasal : Ayat Awal - Ayat Akhir
-        let titleFormat = `${bookName} ${chapterNumber} : ${minV} - ${maxV}`;
+        // Format Tepat: Bible Name, no chapter, verse, bahasa language
+        let titleFormat = `${bookName}, Chapter ${chapterNumber}, Verse ${minV}-${maxV}, Bahasa: ${primaryLang.toUpperCase()}`;
 
         let elTitle = document.getElementById(`${pageId}-info-title`);
         if (elTitle) elTitle.innerText = titleFormat;
-        
-        let elVerses = document.getElementById(`${pageId}-info-verses`);
-        if (elVerses) elVerses.innerText = `${verseCount} Ayat`;
-        
-        let elWords = document.getElementById(`${pageId}-info-words`);
-        if (elWords) elWords.innerText = `${wordCount} Kata`;
     }
 
     async function prosesLogin() {
@@ -651,12 +651,15 @@
     
     function updateProgressUI() {
         const banner = document.getElementById('reading-progress-banner');
+        document.getElementById('btn-tandai').style.display = 'block'; // Tampilkan lagi tombolnya
+
         if(!userSession.plan) return;
         
         let percentage = Math.round((currentHariKe / totalHariPlan) * 100);
         if (percentage > 100) percentage = 100;
         
-        banner.innerText = `Progress: Hari ke-${currentHariKe} dari ${totalHariPlan} (${percentage}%) - ${userSession.plan}`;
+        banner.innerText = `Sedang Membaca: Hari ke-${currentHariKe} dari ${totalHariPlan} (${percentage}%) - ${userSession.plan}`;
+        banner.style.background = "#007aff";
         banner.classList.remove('hidden');
     }
     
@@ -727,6 +730,14 @@
         hentikanSuara();
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
         
+        const banner = document.getElementById('reading-progress-banner');
+        const btnTandai = document.getElementById('btn-tandai');
+        
+        // Ubah Banner Menjadi Info Selesai!
+        banner.innerText = "✅ Pembacaan Hari Ini Sudah Selesai!";
+        banner.style.background = "#28a745"; // Hijau Success
+        btnTandai.style.display = 'none'; // Sembunyikan Tombol
+        
         try {
             await fetch(SCRIPT_URL, { 
                 method: 'POST', 
@@ -737,7 +748,6 @@
                     persentase: Math.round((currentHariKe / totalHariPlan) * 100)
                 }) 
             });
-            setTimeout(() => alert(`🎉 Bacaan Hari ke-${currentHariKe} telah direkam!`), 600);
         } catch (e) {
             console.log("Gagal merekam progress");
         }
