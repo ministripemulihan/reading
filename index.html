@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>16.25 E-Bible </title>
+    <title>16.35 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -140,7 +140,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 16.25</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 16.35</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -270,9 +270,9 @@
                 <p style="font-size:11px; color:gray; margin:2px 0 8px 0;">Isi hanya "Ayat Awal". Tombol di samping: <b>1️⃣ Satu Ayat</b> = hanya 1 ayat itu saja (mis. Filipi 4:4), tekan untuk ganti ke <b>🔢 Semua Ayat</b> = dari ayat itu sampai akhir pasal.</p>
                 <button class="icon-btn" style="background:var(--primary); color:white; width: 100%; margin: 10px 0;" onclick="eksekusiPencarian()">🔍 Eksekusi Pencarian</button>
 
-                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">📑 Atau Cari dari Referensi Lengkap</div>
-                <input type="text" id="search-referensi" placeholder="mis. Filipi 1:1-2,4,7;2:3-4">
-                <p style="font-size:11px; color:gray; margin:2px 0 8px 0;">Boleh campur beberapa ayat/rentang & pasal sekaligus, dipisah koma "," (ayat/rentang) dan titik-koma ";" (ganti pasal). Contoh "Filipi 1:1-2,4,7;2:3-4" akan menampilkan Filipi 1:1,2,4,7 dan 2:3,4.</p>
+                <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">📑 Atau Cari dari Referensi Lengkap (boleh banyak kitab sekaligus)</div>
+                <textarea id="search-referensi" rows="3" style="resize:vertical;" placeholder="mis. Wahyu 1:5; 2:2-4; Matius 1:23; Kejadian 3:15; Filipi 4:4-6; 1 Tesalonika 1:5; 2 Timotius 2:22"></textarea>
+                <p style="font-size:11px; color:gray; margin:2px 0 8px 0;">Pisahkan dengan titik-koma ";". Kalau setelah titik-koma tidak diketik nama kitab lagi (mis. "Wahyu 1:5; 2:2-4"), otomatis dianggap masih kitab yang sama (Wahyu pasal 2). Semua hasil tampil sekaligus, dan saat disimpan ke Jadwal, tiap kitab tersimpan sebagai ayat terpisah langsung dalam satu Jadwal.</p>
                 <button class="icon-btn" style="background:#5856d6; color:white; width: 100%; margin: 0 0 10px 0;" onclick="eksekusiPencarianReferensi()">📑 Cari dari Referensi</button>
 
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🗣️ Tampilan & Suara</div>
@@ -1497,34 +1497,32 @@
     }
 
     // =====================================================================
-    // PENCARIAN REFERENSI LENGKAP, mis. "Filipi 1:1-2,4,7;2:3-4"
-    // Format: NamaKitab lalu pasal:ayat(,ayat|rentang)*;pasal:ayat(,ayat|rentang)*...
+    // PENCARIAN REFERENSI LENGKAP, boleh BANYAK KITAB sekaligus, mis:
+    // "Wahyu 1:5; 2:2-4; Matius 1:23; Kejadian 3:15; Filipi 4:4-6; 1 Tesalonika 1:5; 2 Timotius 2:22"
+    // Tiap bagian dipisah ";". Kalau sebuah bagian TIDAK diawali nama kitab (mis. "2:2-4" setelah
+    // "Wahyu 1:5;"), dianggap masih kitab yang sama dengan bagian sebelumnya (di sini: Wahyu pasal 2).
+    // Hasil: array kelompok per kitab -> [{ book_number, book_name, segments:[...], verse_spec, total_verses }]
     // =====================================================================
-    function parseReferensiAlkitab(teks) {
+    function parseMultiReferensiAlkitab(teks) {
         teks = (teks || "").trim();
-        if (!teks) return null;
+        if (!teks) return [];
 
         const langSelected = document.getElementById('lang1-search').value || 'ind';
         const books = bookData[langSelected] || bookData['ind'];
 
-        // Cari nama kitab dengan kecocokan awal teks TERPANJANG (supaya "1 Korintus" tidak salah kena "Korintus" dsb)
-        let bestMatch = null, bestLen = 0;
-        books.forEach((bookName, idx) => {
-            let bn = bookName.trim().toLowerCase();
-            if (teks.toLowerCase().indexOf(bn) === 0 && bn.length > bestLen) {
-                bestMatch = { book_number: idx + 1, book_name: bookName };
-                bestLen = bn.length;
-            }
-        });
-        if (!bestMatch) return null;
+        function cariNamaKitab(potongan) {
+            let bestMatch = null, bestLen = 0;
+            books.forEach((bookName, idx) => {
+                let bn = bookName.trim().toLowerCase();
+                if (potongan.toLowerCase().indexOf(bn) === 0 && bn.length > bestLen) {
+                    bestMatch = { book_number: idx + 1, book_name: bookName };
+                    bestLen = bn.length;
+                }
+            });
+            return bestMatch ? { match: bestMatch, sisa: potongan.substring(bestLen).trim() } : null;
+        }
 
-        let sisa = teks.substring(bestLen).trim();
-        if (!sisa) return null;
-
-        // sisa contoh: "1:1-2,4,7;2:3-4"
-        let segments = [];
-        let totalVerses = 0;
-        sisa.split(';').forEach(bagianPasal => {
+        function parseChapterVerse(bagianPasal, groupRef) {
             bagianPasal = bagianPasal.trim();
             if (!bagianPasal) return;
             let [chapterStr, ayatStr] = bagianPasal.split(':');
@@ -1537,23 +1535,46 @@
                 if (!tok) return;
                 if (tok.indexOf('-') !== -1) {
                     let [s, e] = tok.split('-').map(n => parseInt(n, 10));
-                    if (s && e) { ranges.push([s, e]); totalVerses += (e - s + 1); }
+                    if (s && e) { ranges.push([s, e]); groupRef.total_verses += (e - s + 1); }
                 } else {
                     let v = parseInt(tok, 10);
-                    if (v) { ranges.push([v, v]); totalVerses += 1; }
+                    if (v) { ranges.push([v, v]); groupRef.total_verses += 1; }
                 }
             });
-            if (ranges.length) segments.push({ chapter: chapter, ranges: ranges });
-        });
+            if (ranges.length) { groupRef.segments.push({ chapter: chapter, ranges: ranges }); groupRef.verse_spec_parts.push(bagianPasal); }
+        }
 
-        if (segments.length === 0) return null;
-        return { book_number: bestMatch.book_number, book_name: bestMatch.book_name, segments: segments, verse_spec: sisa, total_verses: totalVerses };
+        let groups = [];
+        let current = null;
+
+        teks.split(';').forEach(token => {
+            token = token.trim();
+            if (!token) return;
+
+            let cocokKitab = cariNamaKitab(token);
+            if (cocokKitab) {
+                // Bagian baru dimulai dengan nama kitab -> tutup kelompok sebelumnya, mulai kelompok baru
+                if (current && current.segments.length) groups.push(current);
+                current = { book_number: cocokKitab.match.book_number, book_name: cocokKitab.match.book_name, segments: [], verse_spec_parts: [], total_verses: 0 };
+                parseChapterVerse(cocokKitab.sisa, current);
+            } else if (current) {
+                // Lanjutan tanpa nama kitab -> tetap di kitab yang sama dengan bagian sebelumnya
+                parseChapterVerse(token, current);
+            }
+            // Kalau belum ada kitab sama sekali (token pertama tidak dikenali), bagian ini diabaikan
+        });
+        if (current && current.segments.length) groups.push(current);
+
+        groups.forEach(g => { g.verse_spec = g.verse_spec_parts.join(';'); });
+        return groups;
     }
+
+    let lastMultiRefGroups = null; // hasil pencarian referensi multi-kitab terakhir, dipakai saat Simpan ke Jadwal
 
     async function eksekusiPencarianReferensi() {
         const teks = document.getElementById('search-referensi').value;
-        const parsed = parseReferensiAlkitab(teks);
-        if (!parsed) return alert('Format referensi tidak dikenali. Contoh yang benar: "Filipi 1:1-2,4,7;2:3-4"');
+        const groups = parseMultiReferensiAlkitab(teks);
+        if (!groups.length) return alert('Format referensi tidak dikenali. Contoh yang benar: "Wahyu 1:5; 2:2-4; Matius 1:23"');
 
         const box = document.getElementById('search-results');
         box.innerHTML = "<h3>⏳ Sedang mencari secepat kilat...</h3>";
@@ -1561,29 +1582,30 @@
 
         let targetLangs = getSelectedLangs('search');
         try {
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "searchReference", book_number: parsed.book_number, segments: parsed.segments, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP })
-            });
-            const responseText = await res.text();
-            try {
-                const data = JSON.parse(responseText);
+            // Satu request per kelompok kitab, dijalankan bersamaan supaya tetap cepat walau banyak kitab
+            const hasilPerKitab = await Promise.all(groups.map(async (g) => {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "searchReference", book_number: g.book_number, segments: g.segments, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP })
+                });
+                const data = await res.json();
                 if (data.status === "error") throw new Error(data.message);
+                return data.ayat || [];
+            }));
 
-                // Tandai spec_type: 1 ayat saja atau sebagian ayat (referensi campuran)
-                lastSearchRefSpec = { verse_spec: parsed.verse_spec, spec_type: (parsed.total_verses === 1 ? 'satu' : 'sebagian') };
-                renderEreaderGrouped(data.ayat, 'search-results', 'search-info');
+            let semuaAyat = [];
+            groups.forEach((g, i) => { g.ayat = hasilPerKitab[i]; semuaAyat = semuaAyat.concat(hasilPerKitab[i]); });
 
-                // Referensi campuran bisa melintasi beberapa pasal sekaligus (mis. "1:1-2,4,7;2:3-4"),
-                // jadi judul navigasi 1 baris memakai teks referensi persis apa yang diketik, bukan hasil min/max ayat.
-                let selectedLangsArray = getSelectedLangs('search');
-                document.getElementById('search-ref-title').innerText = buildRefText('search-info', `${parsed.book_name} ${parsed.verse_spec}`, selectedLangsArray);
-            } catch (err) {
-                console.error("Respon Server:", responseText);
-                box.innerHTML = `<h3 style='color:red;'>Pencarian Gagal: ${err.message || "Pastikan SCRIPT_URL sudah benar."}</h3>`;
-            }
-        } catch (e) {
-            box.innerHTML = "<h3 style='color:red;'>Pencarian Gagal: Masalah koneksi internet/CORS.</h3>";
+            lastMultiRefGroups = groups;
+            lastSearchRefSpec = null; // mode multi-kitab dipakai lastMultiRefGroups, bukan lastSearchRefSpec
+            renderEreaderGrouped(semuaAyat, 'search-results', 'search-info');
+
+            // Judul navigasi 1 baris memakai teks referensi persis yang diketik (semua kitab digabung)
+            let judul = groups.map(g => `${g.book_name} ${g.verse_spec}`).join('; ');
+            let selectedLangsArray = getSelectedLangs('search');
+            document.getElementById('search-ref-title').innerText = buildRefText('search-info', judul, selectedLangsArray);
+        } catch (err) {
+            box.innerHTML = `<h3 style='color:red;'>Pencarian Gagal: ${err.message || "Masalah koneksi internet/CORS."}</h3>`;
         }
     }
 
