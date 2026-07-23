@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>13.22 E-Bible </title>
+    <title>14.30 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -121,7 +121,18 @@
         .pgm-status-waiting { background: #ff9500; color: #fff; }
         .pgm-status-done { background: #34c759; color: #fff; }
         .pgm-status-expired { background: #ff3b30; color: #fff; }
-        .pgm-admin-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+        .pgm-admin-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-sizing: border-box; }
+        /* PERBAIKAN LEBAR PENGUMUMAN DI HP: sebelumnya form isi pengumuman & daftar pengumuman ikut
+           terbatas oleh max-width .container (800px atau 420px tergantung mode layout global), sehingga
+           di HP terasa "tidak lebar" walau layar sebenarnya lebih lega. Khusus di layar sempit (≤600px,
+           yaitu HP), dua elemen ini "keluar" (breakout) dari batas lebar container dan mengisi selebar
+           layar penuh, terlepas dari mode layout global yang sedang dipilih. Nav & tab tetap seperti biasa.*/
+        @media (max-width: 600px) {
+            #pgm-admin-form, #announce-list-area {
+                width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+                border-radius: 0; box-sizing: border-box; padding-left: 14px; padding-right: 14px;
+            }
+        }
         .pgm-kategori-checks { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 12px; font-weight: normal; margin: 6px 0 10px 0; }
         .pgm-kategori-checks label { display: flex; align-items: center; gap: 4px; background: var(--btn-bg); padding: 5px 8px; border-radius: 8px; cursor: pointer; }
         .pgm-kategori-checks input { width: auto; margin: 0; }
@@ -190,7 +201,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 13.22</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 14.30</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
