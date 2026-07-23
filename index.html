@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>17.30 E-Bible </title>
+    <title>18.06 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -156,6 +156,8 @@
         body.force-italic .reading-area { font-style: italic; }
         body.force-underline .verse-text { text-decoration: underline; }
         .verse-text sup { font-size: 0.7em; opacity: 0.75; text-decoration: none; }
+        .verse-group.tts-start-pointer { outline: 2px dashed #ff9500; outline-offset: 2px; border-radius: 6px; }
+        .verse-group.tts-start-pointer .verse-num { background: #ff9500; color: #fff; border-radius: 50%; padding: 1px 6px; }
         
         /* DEFAULT MODE */
         .verse-group { margin-bottom: 10px; display: inline-block; width: 100%; transition: background 0.3s; border-radius: 5px;}
@@ -202,7 +204,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.30</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 18.06</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -444,6 +446,8 @@
                     <input type="range" id="voice-pitch-search" min="0.1" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('search')">
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('search-results', 'search')">▶</button>
                     <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
+                    <button class="icon-btn" style="background:#8e8e93; color:white;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
+                    <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePilihTitikMulai('search')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
                 </div>
                 <div class="tts-opts">
                     <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-search" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
@@ -567,6 +571,8 @@
                     <input type="range" id="voice-pitch-read" min="0.1" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('read')">
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('reading-content', 'read')">▶</button>
                     <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
+                    <button class="icon-btn" style="background:#8e8e93; color:white;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
+                    <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePilihTitikMulai('read')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
                 </div>
                 <div class="tts-opts">
                     <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-read" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
@@ -787,6 +793,8 @@
             <input type="range" id="voice-pitch-viewer" min="0.1" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('viewer')">
             <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeksViewer()">▶</button>
             <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
+            <button class="icon-btn" style="background:#8e8e93; color:white;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
+            <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePilihTitikMulai('viewer')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
         </div>
         <div class="tts-opts">
             <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-viewer" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
@@ -831,6 +839,18 @@
     let lastChapterDibaca = null;        // Nomor pasal terakhir yang judulnya sudah diumumkan lewat suara
     let ttsBacaNamaKitab = true;         // Checklist "Baca Nama Kitab": ON = baca judul kitab/pasal/ayat spt biasa, OFF = hanya baca isi ayat saja
     let ttsBacaNote = false;             // Checklist "Baca Catatan": OFF (default) = catatan/note TIDAK dibacakan, ON = dibacakan setelah teks ayat
+
+    // PERBAIKAN BUG "SEKALI ERROR, TIDAK BISA BACA LAGI": setiap kali sesi baca dimulai (bacakanTeks/
+    // bacakanTeksViewer) ATAU dihentikan/direset (hentikanSuara/resetSuaraError), sesiSuaraId dinaikkan.
+    // Setiap watchdog/timer dari sesi LAMA membawa nomor sesiSuaraId miliknya sendiri -- kalau nomor itu
+    // sudah tidak sama dengan sesiSuaraId SEKARANG saat timer itu akhirnya jalan, berarti sesi itu sudah
+    // basi (sudah direset/dihentikan sebelum utterance-nya selesai) dan HARUS diabaikan total, supaya
+    // timer basi tidak pernah memicu speak() atau lanjut ke ayat/catatan berikutnya secara diam-diam,
+    // yang selama ini bisa membuat sesi berikutnya terasa "macet"/tidak mau baca sama sekali lagi.
+    let sesiSuaraId = 0;
+    // FITUR "TITIK MULAI PEMBACAAN": kalau true, klik pada nomor ayat manapun akan menjadikan ayat itu
+    // sbg titik mulai (bukan membuka catatan spt biasa). Otomatis mati lagi setelah 1x klik dipakai.
+    let modePilihTitikMulai = false;
     
     let currentLayoutMode = 0; 
     let isClickHighlightOn = false;
@@ -1767,15 +1787,24 @@
     // dalam batas waktu wajar (estimasi lama bicara dari jumlah karakter), paksa lanjut ke langkah
     // berikutnya supaya sesi TIDAK PERNAH macet permanen di satu titik.
     // =====================================================================
-    function ucapkanAman(msg, teksUntukEstimasi, rate, lanjut) {
+    function ucapkanAman(msg, teksUntukEstimasi, rate, lanjut, sesiId) {
         let sudahLanjut = false;
-        let selesai = () => { if (sudahLanjut) return; sudahLanjut = true; clearTimeout(watchdog); lanjut(); };
+        let selesai = () => {
+            if (sudahLanjut) return;
+            sudahLanjut = true;
+            clearTimeout(watchdog);
+            // Sesi ini sudah basi (sudah dihentikan/direset sebelum utterance selesai) -> jangan
+            // pernah lanjut baca apapun lagi, supaya tidak "nyelonong" bicara sendiri setelah user
+            // menekan Stop/Reset, dan supaya sesi BARU tidak ikut kena efek timer sesi LAMA.
+            if (sesiId !== sesiSuaraId) return;
+            lanjut();
+        };
         msg.onend = selesai;
         msg.onerror = selesai;
         let estimasiDetik = Math.max(3, (teksUntukEstimasi || '').length / (14 * (rate || 1))) + 4;
         let watchdog = setTimeout(selesai, estimasiDetik * 1000);
         setTimeout(() => {
-            if (!isReading) { clearTimeout(watchdog); return; }
+            if (!isReading || sesiId !== sesiSuaraId) { clearTimeout(watchdog); return; }
             try { window.speechSynthesis.speak(msg); } catch (e) { selesai(); }
         }, 120);
     }
@@ -1795,10 +1824,20 @@
         ttsBacaNamaKitab = document.getElementById(`chk-baca-kitab-${page}`).checked;
         ttsBacaNote = document.getElementById(`chk-baca-note-${page}`).checked;
 
-        isReading = true; currentVerseIndex = 0;
+        // FITUR "TITIK MULAI": kalau ada ayat yang sudah ditandai (klik nomor ayat saat mode aktif),
+        // mulai pembacaan dari situ, bukan dari ayat pertama.
+        let startIdx = 0;
+        let pointerEl = document.querySelector(`#${containerId} .verse-group.tts-start-pointer`);
+        if (pointerEl) {
+            let idxDitemukan = verseQueue.findIndex(vt => vt.closest('.verse-group') === pointerEl);
+            if (idxDitemukan !== -1) startIdx = idxDitemukan;
+        }
+
+        sesiSuaraId++;
+        isReading = true; currentVerseIndex = startIdx;
         lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
         mintaWakeLock(); mulaiHeartbeatTTS();
-        bacaAyatSelanjutnya(page);
+        bacaAyatSelanjutnya(page, sesiSuaraId);
     }
 
     // Khusus viewer Jadwal: menu ini TIDAK punya kotak pilihan bahasa (lang1/2/3) sendiri seperti
@@ -1819,13 +1858,25 @@
         ttsBacaNamaKitab = document.getElementById('chk-baca-kitab-viewer').checked;
         ttsBacaNote = document.getElementById('chk-baca-note-viewer').checked;
 
-        isReading = true; currentVerseIndex = 0;
+        let startIdx = 0;
+        let pointerEl = document.querySelector(`#viewer-content .verse-group.tts-start-pointer`);
+        if (pointerEl) {
+            let idxDitemukan = verseQueue.findIndex(vt => vt.closest('.verse-group') === pointerEl);
+            if (idxDitemukan !== -1) startIdx = idxDitemukan;
+        }
+
+        sesiSuaraId++;
+        isReading = true; currentVerseIndex = startIdx;
         lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
         mintaWakeLock(); mulaiHeartbeatTTS();
-        bacaAyatSelanjutnya('viewer');
+        bacaAyatSelanjutnya('viewer', sesiSuaraId);
     }
 
-    function bacaAyatSelanjutnya(page) {
+    function bacaAyatSelanjutnya(page, sesiId) {
+        // Kalau sesi ini sudah bukan sesi yang sedang aktif (sudah direset/dihentikan/diganti sesi baru
+        // sebelum sampai di sini), berhenti diam-diam -- JANGAN panggil hentikanSuara() lagi supaya
+        // tidak mengganggu sesi BARU yang mungkin sudah mulai berjalan.
+        if (sesiId !== sesiSuaraId) return;
         if (!isReading || currentVerseIndex >= verseQueue.length) { hentikanSuara(); return; }
 
         hapusHighlight();
@@ -1851,7 +1902,7 @@
                 msgJudul.lang = 'id-ID';
                 if (allVoices[selIdx]) msgJudul.voice = allVoices[selIdx];
                 msgJudul.rate = rate; msgJudul.pitch = pitch;
-                ucapkanAman(msgJudul, judulSuara, rate, () => bacaAyatSelanjutnya(page));
+                ucapkanAman(msgJudul, judulSuara, rate, () => bacaAyatSelanjutnya(page, sesiId), sesiId);
                 return; // ayat pertama kelompok ini menyusul lewat callback di atas setelah judul selesai
             }
         } else {
@@ -1878,7 +1929,7 @@
         // berikutnya (lewat ucapkanAman -> lihat definisinya di atas untuk penjelasan bug & perbaikan).
         // Wake Lock & heartbeat TTS tetap aktif sepanjang ini (tidak mati sendiri di HP) karena masih
         // 1 sesi speechSynthesis yang sama, belum dipanggil hentikanSuara().
-        let lanjutKeAyatBerikutnya = () => { currentVerseIndex++; bacaAyatSelanjutnya(page); };
+        let lanjutKeAyatBerikutnya = () => { currentVerseIndex++; bacaAyatSelanjutnya(page, sesiId); };
         ucapkanAman(msg, teksLengkapAyat, rate, () => {
             let teksNote = ttsBacaNote ? (grup.getAttribute('data-note') || '').trim() : '';
             if (teksNote) {
@@ -1887,20 +1938,64 @@
                 let msgNote = new SpeechSynthesisUtterance(teksLengkapNote);
                 if (allVoices[selIdx]) msgNote.voice = allVoices[selIdx];
                 msgNote.rate = rate; msgNote.pitch = pitch;
-                ucapkanAman(msgNote, teksLengkapNote, rate, lanjutKeAyatBerikutnya);
+                ucapkanAman(msgNote, teksLengkapNote, rate, lanjutKeAyatBerikutnya, sesiId);
             } else {
                 lanjutKeAyatBerikutnya();
             }
-        });
+        }, sesiId);
     }
 
     function hentikanSuara() {
+        sesiSuaraId++; // batalkan semua watchdog/timer sesi yg masih berjalan -> tidak akan lanjut baca apapun lagi
         isReading = false;
         lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
         window.speechSynthesis.cancel();
         hapusHighlight();
         hentikanHeartbeatTTS();
         lepasWakeLock();
+    }
+
+    // TOMBOL "🔄 Reset Suara": dipakai kalau sesi TTS sebelumnya "macet"/error (mis. speechSynthesis
+    // browser sedang dalam keadaan aneh setelah HP terkunci/tidur) sehingga tombol ▶ seperti tidak
+    // mau merespons lagi. Selain menghentikan & membatalkan sesi (sama seperti hentikanSuara), fungsi
+    // ini juga memuat ulang daftar suara (voices) -- langkah ini sering membantu "menyegarkan" koneksi
+    // ke mesin text-to-speech yang sempat error, tanpa perlu memuat ulang (refresh) seluruh halaman.
+    function resetSuaraError() {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+        sesiSuaraId++;
+        isReading = false; currentVerseIndex = 0; verseQueue = [];
+        lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
+        hapusHighlight();
+        hentikanHeartbeatTTS();
+        lepasWakeLock();
+        try { muatDaftarSuara(); } catch (e) {}
+        alert("🔄 Sesi suara sudah direset. Silakan tekan ▶ lagi untuk mulai membaca.");
+    }
+
+    // TOMBOL "🎯 Titik Mulai": aktifkan mode ini, lalu klik SATU nomor ayat mana pun -- ayat itu akan
+    // ditandai sbg titik mulai. Saat tombol ▶ ditekan berikutnya, pembacaan dimulai dari ayat itu,
+    // bukan dari ayat pertama. Mode otomatis nonaktif lagi setelah 1x klik dipakai (supaya klik nomor
+    // ayat berikutnya kembali berfungsi normal membuka/menutup catatan).
+    function toggleModePilihTitikMulai(page) {
+        modePilihTitikMulai = !modePilihTitikMulai;
+        let info = modePilihTitikMulai
+            ? "🎯 Mode aktif: klik nomor ayat mana pun untuk menjadikannya titik mulai pembacaan."
+            : "Mode titik mulai dibatalkan.";
+        alert(info);
+    }
+
+    // Dipanggil dari onclick nomor ayat (menggantikan toggleNote langsung), supaya bisa dipakai untuk
+    // 2 hal tergantung mode: (1) mode normal -> buka/tutup catatan spt biasa, (2) mode "Titik Mulai"
+    // aktif -> tandai ayat ini sbg titik mulai pembacaan berikutnya.
+    function klikNomorAyat(elNomor, noteId) {
+        if (modePilihTitikMulai) {
+            document.querySelectorAll('.verse-group.tts-start-pointer').forEach(el => el.classList.remove('tts-start-pointer'));
+            let grupTerpilih = elNomor.closest('.verse-group');
+            grupTerpilih.classList.add('tts-start-pointer');
+            modePilihTitikMulai = false;
+            return;
+        }
+        toggleNote(noteId);
     }
     
     function hapusHighlight() { 
@@ -2181,7 +2276,7 @@
                     let teksTampil = sanitizeTampilanHtml(g.texts[langCode]);
                     let teksSuara = escAttr(teksUntukSuara(g.texts[langCode]));
                     htmlOut += `<div class="verse-item">
-                                    <span class="verse-num" onclick="toggleNote('note-${safeId}')" title="Klik untuk lihat catatan">${g.v}</span>`;
+                                    <span class="verse-num" onclick="klikNomorAyat(this, 'note-${safeId}')" title="Klik untuk lihat catatan (atau jadikan titik mulai jika mode 🎯 aktif)">${g.v}</span>`;
                     if (selectedLangsArray.length > 1) htmlOut += `<span class="lang-badge">${langCode}</span>`;
                     htmlOut += `<span class="verse-text" data-lang="${langCode}" data-speech="${teksSuara}">${teksTampil}</span>
                                 </div>`;
