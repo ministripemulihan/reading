@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>15.25 E-Bible </title>
+    <title>15.55 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -201,7 +201,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 15.25</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 15.55</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -495,17 +495,26 @@
             <div class="nav-full-menu" id="read-menu">
                 <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
                 <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
-                <div style="font-size: 12px; font-weight: bold; color: gray;">⚙️ Navigasi Hari</div>
-                <div class="icon-bar">
-                    <button class="icon-btn" onclick="gantiHari(-1)">◀ Prev</button>
-                    <button class="icon-btn" onclick="kembaliHariIni()">📅 Hari Ini</button>
-                    <button class="icon-btn" onclick="gantiHari(1)">Next ▶</button>
+                <!-- Kontrol rencana LAMA (per-hari manual + tandai selesai): hanya relevan kalau user
+                     BELUM memakai sistem rencana baca BARU (adil per jumlah ayat). Kalau sudah memakai
+                     sistem baru, hari dihitung otomatis dari tanggal kalender, jadi kotak ini disembunyikan
+                     (lihat toggleLegacyPlanUI()) -- ganti rencana dilakukan lewat menu ⚙️ Setting. -->
+                <div id="box-nav-hari-lama">
+                    <div style="font-size: 12px; font-weight: bold; color: gray;">⚙️ Navigasi Hari</div>
+                    <div class="icon-bar">
+                        <button class="icon-btn" onclick="gantiHari(-1)">◀ Prev</button>
+                        <button class="icon-btn" onclick="kembaliHariIni()">📅 Hari Ini</button>
+                        <button class="icon-btn" onclick="gantiHari(1)">Next ▶</button>
+                    </div>
+                    <div class="icon-bar">
+                        <button class="icon-btn" style="background:#5856d6; color:white; width:100%;" onclick="bukaRiwayatPembacaan()">📋 Riwayat Pembacaan (Terakhir Dibaca, Tanggal Mulai, & Daftar Sudah/Belum)</button>
+                    </div>
+                    <div class="icon-bar">
+                        <button class="icon-btn" style="background:#ff9500; color:white; width:100%;" onclick="bukaGantiRencana()">🔄 Ganti Rencana Baca (Lama)</button>
+                    </div>
                 </div>
-                <div class="icon-bar">
-                    <button class="icon-btn" style="background:#5856d6; color:white; width:100%;" onclick="bukaRiwayatPembacaan()">📋 Riwayat Pembacaan (Terakhir Dibaca, Tanggal Mulai, & Daftar Sudah/Belum)</button>
-                </div>
-                <div class="icon-bar">
-                    <button class="icon-btn" style="background:#ff9500; color:white; width:100%;" onclick="bukaGantiRencana()">🔄 Ganti Rencana Baca</button>
+                <div id="box-info-rencana-baru" class="hidden" style="font-size:12px; color:gray; margin: 4px 0 10px 0;">
+                    🗓️ Rencana baca memakai sistem baru (adil per jumlah ayat). Atur/ganti rencana lewat menu ⚙️ Setting di bawah ini.
                 </div>
                 
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:10px;">🌐 Bandingkan Bahasa</div>
@@ -580,6 +589,7 @@
         </div>
         
         <button id="btn-tandai" onclick="tandaiSelesai()" style="background: #34c759; color: white; padding: 18px; font-size: 18px; border-radius: 30px; margin-top: 20px;">✅ Saya Sudah Membaca Ini</button>
+        <p id="info-selesai-rencana-baru" class="hidden" style="text-align:center; font-size:13px; color:gray; margin-top:14px;">🗓️ Hari berikutnya terbuka otomatis sesuai tanggal kalender pada sistem rencana baru.</p>
     </div>
 
     <!-- ATUR PENANDA (Fitur ketiga: dulu bernama "Log Tersimpan") -->
@@ -792,6 +802,18 @@
     let currentHariKe = 1;
     let actualHariKe = 1; 
     let totalHariPlan = 30;
+
+    // ================== SISTEM RENCANA BACA BARU (adil per jumlah ayat) ==================
+    let setupBacaAktif = null; // hasil getSetupBaca terakhir: {ada, nama_rencana, hari_ke, durasi_hari, persen, ...} atau {ada:false}
+
+    // Nama 66 kitab (urutan standar Protestan, no.1-66) -- dipakai utk checklist "Kitab Pilihan Sendiri"
+    const NAMA_KITAB_66 = ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-Hakim","Rut","1 Samuel","2 Samuel",
+        "1 Raja-Raja","2 Raja-Raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal",
+        "Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos",
+        "Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi",
+        "Matius","Markus","Lukas","Yohanes","Kisah Para Rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus",
+        "Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus",
+        "1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"];
     let currentFontSize = 18;
     
     let allVoices = [];
@@ -857,6 +879,17 @@
     // ke semua elemen .nav-summary-row & .btn-pin sekaligus.
     function toggleStickyNav() {
         isNavSticky = !isNavSticky;
+        syncStickyNav();
+    }
+
+    // PERBAIKAN BUG PIN DI MENU JADWAL: sebelumnya status "sticky-active" hanya diterapkan SEKALI,
+    // tepat saat tombol 📌 ditekan. Kalau menu Jadwal (atau menu lain) baru saja dibuka/dirender ulang
+    // setelah itu (mis. daftar jadwal dimuat ulang), baris navigasinya bisa saja tidak lagi punya class
+    // ini kalau elemen sempat digambar ulang, sehingga terasa "tidak keluar terus" saat discroll.
+    // Untuk menjamin ini konsisten di KEEMPAT menu, syncStickyNav() dipanggil ulang setiap kali sebuah
+    // menu dibuka (lihat bukaPencarian/bukaPembacaan/bukaLog/bukaPengumuman) supaya status pin (ON/OFF)
+    // yang sedang berlaku selalu benar-benar diterapkan ke baris navigasi yang sedang aktif tampil.
+    function syncStickyNav() {
         document.querySelectorAll('.nav-summary-row').forEach(row => row.classList.toggle('sticky-active', isNavSticky));
         document.querySelectorAll('.btn-pin').forEach(btn => {
             btn.classList.toggle('active-pin', isNavSticky);
@@ -1099,6 +1132,7 @@
     function bukaPencarian() {
         hentikanSuara();
         tutupSemuaNavMenu();
+        syncStickyNav();
         setActiveTab('cari');
         document.getElementById('read-page').classList.add('hidden');
         document.getElementById('log-page').classList.add('hidden');
@@ -1113,6 +1147,7 @@
     function bukaPembacaan() {
         hentikanSuara();
         tutupSemuaNavMenu();
+        syncStickyNav();
         setActiveTab('baca');
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('log-page').classList.add('hidden');
@@ -1120,14 +1155,69 @@
         document.getElementById('read-page').classList.remove('hidden');
         document.getElementById('read-ref-title').innerText = buildRefText('read-info', 'Mempersiapkan bacaan...');
         updateUserLabel('read');
-        kalkulasiTanggal(); 
+        toggleLegacyPlanUI();
+        if (setupBacaAktif && setupBacaAktif.ada) {
+            muatBacaanSetup();
+        } else {
+            kalkulasiTanggal();
+        }
         renderHeaderBanners('read-header-banner', 'Baca');
+    }
+
+    // Sembunyikan kontrol rencana LAMA (navigasi hari manual + tandai selesai) kalau user sudah
+    // memakai sistem rencana baru (adil per jumlah ayat) -- di sistem baru, hari dihitung otomatis
+    // dari tanggal kalender, jadi tidak perlu navigasi manual/tandai lagi.
+    function toggleLegacyPlanUI() {
+        let pakaiBaru = !!(setupBacaAktif && setupBacaAktif.ada);
+        document.getElementById('box-nav-hari-lama').classList.toggle('hidden', pakaiBaru);
+        document.getElementById('box-info-rencana-baru').classList.toggle('hidden', !pakaiBaru);
+        document.getElementById('btn-tandai').classList.toggle('hidden', pakaiBaru);
+        document.getElementById('info-selesai-rencana-baru').classList.toggle('hidden', !pakaiBaru);
+    }
+
+    async function refreshSetupBacaAktif() {
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getSetupBaca', username: userSession.username }) });
+            const out = await res.json();
+            setupBacaAktif = (out.status === 'success') ? out : null;
+        } catch (e) { setupBacaAktif = null; }
+    }
+
+    // Ambil & tampilkan bacaan hari ini dari rencana baru (adil per jumlah ayat).
+    async function muatBacaanSetup() {
+        const box = document.getElementById('reading-content');
+        box.innerHTML = `<h3 style='text-align:center;'>⏳ Memuat bacaan (${setupBacaAktif.nama_rencana})...</h3>`;
+        let targetLangs = getSelectedLangs('read');
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getReadingSetup", username: userSession.username, languages: targetLangs, device: userDevice, ip: userIP }) });
+            const data = await res.json();
+            if (data.status === "error") { box.innerHTML = `<h3 style='text-align:center; color:red;'>${data.message}</h3>`; return; }
+
+            if (data.selesai) {
+                box.innerHTML = `<h3 style='text-align:center; color:#34c759;'>🎉 Rencana "${data.nama_rencana}" sudah selesai dibaca tuntas! (ke-${data.selesai_ke}x)<br><br>Silakan pilih rencana baru di menu ⚙️ Setting.</h3>`;
+                document.getElementById('reading-progress-banner').classList.add('hidden');
+                setupBacaAktif = { ada: false };
+                toggleLegacyPlanUI();
+                return;
+            }
+
+            tutupSemuaNavMenu();
+            renderEreaderGrouped(data.ayat, 'reading-content', 'read-info');
+
+            const banner = document.getElementById('reading-progress-banner');
+            banner.innerText = `Sedang Membaca: Hari ke-${data.hari_ke} dari ${data.durasi_hari} (${data.persen}%) - ${data.nama_rencana}`;
+            banner.style.background = "#007aff";
+            banner.classList.remove('hidden');
+        } catch (e) {
+            box.innerHTML = "<h3 style='text-align:center; color:red;'>Koneksi Terputus atau SCRIPT_URL salah.</h3>";
+        }
     }
 
     // Menu keempat: Pengumuman. Semua level bisa melihat; hanya administrator bisa mengelola (lihat toggleAdminPengumumanUI).
     function bukaPengumuman() {
         hentikanSuara();
         tutupSemuaNavMenu();
+        syncStickyNav();
         setActiveTab('pengumuman');
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('read-page').classList.add('hidden');
@@ -1147,6 +1237,7 @@
     function bukaLog() {
         hentikanSuara();
         tutupSemuaNavMenu();
+        syncStickyNav();
         setActiveTab('jadwal');
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('read-page').classList.add('hidden');
@@ -1737,7 +1828,10 @@
         let awalanAyat = (ttsBacaNamaKitab && nomorAyatSekarang && nomorAyatSekarang !== lastAyatNumberDibaca) ? `Ayat ${nomorAyatSekarang}. ` : '';
         lastAyatNumberDibaca = nomorAyatSekarang;
 
-        let msg = new SpeechSynthesisUtterance(awalanAyat + elTeks.innerText);
+        // Pakai data-speech (teks polos, sudah dibersihkan dari <sup>/<FR>/tag HTML lain) supaya
+        // suara TIDAK PERNAH ikut membaca tag atau isi superscript catatan kaki.
+        let teksAyatUntukSuara = elTeks.getAttribute('data-speech') || elTeks.innerText;
+        let msg = new SpeechSynthesisUtterance(awalanAyat + teksAyatUntukSuara);
         if(allVoices[selIdx]) msg.voice = allVoices[selIdx];
         msg.rate = rate; msg.pitch = pitch;
 
@@ -1959,6 +2053,55 @@
             .replace(/>/g, '&gt;');
     }
 
+    // =====================================================================
+    // PEMBERSIH TAG <sup>/<FR> & FORMAT HTML AMAN (ayat & catatan)
+    // - <sup>...</sup> dan pembungkusnya <FR>...<Fr> (penanda catatan kaki, mis.
+    //   "<FR><sup>a</sup><Fr>") DIBUANG TOTAL (tag + isinya) -- baik dari TAMPILAN
+    //   maupun dari SUARA. Ini bukan bagian dari ayat, jadi tak pernah tampil/dibaca.
+    // - Tag format yang DIIZINKAN (p,i,b,u,br,strong,em,sub) dipertahankan APA ADANYA
+    //   saat tampil, supaya benar-benar terbentuk sebagai paragraf/miring/tebal, dst.
+    // - Tag APAPUN di luar daftar itu dibuang (hanya tag-nya), isi teksnya tetap tampil,
+    //   supaya tidak ada risiko tag/skrip asing ikut ter-render dari data ayat/catatan.
+    // - Untuk SUARA (TTS): seluruh tag dibuang total (tak pernah diucapkan "kurang dari
+    //   p lebih besar dari" dsb), <br>/</p> diganti jeda titik supaya kalimat tidak nyambung.
+    // =====================================================================
+    const ALLOWED_FORMAT_TAGS = ['p', 'i', 'b', 'u', 'br', 'strong', 'em', 'sub'];
+
+    function buangSupDanFR(raw) {
+        let s = String(raw || '');
+        // <FR>...<Fr> (atau </Fr>) biasanya membungkus tanda superscript catatan kaki --
+        // seluruh isi di antaranya (termasuk <sup> di dalamnya) dibuang bersama tag-nya.
+        s = s.replace(/<FR[^>]*>[\s\S]*?<\/?Fr[^>]*>/gi, '');
+        // Jaga-jaga kalau ada <sup> berdiri sendiri di luar <FR> -- tetap dibuang tag + isinya.
+        s = s.replace(/<sup[^>]*>[\s\S]*?<\/sup>/gi, '');
+        return s;
+    }
+
+    // Dipakai untuk TAMPILAN (ayat & catatan): hasilnya HTML aman yang boleh langsung
+    // dimasukkan ke innerHTML -- <p><i><b><u><br> dst akan benar-benar terbentuk formatnya.
+    function sanitizeTampilanHtml(raw) {
+        let s = buangSupDanFR(raw);
+        s = s.replace(/<\/?([a-zA-Z0-9]+)([^>]*)>/g, (m, tag) => {
+            let t = String(tag).toLowerCase();
+            if (!ALLOWED_FORMAT_TAGS.includes(t)) return '';
+            let tutup = m.charAt(1) === '/';
+            return tutup ? `</${t}>` : `<${t}>`;
+        });
+        return s;
+    }
+
+    // Dipakai untuk SUARA (TTS): teks polos tanpa tag sama sekali, dengan jeda wajar
+    // di titik <br>/</p> supaya tidak terbaca menyambung tanpa jeda.
+    function teksUntukSuara(raw) {
+        let s = buangSupDanFR(raw);
+        s = s.replace(/<br\s*\/?>/gi, '. ');
+        s = s.replace(/<\/p>/gi, '. ');
+        s = s.replace(/<[^>]+>/g, '');
+        s = s.replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+        s = s.replace(/\s+/g, ' ').trim();
+        return s;
+    }
+
     function buildAyatHtml(ayatArray, selectedLangsArray) {
         // PERBAIKAN BUG 3-BAHASA: kunci pengelompokan SEKARANG memakai nomor kitab (bn) +
         // pasal (c) + ayat (v) -- angka ini sama persis di semua bahasa. Sebelumnya kunci
@@ -1995,22 +2138,30 @@
                 currentHeaderKey = headerKey;
                 currentHeaderBookName = headerBookName || "";
             }
-            let noteAttr = escAttr(g.note);
+            // data-note dipakai KHUSUS untuk suara (TTS) di bacaAyatSelanjutnya() -> harus teks
+            // polos tanpa tag sama sekali (lihat teksUntukSuara), supaya "<p>", "<br/>" dst tidak
+            // pernah ikut terbacakan sebagai kata-kata.
+            let noteAttr = escAttr(teksUntukSuara(g.note));
             htmlOut += `<div class="verse-group" data-book="${escAttr(currentHeaderBookName)}" data-chapter="${g.c}" data-verse="${g.v}" data-note="${noteAttr}">`;
 
             // Render BERDASARKAN URUTAN array dropdown (selectedLangsArray), bukan urutan acak JavaScript
             selectedLangsArray.forEach(langCode => {
                 if (g.texts[langCode]) {
+                    // TAMPILAN: <sup>/<FR> dibuang total; <p><i><b><br> dst dipertahankan sbg HTML asli.
+                    // data-speech: teks polos khusus utk dibacakan (dipakai bacaAyatSelanjutnya), supaya
+                    // tag apapun (termasuk yg baru dipertahankan utk tampilan) tidak pernah ikut diucapkan.
+                    let teksTampil = sanitizeTampilanHtml(g.texts[langCode]);
+                    let teksSuara = escAttr(teksUntukSuara(g.texts[langCode]));
                     htmlOut += `<div class="verse-item">
                                     <span class="verse-num" onclick="toggleNote('note-${safeId}')" title="Klik untuk lihat catatan">${g.v}</span>`;
                     if (selectedLangsArray.length > 1) htmlOut += `<span class="lang-badge">${langCode}</span>`;
-                    htmlOut += `<span class="verse-text" data-lang="${langCode}">${g.texts[langCode]}</span>
+                    htmlOut += `<span class="verse-text" data-lang="${langCode}" data-speech="${teksSuara}">${teksTampil}</span>
                                 </div>`;
                 }
             });
 
             if (g.note) {
-                htmlOut += `<div id="note-${safeId}" class="verse-note">💡 <b>Catatan:</b> ${escHtml(g.note)}</div>`;
+                htmlOut += `<div id="note-${safeId}" class="verse-note">💡 <b>Catatan:</b> ${sanitizeTampilanHtml(g.note)}</div>`;
             }
             htmlOut += `</div>`;
         });
@@ -2202,8 +2353,8 @@
         banner.classList.remove('hidden');
     }
     
-    function gantiHari(arah) { hentikanSuara(); if(currentHariKe + arah < 1) return; currentHariKe += arah; updateProgressUI(); muatAyatServer(); }
-    function kembaliHariIni() { hentikanSuara(); currentHariKe = actualHariKe; updateProgressUI(); muatAyatServer(); }
+    function gantiHari(arah) { if (setupBacaAktif && setupBacaAktif.ada) return; hentikanSuara(); if(currentHariKe + arah < 1) return; currentHariKe += arah; updateProgressUI(); muatAyatServer(); }
+    function kembaliHariIni() { if (setupBacaAktif && setupBacaAktif.ada) return; hentikanSuara(); currentHariKe = actualHariKe; updateProgressUI(); muatAyatServer(); }
 
     let cacheJudulHari = {}; // { "PlanName_HariKe": "Nama Kitab Pasal..." } -- diisi setelah berhasil dimuat, dipakai utk pesan loading berikutnya
 
