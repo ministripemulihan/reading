@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>14.31 E-Bible </title>
+    <title>14.54 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -201,7 +201,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 14.30</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 14.54</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -1745,17 +1745,38 @@
         // catatan/note, bacakan catatannya dulu (mis. "Catatan ayat 5. ..."), baru lanjut ke ayat
         // berikutnya. Wake Lock & heartbeat TTS tetap aktif sepanjang ini (tidak mati sendiri di HP)
         // karena masih 1 sesi speechSynthesis yang sama, belum dipanggil hentikanSuara().
+        //
+        // PERBAIKAN BUG "NOTE TIDAK PERNAH DIBACAKAN": Chrome/Android punya bug lama di mana
+        // speechSynthesis.speak() yang dipanggil LANGSUNG di dalam onend utterance sebelumnya
+        // kadang gagal mulai sama sekali secara diam-diam (tidak ada error, onend/onerror juga
+        // tidak pernah terpanggil -- sesi terlihat "macet" tepat di titik note). Ini jauh lebih
+        // mudah terjadi di rantai speak() yang KEDUA (ayat -> note) dibanding yang pertama
+        // (ayat -> ayat berikutnya), karena mesin TTS butuh sedikit jeda untuk benar-benar
+        // "reset" antar utterance. Perbaikan: (1) beri jeda kecil sebelum speak() lewat
+        // setTimeout, (2) pasang watchdog -- kalau onend/onerror belum terpanggil dalam batas
+        // waktu wajar, paksa lanjut ke ayat berikutnya supaya sesi TIDAK PERNAH macet permanen.
         let lanjutKeAyatBerikutnya = () => { currentVerseIndex++; bacaAyatSelanjutnya(page); };
         msg.onend = () => {
             let teksNote = ttsBacaNote ? (grup.getAttribute('data-note') || '').trim() : '';
             if (teksNote) {
                 let awalanNote = ttsBacaNamaKitab ? `Catatan ayat ${nomorAyatSekarang}. ` : `Catatan. `;
-                let msgNote = new SpeechSynthesisUtterance(awalanNote + teksNote);
+                let teksLengkapNote = awalanNote + teksNote;
+                let msgNote = new SpeechSynthesisUtterance(teksLengkapNote);
                 if (allVoices[selIdx]) msgNote.voice = allVoices[selIdx];
                 msgNote.rate = rate; msgNote.pitch = pitch;
-                msgNote.onend = lanjutKeAyatBerikutnya;
-                msgNote.onerror = lanjutKeAyatBerikutnya;
-                window.speechSynthesis.speak(msgNote);
+
+                let sudahLanjut = false;
+                let lanjutSekaliSaja = () => { if (sudahLanjut) return; sudahLanjut = true; clearTimeout(watchdogNote); lanjutKeAyatBerikutnya(); };
+                msgNote.onend = lanjutSekaliSaja;
+                msgNote.onerror = lanjutSekaliSaja;
+
+                // Watchdog: estimasi lama bicara dari jumlah karakter (±14 karakter/detik di rate 1.0),
+                // ditambah buffer 4 detik. Kalau tidak juga selesai/gagal dalam waktu itu, paksa lanjut.
+                let estimasiDetik = Math.max(3, teksLengkapNote.length / (14 * rate)) + 4;
+                let watchdogNote = setTimeout(lanjutSekaliSaja, estimasiDetik * 1000);
+
+                // Jeda kecil sebelum speak() kedua ini -- menghindari bug "silent fail" di atas.
+                setTimeout(() => { try { window.speechSynthesis.speak(msgNote); } catch (e) { lanjutSekaliSaja(); } }, 120);
             } else {
                 lanjutKeAyatBerikutnya();
             }
