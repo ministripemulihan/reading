@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>18.34 E-Bible </title>
+    <title>10.32 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -50,35 +50,61 @@
         button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         
-        /* PENGATURAN NAVIGASI BAR: 1 BARIS (maksimal 2 baris di layar sempit), tidak pernah terpotong/ellipsis */
-        .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: visible;}
+        /* =====================================================================
+           PENGATURAN NAVIGASI BAR — DIRANCANG ULANG: benar-benar SELALU 1 BARIS.
+           Kuncinya: min-width:0 + overflow:hidden + text-overflow:ellipsis pada
+           teks referensi (bukan lagi min-width:140px+overflow:visible yang dulu
+           memaksa baris melebar lalu mendorong tombol2 lain turun jadi banyak baris).
+           Tema hanya diwakili titik warna kecil (nama lengkapnya ada di modal 🎨),
+           supaya baris ini singkat & gampang ditambah menu baru tanpa pecah baris.
+           ===================================================================== */
+        .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
 
-        /* Baris ringkas: [kitab pasal:ayat-ayat (bahasa)] paling depan -> [user] -> [tema] -> [pin] -> [panah] paling belakang.
-           flex:0 0 auto pada semua item (bukan 100%) supaya browser memadatkan semuanya dalam 1 baris,
-           dan hanya pindah ke baris ke-2 kalau memang benar-benar tidak muat (bukan dipotong/ellipsis). */
-        .nav-summary-row { display: flex; flex-wrap: wrap; align-items: center; padding: 10px 12px; background: var(--btn-bg); font-weight: bold; cursor: pointer; gap: 6px 10px; row-gap: 6px; }
+        .nav-summary-row { display: flex; flex-wrap: nowrap; align-items: center; padding: 9px 10px; background: var(--btn-bg); font-weight: bold; cursor: pointer; gap: 6px; overflow: hidden; }
 
-        .nav-ref-title { flex: 1 1 auto; min-width: 140px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: visible; }
-        .nav-user-title { flex: 0 0 auto; font-size: 12px; font-weight: 600; opacity: 0.75; white-space: nowrap; }
+        .nav-ref-title { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; overflow: hidden; }
+        .nav-ref-title > span[id$="-ref-title"] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .nav-user-title { flex: 0 0 auto; font-size: 11px; font-weight: 600; opacity: 0.75; white-space: nowrap; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
 
-        /* Titik warna yang otomatis mengikuti warna primary tema aktif */
+        /* Titik warna yang otomatis mengikuti warna primary tema aktif (pengganti nama tema panjang, hemat tempat) */
         .theme-dot { width: 9px; height: 9px; min-width: 9px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 4px var(--primary); flex-shrink: 0; }
-        /* Nama tema aktif, tampil di sebelah titik warna tema di navigasi 1 baris (Cari/Baca/Jadwal) */
-        .theme-name-label { font-size: 11px; font-weight: 600; opacity: 0.7; white-space: nowrap; }
+        /* Nama tema lengkap tetap ada di DOM (dipakai beberapa fungsi JS) tapi disembunyikan dari baris ringkas */
+        .theme-name-label { display: none; }
 
-        /* TAB MENU UTAMA: Cari / Baca / Jadwal - tampil sama & konsisten di ketiga halaman */
-        .nav-tabs { display: flex; gap: 6px; padding: 8px 8px 0 8px; }
-        .nav-tab-btn { flex: 1; text-align: center; padding: 10px 6px; border-radius: 10px 10px 0 0; background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); border-bottom: none; font-weight: 700; font-size: 14px; cursor: pointer; opacity: 0.7; }
+        /* TAB MENU UTAMA: baris terpisah dari nav-summary-row, boleh scroll ke samping
+           kalau menu makin banyak (mis. nanti ditambah lagi) -> tidak pernah memaksa
+           nav-summary-row ikut melebar/pecah baris. */
+        .nav-tabs { display: flex; gap: 5px; padding: 7px 7px 0 7px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+        .nav-tab-btn { flex: 0 0 auto; min-width: 58px; text-align: center; padding: 9px 10px; border-radius: 10px 10px 0 0; background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); border-bottom: none; font-weight: 700; font-size: 13px; cursor: pointer; opacity: 0.7; white-space: nowrap; }
         .nav-tab-btn.active-tab { background: var(--primary); color: #fff; opacity: 1; }
 
-        .nav-chevron { flex: 0 0 auto; width: 18px; text-align: center; font-size: 11px; opacity: 0.6; }
+        .nav-chevron { flex: 0 0 auto; width: 16px; text-align: center; font-size: 11px; opacity: 0.6; }
         .btn-signout { background: #ff3b30; color: white; border-radius: 8px; padding: 10px; font-size: 14px; border: none; cursor: pointer; width: 100%; }
-        .btn-icon-top { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 14px; cursor: pointer; flex: 0 0 auto; line-height: 1; }
+        .btn-icon-top { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 7px; font-size: 13px; cursor: pointer; flex: 0 0 auto; line-height: 1; }
 
         /* TOMBOL PIN: ON = baris navigasi 1 baris menempel tetap di atas layar walau discroll, sampai di-klik lagi (un-pin) */
-        .btn-pin { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 14px; cursor: pointer; flex: 0 0 auto; line-height: 1; }
+        .btn-pin { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 7px; font-size: 13px; cursor: pointer; flex: 0 0 auto; line-height: 1; }
         .btn-pin.active-pin { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,0,0,0.05); }
         .nav-summary-row.sticky-active { position: sticky; top: 0; z-index: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.18); border-radius: 0 0 10px 10px; }
+
+        /* =====================================================================
+           PENGUMUMAN: banner dismissible, dipakai di header menu & di dalam isi search
+           ===================================================================== */
+        .pengumuman-banner { position: relative; background: var(--card); border: 1px solid var(--primary); border-left: 5px solid var(--primary); border-radius: 10px; padding: 10px 34px 10px 12px; margin-bottom: 10px; font-size: 13px; line-height: 1.5; }
+        .pengumuman-banner .pgm-kategori-tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; background: var(--primary); color: #fff; padding: 2px 6px; border-radius: 5px; margin-right: 6px; vertical-align: middle; }
+        .pengumuman-banner .pgm-tanggal { font-size: 11px; opacity: 0.6; margin-top: 4px; }
+        .pengumuman-banner .pgm-close { position: absolute; top: 6px; right: 8px; background: none; border: none; width: auto; padding: 4px 6px; margin: 0; font-size: 15px; font-weight: bold; color: var(--text); opacity: 0.5; cursor: pointer; line-height: 1; }
+        .pengumuman-banner .pgm-close:hover { opacity: 1; }
+        .pgm-status-badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 5px; margin-left: 6px; }
+        .pgm-status-draft { background: #8e8e93; color: #fff; }
+        .pgm-status-waiting { background: #ff9500; color: #fff; }
+        .pgm-status-done { background: #34c759; color: #fff; }
+        .pgm-status-expired { background: #ff3b30; color: #fff; }
+        .pgm-admin-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+        .pgm-kategori-checks { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 12px; font-weight: normal; margin: 6px 0 10px 0; }
+        .pgm-kategori-checks label { display: flex; align-items: center; gap: 4px; background: var(--btn-bg); padding: 5px 8px; border-radius: 8px; cursor: pointer; }
+        .pgm-kategori-checks input { width: auto; margin: 0; }
 
         .nav-full-menu { display: none; padding: 15px; background: var(--bg); border-top: 1px solid var(--border); }
         .nav-full-menu.open { display: flex; flex-direction: column; gap: 10px; }
@@ -144,7 +170,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 18.34</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 10.32</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -243,6 +269,7 @@
                 <button type="button" class="nav-tab-btn active-tab" id="tab-cari" onclick="bukaPencarian()">🔍 Cari</button>
                 <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn" id="tab-pengumuman" onclick="bukaPengumuman()">📢 Info</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
@@ -335,7 +362,10 @@
             </div>
         </div>
 
+        <div id="search-header-banner"></div>
+
         <div id="search-results" class="reading-area card" style="background: var(--card);">
+            <div id="search-inline-banner"></div>
             <i>Silakan atur parameter di atas lalu tekan "Eksekusi Pencarian"...</i>
         </div>
     </div>
@@ -352,6 +382,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-cari-2" onclick="bukaPencarian()">🔍 Cari</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-baca-2" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal-2" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn" id="tab-pengumuman-2" onclick="bukaPengumuman()">📢 Info</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
@@ -434,7 +465,10 @@
             </div>
         </div>
 
+        <div id="read-header-banner"></div>
+
         <div id="reading-content" class="reading-area card" style="background: var(--card);">
+            <div id="read-inline-banner"></div>
             <i>Mempersiapkan bacaan...</i>
         </div>
         
@@ -449,6 +483,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-cari-3" onclick="bukaPencarian()">🔍 Cari</button>
                 <button type="button" class="nav-tab-btn" id="tab-baca-3" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-jadwal-3" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn" id="tab-pengumuman-3" onclick="bukaPengumuman()">📢 Info</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
@@ -484,8 +519,90 @@
             </div>
         </div>
 
+        <div id="log-header-banner"></div>
+
         <div id="log-list-area" class="reading-area card" style="background: var(--card);">
+            <div id="log-inline-banner"></div>
             <i>Memuat...</i>
+        </div>
+    </div>
+
+    <!-- PENGUMUMAN: semua level bisa melihat; hanya level administrator yang bisa menambah/mengubah/menghapus -->
+    <div id="announce-page" class="hidden">
+        <div class="top-nav-bar">
+            <div class="nav-tabs">
+                <button type="button" class="nav-tab-btn" id="tab-cari-4" onclick="bukaPencarian()">🔍 Cari</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-4" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-jadwal-4" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn active-tab" id="tab-pengumuman-4" onclick="bukaPengumuman()">📢 Info</button>
+            </div>
+            <div class="nav-summary-row" onclick="toggleNavMenu('announce-menu', 'chevron-announce')">
+                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
+                <span class="nav-user-title" id="announce-user-title">👤 -</span>
+                <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-announce">▼</span>
+            </div>
+            <div class="nav-full-menu" id="announce-menu">
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">📢 Tentang Pengumuman</div>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Pengumuman yang berstatus <b>done</b> dan sedang berada di antara tanggal mulai &amp; tanggal akhir akan tampil otomatis di bagian atas menu terkait dan bisa ditutup dengan tanda ✕. Hanya administrator yang bisa menambah/mengubah/menghapus pengumuman.</p>
+                <button class="icon-btn" style="background:var(--primary); color:white; width:100%;" onclick="muatDaftarPengumuman()">🔄 Muat Ulang Daftar Pengumuman</button>
+            </div>
+        </div>
+
+        <div id="announce-header-banner"></div>
+
+        <!-- Form tambah/ubah pengumuman: hanya tampil untuk level administrator (lihat toggleAdminPengumumanUI) -->
+        <div id="pgm-admin-form" class="pgm-admin-card hidden">
+            <h3 id="pgm-form-title" style="margin-top:0;">➕ Tambah Pengumuman</h3>
+            <input type="hidden" id="pgm-id">
+            <label style="font-size:12px; color:gray;">Tanggal Pengumuman (tanggal diisinya pengumuman):</label>
+            <input type="date" id="pgm-tanggal">
+
+            <label style="font-size:12px; color:gray; margin-top:6px; display:block;">Kategori (tampil di menu mana saja — boleh pilih lebih dari satu):</label>
+            <div class="pgm-kategori-checks" id="pgm-kategori-checks">
+                <label><input type="checkbox" value="Cari"> Cari</label>
+                <label><input type="checkbox" value="Baca"> Baca</label>
+                <label><input type="checkbox" value="Jadwal"> Jadwal</label>
+                <label><input type="checkbox" value="Search Cari"> Search Cari</label>
+                <label><input type="checkbox" value="Search Baca"> Search Baca</label>
+                <label><input type="checkbox" value="Search Jadwal"> Search Jadwal</label>
+                <label><input type="checkbox" value="All header Menu"> All header Menu</label>
+                <label><input type="checkbox" value="All Search"> All Search</label>
+                <label><input type="checkbox" value="All"> All (semua header + semua search)</label>
+            </div>
+
+            <label style="font-size:12px; color:gray;">Isi Pengumuman:</label>
+            <textarea id="pgm-isi" rows="4" style="resize:vertical;" placeholder="Tulis isi pengumuman di sini..."></textarea>
+
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Tanggal Mulai:</label>
+                    <input type="date" id="pgm-tanggal-start">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Tanggal Akhir:</label>
+                    <input type="date" id="pgm-tanggal-akhir">
+                </div>
+            </div>
+
+            <label style="font-size:12px; color:gray;">Status:</label>
+            <select id="pgm-status">
+                <option value="draft">Draft (belum final, belum tampil)</option>
+                <option value="waiting">Waiting (sengaja belum ditampilkan)</option>
+                <option value="done">Done (tampil sesuai rentang tanggal)</option>
+            </select>
+
+            <div class="icon-bar" style="margin-top:10px;">
+                <button class="icon-btn" style="background:var(--primary); color:white;" onclick="simpanPengumuman()">💾 Simpan</button>
+                <button class="icon-btn" onclick="resetFormPengumuman()">✖ Batal</button>
+            </div>
+        </div>
+        <button id="pgm-btn-tambah" class="icon-btn hidden" style="background:#34c759; color:white; margin-bottom:10px;" onclick="bukaFormPengumumanBaru()">➕ Tambah Pengumuman Baru</button>
+
+        <div id="announce-list-area" class="reading-area card" style="background: var(--card);">
+            <i>Memuat daftar pengumuman...</i>
         </div>
     </div>
 
@@ -548,9 +665,11 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuyHv1Rlu3exAMds8Wcs9UjUbGZa_FipuXgh5OHubFJiCKTPO4-yZtUi9xfFRwxoHEeQ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwz7AWqANBTGuy7RpTgNQyYeO0Bzw1gguEfVJ-SWq0COeVZiEP21q1WAtP9WaUaLGdCCQ/exec';
     
     let userSession = {};
+    let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
+    let dismissedPengumuman = new Set(); // ID yang sudah ditutup (✕) SELAMA sesi ini saja -> muncul lagi tiap login baru
     let currentHariKe = 1;
     let actualHariKe = 1; 
     let totalHariPlan = 30;
@@ -622,7 +741,7 @@
 
     // Menandai tab aktif (Cari / Baca / Jadwal) di ketiga salinan tab bar sekaligus
     function setActiveTab(tabName) {
-        const map = { cari: ['tab-cari', 'tab-cari-2', 'tab-cari-3'], baca: ['tab-baca', 'tab-baca-2', 'tab-baca-3'], jadwal: ['tab-jadwal', 'tab-jadwal-2', 'tab-jadwal-3'] };
+        const map = { cari: ['tab-cari', 'tab-cari-2', 'tab-cari-3', 'tab-cari-4'], baca: ['tab-baca', 'tab-baca-2', 'tab-baca-3', 'tab-baca-4'], jadwal: ['tab-jadwal', 'tab-jadwal-2', 'tab-jadwal-3', 'tab-jadwal-4'], pengumuman: ['tab-pengumuman', 'tab-pengumuman-2', 'tab-pengumuman-3', 'tab-pengumuman-4'] };
         Object.keys(map).forEach(key => {
             map[key].forEach(id => {
                 const el = document.getElementById(id);
@@ -638,6 +757,187 @@
         document.getElementById('chevron-read').innerText = "▼";
         document.getElementById('log-menu').classList.remove('open');
         document.getElementById('chevron-log').innerText = "▼";
+        document.getElementById('announce-menu').classList.remove('open');
+        document.getElementById('chevron-announce').innerText = "▼";
+    }
+
+    // =====================================================================
+    // FITUR PENGUMUMAN
+    // =====================================================================
+
+    // Ambil semua pengumuman dari server (dipanggil sekali setelah login, dan bisa dimuat ulang manual)
+    async function loadPengumuman() {
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getPengumuman" }) });
+            const out = await res.json();
+            if (out.status === "success") allPengumuman = out.list || [];
+        } catch (e) { console.log("Gagal memuat pengumuman"); }
+    }
+
+    // Pengumuman dianggap AKTIF (layak tampil) kalau status="done" DAN hari ini ada di antara tanggal_start & tanggal_akhir.
+    // draft/waiting/expired -> tidak pernah tampil ke pengguna.
+    function pengumumanAktif(p) {
+        if (p.status !== 'done') return false;
+        let today = new Date().toISOString().slice(0, 10);
+        if (p.tanggal_start && today < p.tanggal_start) return false;
+        if (p.tanggal_akhir && today > p.tanggal_akhir) return false;
+        return true;
+    }
+
+    // Cek apakah sebuah pengumuman cocok tampil untuk "slot" tertentu.
+    // slot header: 'Cari' | 'Baca' | 'Jadwal' | 'Pengumuman'  (bagian atas menu)
+    // slot search: 'Search Cari' | 'Search Baca' | 'Search Jadwal' (di dalam isi hasil search/baca/jadwal)
+    function pengumumanCocokSlot(p, slot) {
+        let kategoriList = String(p.kategori || "").split(',').map(k => k.trim()).filter(Boolean);
+        if (kategoriList.includes(slot)) return true;
+        let isHeaderSlot = ['Cari', 'Baca', 'Jadwal', 'Pengumuman'].includes(slot);
+        let isSearchSlot = ['Search Cari', 'Search Baca', 'Search Jadwal'].includes(slot);
+        if (kategoriList.includes('All')) return true;
+        if (isHeaderSlot && kategoriList.includes('All header Menu')) return true;
+        if (isSearchSlot && kategoriList.includes('All Search')) return true;
+        return false;
+    }
+
+    function formatTanggalIndo(tgl) {
+        if (!tgl) return "-";
+        try { return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(tgl)); }
+        catch (e) { return tgl; }
+    }
+
+    // Render banner dismissible untuk sebuah slot ke dalam elemen container tertentu
+    function renderBannerUntukSlot(containerId, slot) {
+        const box = document.getElementById(containerId);
+        if (!box) return;
+        let cocok = allPengumuman.filter(p => pengumumanAktif(p) && pengumumanCocokSlot(p, slot) && !dismissedPengumuman.has(p.id));
+        if (cocok.length === 0) { box.innerHTML = ""; return; }
+        box.innerHTML = cocok.map(p => `
+            <div class="pengumuman-banner" data-pgm-id="${p.id}">
+                <button class="pgm-close" onclick="tutupPengumuman('${p.id}')" title="Tutup pengumuman ini">✕</button>
+                <span class="pgm-kategori-tag">📢 ${slot}</span>${(p.isi || "").replace(/</g,'&lt;')}
+                <div class="pgm-tanggal">Berlaku: ${formatTanggalIndo(p.tanggal_start)} — ${formatTanggalIndo(p.tanggal_akhir)}</div>
+            </div>`).join("");
+    }
+
+    // Dipanggil saat membuka menu Cari/Baca/Jadwal/Pengumuman -> tampilkan pengumuman di bagian header menu itu
+    function renderHeaderBanners(containerId, pageKey) {
+        renderBannerUntukSlot(containerId, pageKey);
+    }
+
+    // Dipanggil setelah hasil pencarian/pembacaan/daftar jadwal tampil -> pengumuman di dalam isi search
+    function renderSearchBanners(containerId, searchSlot) {
+        renderBannerUntukSlot(containerId, searchSlot);
+    }
+
+    function tutupPengumuman(id) {
+        dismissedPengumuman.add(id);
+        // Hilangkan langsung dari semua tempat ia mungkin tampil (header & search) tanpa perlu render ulang server
+        document.querySelectorAll(`.pengumuman-banner[data-pgm-id="${id}"]`).forEach(el => el.remove());
+    }
+
+    // Tampilkan/sembunyikan tombol & form kelola pengumuman berdasarkan Level user (hanya administrator)
+    function toggleAdminPengumumanUI() {
+        let isAdmin = (userSession.level === 'administrator');
+        document.getElementById('pgm-btn-tambah').classList.toggle('hidden', !isAdmin);
+    }
+
+    function resetFormPengumuman() {
+        document.getElementById('pgm-admin-form').classList.add('hidden');
+        document.getElementById('pgm-id').value = "";
+        document.getElementById('pgm-tanggal').value = "";
+        document.getElementById('pgm-isi').value = "";
+        document.getElementById('pgm-tanggal-start').value = "";
+        document.getElementById('pgm-tanggal-akhir').value = "";
+        document.getElementById('pgm-status').value = "draft";
+        document.querySelectorAll('#pgm-kategori-checks input').forEach(cb => cb.checked = false);
+    }
+
+    function bukaFormPengumumanBaru() {
+        resetFormPengumuman();
+        document.getElementById('pgm-form-title').innerText = "➕ Tambah Pengumuman";
+        document.getElementById('pgm-tanggal').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('pgm-admin-form').classList.remove('hidden');
+    }
+
+    function editPengumuman(id) {
+        let p = allPengumuman.find(x => x.id === id);
+        if (!p) return;
+        resetFormPengumuman();
+        document.getElementById('pgm-form-title').innerText = "✏️ Ubah Pengumuman";
+        document.getElementById('pgm-id').value = p.id;
+        document.getElementById('pgm-tanggal').value = p.tanggal || "";
+        document.getElementById('pgm-isi').value = p.isi || "";
+        document.getElementById('pgm-tanggal-start').value = p.tanggal_start || "";
+        document.getElementById('pgm-tanggal-akhir').value = p.tanggal_akhir || "";
+        document.getElementById('pgm-status').value = p.status || "draft";
+        let kategoriList = String(p.kategori || "").split(',').map(k => k.trim());
+        document.querySelectorAll('#pgm-kategori-checks input').forEach(cb => cb.checked = kategoriList.includes(cb.value));
+        document.getElementById('pgm-admin-form').classList.remove('hidden');
+    }
+
+    async function simpanPengumuman() {
+        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengatur pengumuman.");
+        let kategori = Array.from(document.querySelectorAll('#pgm-kategori-checks input:checked')).map(cb => cb.value);
+        if (kategori.length === 0) return alert("Pilih minimal satu kategori tampilan.");
+        let isi = document.getElementById('pgm-isi').value.trim();
+        if (!isi) return alert("Isi pengumuman belum diisi.");
+
+        let payload = {
+            action: "savePengumuman",
+            username: userSession.username,
+            id: document.getElementById('pgm-id').value || null,
+            tanggal: document.getElementById('pgm-tanggal').value,
+            kategori: kategori,
+            isi: isi,
+            status: document.getElementById('pgm-status').value,
+            tanggal_start: document.getElementById('pgm-tanggal-start').value,
+            tanggal_akhir: document.getElementById('pgm-tanggal-akhir').value
+        };
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === "success") {
+            resetFormPengumuman();
+            await loadPengumuman();
+            muatDaftarPengumuman();
+            renderHeaderBanners('announce-header-banner', 'Pengumuman');
+        } else { alert(out.message || "Gagal menyimpan pengumuman."); }
+    }
+
+    async function hapusPengumuman(id) {
+        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh menghapus pengumuman.");
+        if (!confirm("Hapus pengumuman ini?")) return;
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deletePengumuman", username: userSession.username, id: id }) });
+        const out = await res.json();
+        if (out.status === "success") {
+            await loadPengumuman();
+            muatDaftarPengumuman();
+        } else { alert(out.message || "Gagal menghapus pengumuman."); }
+    }
+
+    // Daftar lengkap semua pengumuman di menu "📢 Info" (admin: lengkap dengan tombol Ubah/Hapus; user biasa: hanya lihat)
+    async function muatDaftarPengumuman() {
+        toggleAdminPengumumanUI();
+        const box = document.getElementById('announce-list-area');
+        box.innerHTML = "<i>Memuat daftar pengumuman...</i>";
+        if (allPengumuman.length === 0) await loadPengumuman();
+
+        let isAdmin = (userSession.level === 'administrator');
+        let list = allPengumuman.slice().sort((a, b) => (b.tanggal || "").localeCompare(a.tanggal || ""));
+        if (list.length === 0) { box.innerHTML = "<i>Belum ada pengumuman.</i>"; return; }
+
+        box.innerHTML = list.map(p => `
+            <div class="log-item-card" style="align-items:flex-start; flex-direction:column;">
+                <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                    <b>${formatTanggalIndo(p.tanggal)}</b>
+                    <span class="pgm-status-badge pgm-status-${p.status}">${p.status}</span>
+                </div>
+                <div style="font-size:12px; color:gray; margin:4px 0;">Kategori: ${(p.kategori || "-").split(',').join(', ')}</div>
+                <div style="margin:4px 0;">${(p.isi || "").replace(/</g,'&lt;')}</div>
+                <div style="font-size:11px; color:gray;">Berlaku: ${formatTanggalIndo(p.tanggal_start)} — ${formatTanggalIndo(p.tanggal_akhir)}</div>
+                ${isAdmin ? `<div class="icon-bar" style="width:100%; margin-top:8px;">
+                    <button class="icon-btn" onclick="editPengumuman('${p.id}')">✏️ Ubah</button>
+                    <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hapusPengumuman('${p.id}')">🗑️ Hapus</button>
+                </div>` : ``}
+            </div>`).join("");
     }
 
     function bukaPencarian() {
@@ -646,10 +946,12 @@
         setActiveTab('cari');
         document.getElementById('read-page').classList.add('hidden');
         document.getElementById('log-page').classList.add('hidden');
+        document.getElementById('announce-page').classList.add('hidden');
         document.getElementById('search-page').classList.remove('hidden');
         sinkronisasiBukuPencarian();
         document.getElementById('search-ref-title').innerText = buildRefText('search-info', 'Silakan atur parameter pencarian');
         updateUserLabel('search');
+        renderHeaderBanners('search-header-banner', 'Cari');
     }
 
     function bukaPembacaan() {
@@ -658,10 +960,26 @@
         setActiveTab('baca');
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('log-page').classList.add('hidden');
+        document.getElementById('announce-page').classList.add('hidden');
         document.getElementById('read-page').classList.remove('hidden');
         document.getElementById('read-ref-title').innerText = buildRefText('read-info', 'Mempersiapkan bacaan...');
         updateUserLabel('read');
         kalkulasiTanggal(); 
+        renderHeaderBanners('read-header-banner', 'Baca');
+    }
+
+    // Menu keempat: Pengumuman. Semua level bisa melihat; hanya administrator bisa mengelola (lihat toggleAdminPengumumanUI).
+    function bukaPengumuman() {
+        hentikanSuara();
+        tutupSemuaNavMenu();
+        setActiveTab('pengumuman');
+        document.getElementById('search-page').classList.add('hidden');
+        document.getElementById('read-page').classList.add('hidden');
+        document.getElementById('log-page').classList.add('hidden');
+        document.getElementById('announce-page').classList.remove('hidden');
+        updateUserLabel('announce');
+        renderHeaderBanners('announce-header-banner', 'Pengumuman');
+        muatDaftarPengumuman();
     }
 
     // =====================================================================
@@ -676,9 +994,11 @@
         setActiveTab('jadwal');
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('read-page').classList.add('hidden');
+        document.getElementById('announce-page').classList.add('hidden');
         document.getElementById('log-page').classList.remove('hidden');
         updateUserLabel('log');
         muatDaftarLog();
+        renderHeaderBanners('log-header-banner', 'Jadwal');
     }
 
     let pendingLogItem = null, pendingLogItemLabel = null;
@@ -840,12 +1160,24 @@
 
             if (savedLogs.length === 0) {
                 box.innerHTML = "<i>Belum ada Jadwal tersimpan. Buka Mode Baca atau Mode Cari, lalu tekan tombol \"🔖 Simpan ke Jadwal\" untuk menyimpan ayat/pasal.</i>";
+                sisipkanBannerLogInline();
                 return;
             }
             renderDaftarJadwalList(savedLogs);
+            sisipkanBannerLogInline();
         } catch (e) {
             box.innerHTML = "<p style='color:red;'>Gagal memuat Jadwal (masalah koneksi).</p>";
         }
+    }
+
+    function sisipkanBannerLogInline() {
+        const box = document.getElementById('log-list-area');
+        let existing = box.querySelector('#log-inline-banner');
+        if (existing) existing.remove();
+        let div = document.createElement('div');
+        div.id = 'log-inline-banner';
+        box.prepend(div);
+        renderSearchBanners('log-inline-banner', 'Search Jadwal');
     }
 
     // Render daftar nama Jadwal di halaman "Jadwal", dilengkapi kotak cari nama & filter "Terakhir Disimpan"
@@ -1344,11 +1676,24 @@
         return htmlOut;
     }
 
+    // pageId 'read-info' -> kategori pengumuman "Search Baca"; 'search-info' -> "Search Cari"
+    function sisipkanBannerInline(box, pageId) {
+        let slot = pageId === 'read-info' ? 'Search Baca' : 'Search Cari';
+        let bannerId = pageId === 'read-info' ? 'read-inline-banner' : 'search-inline-banner';
+        let existing = box.querySelector(`#${bannerId}`);
+        if (existing) existing.remove();
+        let div = document.createElement('div');
+        div.id = bannerId;
+        box.prepend(div);
+        renderSearchBanners(bannerId, slot);
+    }
+
     function renderEreaderGrouped(ayatArray, containerId, pageId) {
         const box = document.getElementById(containerId);
         
         if (!ayatArray || ayatArray.length === 0) {
             box.innerHTML = "<h3 style='text-align:center; color:red;'>Ayat tidak ditemukan.</h3>";
+            sisipkanBannerInline(box, pageId);
             let prefix = pageId === 'read-info' ? 'read' : 'search';
             let elEmpty = document.getElementById(`${prefix}-ref-title`);
             if (elEmpty) elEmpty.innerText = buildRefText(pageId, null);
@@ -1361,6 +1706,7 @@
         let primaryLang = selectedLangsArray[0]; 
 
         box.innerHTML = buildAyatHtml(ayatArray, selectedLangsArray);
+        sisipkanBannerInline(box, pageId);
 
         // Simpan hasil terakhir untuk dipakai fitur "Simpan ke Jadwal"
         if (pageId === 'read-info') lastAyatRead = ayatArray; else lastAyatSearch = ayatArray;
@@ -1421,7 +1767,18 @@
                 userSession = out.data;
                 historyHariKe = (userSession.history || "").split(',').map(s => s.trim()).filter(Boolean).map(Number);
                 document.getElementById('login-page').classList.add('hidden');
-                updateUserLabel('search'); updateUserLabel('read'); updateUserLabel('log');
+                updateUserLabel('search'); updateUserLabel('read'); updateUserLabel('log'); updateUserLabel('announce');
+
+                // Language tersimpan di database (diatur administrator) dipakai sebagai bahasa default final,
+                // menimpa pilihan sementara di layar login.
+                if (userSession.language) {
+                    document.getElementById('lang1-search').value = userSession.language;
+                    document.getElementById('lang1-read').value = userSession.language;
+                }
+
+                dismissedPengumuman = new Set(); // pengumuman selalu tampil lagi di setiap login baru
+                await loadPengumuman();
+                toggleAdminPengumumanUI();
                 
                 if (!userSession.plan || !userSession.start_date) {
                     document.getElementById('settings-page').classList.remove('hidden');
