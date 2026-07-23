@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>10.32 E-Bible </title>
+    <title>12.09 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -51,42 +51,44 @@
         button:hover { opacity: 0.9; }
         
         /* =====================================================================
-           PENGATURAN NAVIGASI BAR — DIRANCANG ULANG: benar-benar SELALU 1 BARIS.
-           Kuncinya: min-width:0 + overflow:hidden + text-overflow:ellipsis pada
-           teks referensi (bukan lagi min-width:140px+overflow:visible yang dulu
-           memaksa baris melebar lalu mendorong tombol2 lain turun jadi banyak baris).
-           Tema hanya diwakili titik warna kecil (nama lengkapnya ada di modal 🎨),
-           supaya baris ini singkat & gampang ditambah menu baru tanpa pecah baris.
+           NAVIGASI — DIRANCANG ULANG GAYA APPLE: pill/rounded, elegan, minimalis.
+           Baris 1 (.nav-tabs): nama menu (Cari/Baca/Jadwal/Info), lebar dibagi 3
+           kolom sama rata (scroll-snap) supaya rapi tapi tetap bisa digeser kalau
+           menu ditambah lagi di masa depan.
+           Baris 2 (.nav-summary-row): kapsul (pill) berisi teks kitab+pasal+ayat+
+           bahasa (dari buildRefText), lalu di ujung kanan tombol BULAT kecil untuk
+           tema, pin, dan panah — semua elemen sirkular, gampang ditambah tombol
+           baru tanpa pernah pecah jadi banyak baris (overflow:hidden + ellipsis).
            ===================================================================== */
-        .top-nav-bar { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden;}
+        .top-nav-bar { background: var(--card); border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
 
-        .nav-summary-row { display: flex; flex-wrap: nowrap; align-items: center; padding: 9px 10px; background: var(--btn-bg); font-weight: bold; cursor: pointer; gap: 6px; overflow: hidden; }
+        .nav-tabs { display: flex; gap: 6px; padding: 8px 8px 0 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+        .nav-tab-btn { flex: 0 0 calc(33.333% - 4px); scroll-snap-align: start; text-align: center; padding: 10px 6px; border-radius: 14px; background: var(--btn-bg); color: var(--text); border: none; font-weight: 600; font-size: 13px; cursor: pointer; opacity: 0.62; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background 0.25s ease, opacity 0.25s ease, transform 0.15s ease; }
+        .nav-tab-btn.active-tab { background: var(--primary); color: #fff; opacity: 1; box-shadow: 0 3px 10px rgba(0,0,0,0.18); transform: translateY(-1px); }
+
+        .nav-summary-row { display: flex; flex-wrap: nowrap; align-items: center; padding: 9px 12px; margin: 9px 8px; background: var(--btn-bg); border-radius: 999px; font-weight: bold; cursor: pointer; gap: 7px; overflow: hidden; transition: box-shadow 0.2s ease; }
 
         .nav-ref-title { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; overflow: hidden; }
         .nav-ref-title > span[id$="-ref-title"] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .nav-user-title { flex: 0 0 auto; font-size: 11px; font-weight: 600; opacity: 0.75; white-space: nowrap; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Titik warna yang otomatis mengikuti warna primary tema aktif (pengganti nama tema panjang, hemat tempat) */
-        .theme-dot { width: 9px; height: 9px; min-width: 9px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 4px var(--primary); flex-shrink: 0; }
-        /* Nama tema lengkap tetap ada di DOM (dipakai beberapa fungsi JS) tapi disembunyikan dari baris ringkas */
+        /* Nama tema lengkap tetap ada di DOM (dipakai beberapa fungsi JS utk tooltip) tapi tak tampil sbg teks */
         .theme-name-label { display: none; }
 
-        /* TAB MENU UTAMA: baris terpisah dari nav-summary-row, boleh scroll ke samping
-           kalau menu makin banyak (mis. nanti ditambah lagi) -> tidak pernah memaksa
-           nav-summary-row ikut melebar/pecah baris. */
-        .nav-tabs { display: flex; gap: 5px; padding: 7px 7px 0 7px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
-        .nav-tabs::-webkit-scrollbar { display: none; }
-        .nav-tab-btn { flex: 0 0 auto; min-width: 58px; text-align: center; padding: 9px 10px; border-radius: 10px 10px 0 0; background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); border-bottom: none; font-weight: 700; font-size: 13px; cursor: pointer; opacity: 0.7; white-space: nowrap; }
-        .nav-tab-btn.active-tab { background: var(--primary); color: #fff; opacity: 1; }
+        /* Tombol BULAT (Apple-style): tema, pin, tutup — semua bentuk lingkaran kecil senada */
+        .nav-circle-btn, .btn-icon-top { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .nav-circle-btn:active, .btn-icon-top:active { transform: scale(0.92); }
 
-        .nav-chevron { flex: 0 0 auto; width: 16px; text-align: center; font-size: 11px; opacity: 0.6; }
-        .btn-signout { background: #ff3b30; color: white; border-radius: 8px; padding: 10px; font-size: 14px; border: none; cursor: pointer; width: 100%; }
-        .btn-icon-top { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 7px; font-size: 13px; cursor: pointer; flex: 0 0 auto; line-height: 1; }
+        /* Logo bulat kecil tema: cincin warnanya otomatis ikut var(--primary) tema aktif */
+        .theme-circle { border: 2px solid var(--primary); background: var(--card); }
 
-        /* TOMBOL PIN: ON = baris navigasi 1 baris menempel tetap di atas layar walau discroll, sampai di-klik lagi (un-pin) */
-        .btn-pin { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 7px; font-size: 13px; cursor: pointer; flex: 0 0 auto; line-height: 1; }
-        .btn-pin.active-pin { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,0,0,0.05); }
-        .nav-summary-row.sticky-active { position: sticky; top: 0; z-index: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.18); border-radius: 0 0 10px 10px; }
+        /* TOMBOL PIN bulat: ON = baris navigasi menempel tetap di atas layar walau discroll */
+        .btn-pin.active-pin { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+        .nav-summary-row.sticky-active { position: sticky; top: 0; z-index: 500; box-shadow: 0 4px 14px rgba(0,0,0,0.18); border-radius: 999px; margin-top: 0; }
+
+        .nav-chevron { flex: 0 0 auto; width: 16px; text-align: center; font-size: 11px; opacity: 0.55; }
+        .btn-signout { background: #ff3b30; color: white; border-radius: 999px; padding: 10px; font-size: 14px; border: none; cursor: pointer; width: 100%; }
+        /* Dipakai khusus label mode di viewer Jadwal (bukan lagi di 4 nav utama) */
+        .nav-user-title { flex: 0 0 auto; font-size: 11px; font-weight: 600; opacity: 0.75; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
 
         /* =====================================================================
            PENGUMUMAN: banner dismissible, dipakai di header menu & di dalam isi search
@@ -96,6 +98,9 @@
         .pengumuman-banner .pgm-tanggal { font-size: 11px; opacity: 0.6; margin-top: 4px; }
         .pengumuman-banner .pgm-close { position: absolute; top: 6px; right: 8px; background: none; border: none; width: auto; padding: 4px 6px; margin: 0; font-size: 15px; font-weight: bold; color: var(--text); opacity: 0.5; cursor: pointer; line-height: 1; }
         .pengumuman-banner .pgm-close:hover { opacity: 1; }
+        .pgm-media-link { margin-top: 6px; }
+        .pgm-media-link a, .pengumuman-banner a, .log-item-card a { color: var(--primary); font-weight: 700; text-decoration: none; word-break: break-all; }
+        .pgm-media-link a:hover, .pengumuman-banner a:hover { text-decoration: underline; }
         .pgm-status-badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 5px; margin-left: 6px; }
         .pgm-status-draft { background: #8e8e93; color: #fff; }
         .pgm-status-waiting { background: #ff9500; color: #fff; }
@@ -170,7 +175,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 10.32</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 12.09</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -199,6 +204,7 @@
             <label>Tanggal Mulai Pembacaan:</label>
             <input type="date" id="set-date">
             <button onclick="simpanSetting()">Mulai Baca</button>
+            <button id="btn-batal-ganti-rencana" class="hidden" style="background:#8e8e93;" onclick="document.getElementById('settings-page').classList.add('hidden')">✖ Batal</button>
         </div>
     </div>
     
@@ -273,10 +279,9 @@
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
-                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span class="theme-name-label">Terang Default</span><span id="search-ref-title">Pencarian Kosong...</span></span>
-                <span class="nav-user-title" id="search-user-title">👤 -</span>
-                <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
-                <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="search-ref-title">Pencarian Kosong...</span></span>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-search">▼</span>
             </div>
             
@@ -386,10 +391,9 @@
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
-                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span class="theme-name-label">Terang Default</span><span id="read-ref-title">Mempersiapkan...</span></span>
-                <span class="nav-user-title" id="read-user-title">👤 -</span>
-                <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
-                <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="read-ref-title">Mempersiapkan...</span></span>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-read">▼</span>
             </div>
             
@@ -403,6 +407,9 @@
                 </div>
                 <div class="icon-bar">
                     <button class="icon-btn" style="background:#5856d6; color:white; width:100%;" onclick="bukaRiwayatPembacaan()">📋 Riwayat Pembacaan (Terakhir Dibaca, Tanggal Mulai, & Daftar Sudah/Belum)</button>
+                </div>
+                <div class="icon-bar">
+                    <button class="icon-btn" style="background:#ff9500; color:white; width:100%;" onclick="bukaGantiRencana()">🔄 Ganti Rencana Baca</button>
                 </div>
                 
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:10px;">🌐 Bandingkan Bahasa</div>
@@ -487,10 +494,9 @@
             </div>
             <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
-                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span class="theme-name-label">Terang Default</span><span id="log-ref-title">🗓️ Daftar Jadwal</span></span>
-                <span class="nav-user-title" id="log-user-title">👤 -</span>
-                <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
-                <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="log-ref-title">🗓️ Daftar Jadwal</span></span>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-log">▼</span>
             </div>
             <div class="nav-full-menu" id="log-menu">
@@ -537,10 +543,9 @@
                 <button type="button" class="nav-tab-btn active-tab" id="tab-pengumuman-4" onclick="bukaPengumuman()">📢 Info</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('announce-menu', 'chevron-announce')">
-                <span class="nav-ref-title"><span class="theme-dot" title="Warna tema aktif"></span><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
-                <span class="nav-user-title" id="announce-user-title">👤 -</span>
-                <button class="btn-icon-top" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
-                <button class="btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-announce">▼</span>
             </div>
             <div class="nav-full-menu" id="announce-menu">
@@ -574,7 +579,13 @@
             </div>
 
             <label style="font-size:12px; color:gray;">Isi Pengumuman:</label>
-            <textarea id="pgm-isi" rows="4" style="resize:vertical;" placeholder="Tulis isi pengumuman di sini..."></textarea>
+            <textarea id="pgm-isi" rows="4" style="resize:vertical;" placeholder="Tulis isi pengumuman di sini... (link http/https di dalam teks otomatis jadi bisa diklik)"></textarea>
+
+            <label style="font-size:12px; color:gray;">🖼️ Link Foto (opsional):</label>
+            <input type="url" id="pgm-link-foto" placeholder="https://... (link foto/gambar, mis. Google Drive/Photos)">
+
+            <label style="font-size:12px; color:gray;">🎬 Link Video (opsional):</label>
+            <input type="url" id="pgm-link-video" placeholder="https://... (link video, mis. YouTube/Drive)">
 
             <div style="display:flex; gap:10px;">
                 <div style="flex:1;">
@@ -679,6 +690,10 @@
     let verseQueue = [];
     let isReading = false;
     let currentVerseIndex = 0;
+    let wakeLockRef = null;              // Wake Lock aktif selama TTS berjalan, supaya layar (& suara) tidak mati sendiri
+    let ttsHeartbeatTimer = null;        // Heartbeat resume() utk mengatasi bug Chrome/Android yg mem-pause speechSynthesis
+    let sudahBacaJudulAwal = false;      // Judul kitab+pasal+ayat hanya dibacakan SEKALI di awal, bukan diulang tiap ayat
+    let lastAyatNumberDibaca = null;     // Nomor ayat terakhir yang sudah diumumkan lewat suara
     
     let currentLayoutMode = 0; 
     let isClickHighlightOn = false;
@@ -775,8 +790,13 @@
     }
 
     // Pengumuman dianggap AKTIF (layak tampil) kalau status="done" DAN hari ini ada di antara tanggal_start & tanggal_akhir.
-    // draft/waiting/expired -> tidak pernah tampil ke pengguna.
+    // draft/waiting/expired -> tidak pernah tampil ke pengguna BIASA.
+    // Khusus administrator: draft & waiting tetap ditampilkan (sbg PRATINJAU, ditandai badge) supaya
+    // admin bisa melihat langsung tampilannya sebelum dipublikasikan -- sebelumnya draft tidak
+    // pernah tampil sama sekali walau dilihat oleh administrator.
     function pengumumanAktif(p) {
+        let isAdmin = (userSession.level === 'administrator');
+        if (isAdmin && (p.status === 'draft' || p.status === 'waiting')) return true;
         if (p.status !== 'done') return false;
         let today = new Date().toISOString().slice(0, 10);
         if (p.tanggal_start && today < p.tanggal_start) return false;
@@ -804,18 +824,32 @@
         catch (e) { return tgl; }
     }
 
+    // Ubah URL polos di dalam teks jadi link yang bisa diklik, terbuka di tab baru.
+    // Dipakai baik untuk isi pengumuman maupun untuk field Link Foto / Link Video terpisah.
+    function linkifyTeks(teks) {
+        let aman = (teks || "").replace(/</g, '&lt;');
+        return aman.replace(/(https?:\/\/[^\s<]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+    }
+
     // Render banner dismissible untuk sebuah slot ke dalam elemen container tertentu
     function renderBannerUntukSlot(containerId, slot) {
         const box = document.getElementById(containerId);
         if (!box) return;
         let cocok = allPengumuman.filter(p => pengumumanAktif(p) && pengumumanCocokSlot(p, slot) && !dismissedPengumuman.has(p.id));
         if (cocok.length === 0) { box.innerHTML = ""; return; }
-        box.innerHTML = cocok.map(p => `
+        box.innerHTML = cocok.map(p => {
+            let previewBadge = (p.status !== 'done') ? `<span class="pgm-status-badge pgm-status-${p.status}">PRATINJAU: ${p.status}</span>` : '';
+            let mediaLinks = '';
+            if (p.link_foto) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_foto}" target="_blank" rel="noopener noreferrer">🖼️ Lihat Foto</a></div>`;
+            if (p.link_video) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_video}" target="_blank" rel="noopener noreferrer">🎬 Lihat Video</a></div>`;
+            return `
             <div class="pengumuman-banner" data-pgm-id="${p.id}">
                 <button class="pgm-close" onclick="tutupPengumuman('${p.id}')" title="Tutup pengumuman ini">✕</button>
-                <span class="pgm-kategori-tag">📢 ${slot}</span>${(p.isi || "").replace(/</g,'&lt;')}
+                <span class="pgm-kategori-tag">📢 ${slot}</span>${previewBadge}${linkifyTeks(p.isi)}
+                ${mediaLinks}
                 <div class="pgm-tanggal">Berlaku: ${formatTanggalIndo(p.tanggal_start)} — ${formatTanggalIndo(p.tanggal_akhir)}</div>
-            </div>`).join("");
+            </div>`;
+        }).join("");
     }
 
     // Dipanggil saat membuka menu Cari/Baca/Jadwal/Pengumuman -> tampilkan pengumuman di bagian header menu itu
@@ -845,6 +879,8 @@
         document.getElementById('pgm-id').value = "";
         document.getElementById('pgm-tanggal').value = "";
         document.getElementById('pgm-isi').value = "";
+        document.getElementById('pgm-link-foto').value = "";
+        document.getElementById('pgm-link-video').value = "";
         document.getElementById('pgm-tanggal-start').value = "";
         document.getElementById('pgm-tanggal-akhir').value = "";
         document.getElementById('pgm-status').value = "draft";
@@ -866,6 +902,8 @@
         document.getElementById('pgm-id').value = p.id;
         document.getElementById('pgm-tanggal').value = p.tanggal || "";
         document.getElementById('pgm-isi').value = p.isi || "";
+        document.getElementById('pgm-link-foto').value = p.link_foto || "";
+        document.getElementById('pgm-link-video').value = p.link_video || "";
         document.getElementById('pgm-tanggal-start').value = p.tanggal_start || "";
         document.getElementById('pgm-tanggal-akhir').value = p.tanggal_akhir || "";
         document.getElementById('pgm-status').value = p.status || "draft";
@@ -924,20 +962,26 @@
         let list = allPengumuman.slice().sort((a, b) => (b.tanggal || "").localeCompare(a.tanggal || ""));
         if (list.length === 0) { box.innerHTML = "<i>Belum ada pengumuman.</i>"; return; }
 
-        box.innerHTML = list.map(p => `
+        box.innerHTML = list.map(p => {
+            let mediaLinks = '';
+            if (p.link_foto) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_foto}" target="_blank" rel="noopener noreferrer">🖼️ Lihat Foto</a></div>`;
+            if (p.link_video) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_video}" target="_blank" rel="noopener noreferrer">🎬 Lihat Video</a></div>`;
+            return `
             <div class="log-item-card" style="align-items:flex-start; flex-direction:column;">
                 <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
                     <b>${formatTanggalIndo(p.tanggal)}</b>
                     <span class="pgm-status-badge pgm-status-${p.status}">${p.status}</span>
                 </div>
                 <div style="font-size:12px; color:gray; margin:4px 0;">Kategori: ${(p.kategori || "-").split(',').join(', ')}</div>
-                <div style="margin:4px 0;">${(p.isi || "").replace(/</g,'&lt;')}</div>
+                <div style="margin:4px 0;">${linkifyTeks(p.isi)}</div>
+                ${mediaLinks}
                 <div style="font-size:11px; color:gray;">Berlaku: ${formatTanggalIndo(p.tanggal_start)} — ${formatTanggalIndo(p.tanggal_akhir)}</div>
                 ${isAdmin ? `<div class="icon-bar" style="width:100%; margin-top:8px;">
                     <button class="icon-btn" onclick="editPengumuman('${p.id}')">✏️ Ubah</button>
                     <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hapusPengumuman('${p.id}')">🗑️ Hapus</button>
                 </div>` : ``}
-            </div>`).join("");
+            </div>`;
+        }).join("");
     }
 
     function bukaPencarian() {
@@ -1416,6 +1460,79 @@
         document.getElementById(`speed-label-${page}`).innerText = `Kec: ${speed} | Art: ${pitch}`;
     }
 
+    // =====================================================================
+    // WAKE LOCK + HEARTBEAT: menjaga layar (dan suara) tetap menyala/berjalan
+    // selama sesi pembacaan TTS, supaya tidak berhenti sendiri saat layar HP mati.
+    // =====================================================================
+    async function mintaWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLockRef = await navigator.wakeLock.request('screen');
+                wakeLockRef.addEventListener('release', () => { wakeLockRef = null; });
+            }
+        } catch (e) { console.log('Wake Lock tidak tersedia/ditolak:', e); }
+    }
+    function lepasWakeLock() {
+        if (wakeLockRef) { try { wakeLockRef.release(); } catch (e) {} wakeLockRef = null; }
+    }
+    // Kalau tab sempat disembunyikan/layar mati lalu kembali aktif saat masih membaca, minta wake lock ulang
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && isReading && !wakeLockRef) mintaWakeLock();
+    });
+    // Chrome/Android punya bug: speechSynthesis otomatis "pause" setelah ±15 detik diam (terutama
+    // saat layar terkunci). resume() berkala menjaga suara tidak macet di tengah jalan.
+    function mulaiHeartbeatTTS() {
+        hentikanHeartbeatTTS();
+        ttsHeartbeatTimer = setInterval(() => {
+            if (isReading && window.speechSynthesis.speaking) window.speechSynthesis.resume();
+        }, 10000);
+    }
+    function hentikanHeartbeatTTS() {
+        if (ttsHeartbeatTimer) { clearInterval(ttsHeartbeatTimer); ttsHeartbeatTimer = null; }
+    }
+
+    // Susun kalimat daftar ayat gaya Indonesia dari daftar nomor ayat berurutan tampil, mis.
+    // [3,4,5,8] -> "ayat 3 sampai ayat 5, dan ayat 8"; [5] -> "ayat 5"
+    function formatDaftarAyatUntukSuara(nomorAyatArray) {
+        if (!nomorAyatArray || nomorAyatArray.length === 0) return '';
+        let runs = [];
+        let start = nomorAyatArray[0], prev = nomorAyatArray[0];
+        for (let i = 1; i < nomorAyatArray.length; i++) {
+            let n = nomorAyatArray[i];
+            if (n === prev + 1) { prev = n; }
+            else { runs.push([start, prev]); start = n; prev = n; }
+        }
+        runs.push([start, prev]);
+        let parts = runs.map(r => r[0] === r[1] ? `ayat ${r[0]}` : `ayat ${r[0]} sampai ayat ${r[1]}`);
+        if (parts.length === 1) return parts[0];
+        let last = parts.pop();
+        return parts.join(', ') + ', dan ' + last;
+    }
+
+    // Bangun kalimat pembuka "kitab X pasal Y ayat Z" / "...ayat 3 sampai ayat 5, dan ayat 8" dari
+    // urutan verse-group pertama yang akan dibacakan (kitab+pasal pertama pada antrian).
+    function bangunJudulSuaraDariQueue(queue) {
+        if (!queue || queue.length === 0) return '';
+        let grupPertama = queue[0].closest('.verse-group');
+        if (!grupPertama) return '';
+        let book = grupPertama.getAttribute('data-book') || '';
+        let chapter = grupPertama.getAttribute('data-chapter') || '';
+        if (!book || !chapter) return '';
+
+        let nomorSet = [];
+        queue.forEach(el => {
+            let grp = el.closest('.verse-group');
+            if (!grp) return;
+            if (grp.getAttribute('data-book') === book && grp.getAttribute('data-chapter') === chapter) {
+                let v = parseInt(grp.getAttribute('data-verse'));
+                if (!isNaN(v) && nomorSet.indexOf(v) === -1) nomorSet.push(v);
+            }
+        });
+        nomorSet.sort((a, b) => a - b);
+        if (nomorSet.length === 0) return '';
+        return `kitab ${book} pasal ${chapter} ${formatDaftarAyatUntukSuara(nomorSet)}`;
+    }
+
     function bacakanTeks(containerId, page) {
         hentikanSuara(); 
         let targetLangs = getSelectedLangs(page);
@@ -1429,6 +1546,8 @@
         if (verseQueue.length === 0) return alert("Belum ada teks bahasa tersebut.");
         
         isReading = true; currentVerseIndex = 0;
+        sudahBacaJudulAwal = false; lastAyatNumberDibaca = null;
+        mintaWakeLock(); mulaiHeartbeatTTS();
         bacaAyatSelanjutnya(page);
     }
 
@@ -1448,6 +1567,8 @@
         if (verseQueue.length === 0) return alert("Belum ada teks bahasa tersebut di ayat ini.");
 
         isReading = true; currentVerseIndex = 0;
+        sudahBacaJudulAwal = false; lastAyatNumberDibaca = null;
+        mintaWakeLock(); mulaiHeartbeatTTS();
         bacaAyatSelanjutnya('viewer');
     }
 
@@ -1456,14 +1577,37 @@
 
         hapusHighlight();
         let elTeks = verseQueue[currentVerseIndex];
-        elTeks.closest('.verse-group').classList.add('highlight-tts');
+        let grup = elTeks.closest('.verse-group');
+        grup.classList.add('highlight-tts');
 
-        let msg = new SpeechSynthesisUtterance(elTeks.innerText);
         let selIdx = document.getElementById(`voice-select-${page}`).value;
+        let rate = parseFloat(document.getElementById(`voice-speed-${page}`).value);
+        let pitch = parseFloat(document.getElementById(`voice-pitch-${page}`).value);
+
+        // Judul (kitab + pasal + daftar ayat) hanya dibacakan SEKALI di awal sesi, sebelum ayat pertama.
+        if (!sudahBacaJudulAwal) {
+            sudahBacaJudulAwal = true;
+            let judulSuara = bangunJudulSuaraDariQueue(verseQueue);
+            if (judulSuara) {
+                let msgJudul = new SpeechSynthesisUtterance(judulSuara);
+                msgJudul.lang = 'id-ID';
+                if (allVoices[selIdx]) msgJudul.voice = allVoices[selIdx];
+                msgJudul.rate = rate; msgJudul.pitch = pitch;
+                msgJudul.onend = () => bacaAyatSelanjutnya(page);
+                msgJudul.onerror = () => bacaAyatSelanjutnya(page);
+                window.speechSynthesis.speak(msgJudul);
+                return; // ayat pertama menyusul lewat rekursi di atas setelah judul selesai
+            }
+        }
+
+        // Setiap kali ganti ayat (nomor ayat berbeda dari yang terakhir dibacakan), sebutkan nomornya dulu.
+        let nomorAyatSekarang = grup.getAttribute('data-verse');
+        let awalanAyat = (nomorAyatSekarang && nomorAyatSekarang !== lastAyatNumberDibaca) ? `Ayat ${nomorAyatSekarang}. ` : '';
+        lastAyatNumberDibaca = nomorAyatSekarang;
+
+        let msg = new SpeechSynthesisUtterance(awalanAyat + elTeks.innerText);
         if(allVoices[selIdx]) msg.voice = allVoices[selIdx];
-        
-        msg.rate = parseFloat(document.getElementById(`voice-speed-${page}`).value);
-        msg.pitch = parseFloat(document.getElementById(`voice-pitch-${page}`).value); 
+        msg.rate = rate; msg.pitch = pitch;
 
         msg.onend = () => { currentVerseIndex++; bacaAyatSelanjutnya(page); };
         msg.onerror = () => { hentikanSuara(); };
@@ -1472,8 +1616,11 @@
 
     function hentikanSuara() {
         isReading = false;
+        sudahBacaJudulAwal = false; lastAyatNumberDibaca = null;
         window.speechSynthesis.cancel();
         hapusHighlight();
+        hentikanHeartbeatTTS();
+        lepasWakeLock();
     }
     
     function hapusHighlight() { 
@@ -1626,7 +1773,7 @@
         // "创世记" vs "Genesis"), sehingga tiap bahasa punya kunci berbeda dan TIDAK PERNAH
         // tergabung dalam satu verse-group -- inilah sebabnya 3 bahasa tidak pernah muncul
         // bersamaan, baik di mode biasa maupun mode Pararel.
-        let grouped = {}, order = [], currentHeaderKey = "", htmlOut = "";
+        let grouped = {}, order = [], currentHeaderKey = "", currentHeaderBookName = "", htmlOut = "";
         let primaryLang = selectedLangsArray[0];
 
         ayatArray.forEach((a) => {
@@ -1653,8 +1800,9 @@
                 }
                 htmlOut += `<div class="book-title">${headerBookName} ${g.c}</div>`;
                 currentHeaderKey = headerKey;
+                currentHeaderBookName = headerBookName || "";
             }
-            htmlOut += `<div class="verse-group">`;
+            htmlOut += `<div class="verse-group" data-book="${currentHeaderBookName.replace(/"/g,'&quot;')}" data-chapter="${g.c}" data-verse="${g.v}">`;
 
             // Render BERDASARKAN URUTAN array dropdown (selectedLangsArray), bukan urutan acak JavaScript
             selectedLangsArray.forEach(langCode => {
@@ -1795,6 +1943,17 @@
         }
     }
 
+    // Dipanggil dari menu Baca kapan saja (bukan cuma onboarding) utk mengganti rencana pembacaan.
+    // Modal yang sama dipakai ulang, tapi field diisi dulu dengan rencana yg sedang aktif + tombol Batal ditampilkan.
+    let modeGantiRencana = false;
+    function bukaGantiRencana() {
+        modeGantiRencana = true;
+        if (userSession.plan) document.getElementById('set-plan').value = userSession.plan;
+        if (userSession.start_date) document.getElementById('set-date').value = userSession.start_date;
+        document.getElementById('btn-batal-ganti-rencana').classList.remove('hidden');
+        document.getElementById('settings-page').classList.remove('hidden');
+    }
+
     async function simpanSetting() {
         const planSelect = document.getElementById('set-plan');
         userSession.plan = planSelect.value;
@@ -1804,9 +1963,18 @@
         
         document.querySelector('#settings-page button').innerText = "Menyimpan...";
         await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveSettings", username: userSession.username, plan: userSession.plan, start_date: userSession.start_date }) });
+        document.querySelector('#settings-page button').innerText = "Mulai Baca";
         
         document.getElementById('settings-page').classList.add('hidden');
-        bukaPencarian(); 
+        document.getElementById('btn-batal-ganti-rencana').classList.add('hidden');
+
+        if (modeGantiRencana) {
+            // Rencana diganti dari dalam menu Baca -> langsung muat ulang bacaan hari ini sesuai rencana baru
+            modeGantiRencana = false;
+            bukaPembacaan();
+        } else {
+            bukaPencarian();
+        }
     }
 
     function kalkulasiTanggal() {
@@ -1843,15 +2011,21 @@
     function gantiHari(arah) { hentikanSuara(); if(currentHariKe + arah < 1) return; currentHariKe += arah; updateProgressUI(); muatAyatServer(); }
     function kembaliHariIni() { hentikanSuara(); currentHariKe = actualHariKe; updateProgressUI(); muatAyatServer(); }
 
+    let cacheJudulHari = {}; // { "PlanName_HariKe": "Nama Kitab Pasal..." } -- diisi setelah berhasil dimuat, dipakai utk pesan loading berikutnya
+
     async function muatAyatServer() {
         const box = document.getElementById('reading-content');
-        box.innerHTML = "<h3 style='text-align:center;'>⏳ Mengunduh ayat dari database...</h3>";
+        let cacheKeyHari = `${userSession.plan}_${currentHariKe}`;
+        let judulDiketahui = cacheJudulHari[cacheKeyHari];
+        box.innerHTML = judulDiketahui
+            ? `<h3 style='text-align:center;'>⏳ Memuat ${judulDiketahui}...</h3>`
+            : `<h3 style='text-align:center;'>⏳ Memuat bacaan Hari ke-${currentHariKe}${userSession.plan ? ' (' + userSession.plan + ')' : ''}...</h3>`;
         
         let targetLangs = getSelectedLangs('read');
         try {
             let payload = userSession.plan === "Amsal 1 Bulan"
                 ? { action: "searchSpesific", book_number: 20, chapter: currentHariKe, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP }
-                : { action: "getReading", plan: userSession.plan, hari_ke: currentHariKe, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP };
+                : { action: "getReading", plan: userSession.plan, hari_ke: currentHariKe, total_hari: totalHariPlan, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP };
             
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
             const responseText = await res.text();
@@ -1862,6 +2036,10 @@
                 
                 tutupSemuaNavMenu();
                 renderEreaderGrouped(data.ayat, 'reading-content', 'read-info');
+
+                // Simpan judul kitab+pasal hari ini ke cache, supaya lain kali dibuka pesan loading-nya langsung informatif
+                let judulTitles = Array.from(box.querySelectorAll('.book-title')).map(el => el.innerText).filter(Boolean);
+                if (judulTitles.length > 0) cacheJudulHari[cacheKeyHari] = judulTitles.join(', ');
             } catch (err) {
                 console.error("Respon Server:", responseText);
                 box.innerHTML = `<h3 style='text-align:center; color:red;'>Gagal: ${err.message || "Data dari server tidak valid."}</h3>`;
