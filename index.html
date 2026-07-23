@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>15.58 E-Bible </title>
+    <title>16.22 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -155,6 +155,7 @@
         body.force-bold .reading-area { font-weight: bold; }
         body.force-italic .reading-area { font-style: italic; }
         body.force-underline .verse-text { text-decoration: underline; }
+        .verse-text sup { font-size: 0.7em; opacity: 0.75; text-decoration: none; }
         
         /* DEFAULT MODE */
         .verse-group { margin-bottom: 10px; display: inline-block; width: 100%; transition: background 0.3s; border-radius: 5px;}
@@ -201,7 +202,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 15.58</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 16.22</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -2055,32 +2056,44 @@
 
     // =====================================================================
     // PEMBERSIH TAG <sup>/<FR> & FORMAT HTML AMAN (ayat & catatan)
-    // - <sup>...</sup> dan pembungkusnya <FR>...<Fr> (penanda catatan kaki, mis.
-    //   "<FR><sup>a</sup><Fr>") DIBUANG TOTAL (tag + isinya) -- baik dari TAMPILAN
-    //   maupun dari SUARA. Ini bukan bagian dari ayat, jadi tak pernah tampil/dibaca.
-    // - Tag format yang DIIZINKAN (p,i,b,u,br,strong,em,sub) dipertahankan APA ADANYA
-    //   saat tampil, supaya benar-benar terbentuk sebagai paragraf/miring/tebal, dst.
+    // - <FR>...<Fr> (pembungkus penanda catatan kaki, mis. "<FR><sup>a</sup><Fr>")
+    //   HANYA tag <FR>/<Fr>-nya yang dibuang saat TAMPIL -- isi di dalamnya (yaitu
+    //   <sup>a</sup>) TETAP DITULIS apa adanya, sehingga huruf/angka catatan kaki
+    //   tetap muncul di layar sebagai superscript kecil (format HTML asli).
+    // - Tag format yang DIIZINKAN (p,i,b,u,br,strong,em,sub,sup) dipertahankan APA
+    //   ADANYA saat tampil, supaya benar-benar terbentuk sbg paragraf/miring/tebal/
+    //   superscript, dst.
     // - Tag APAPUN di luar daftar itu dibuang (hanya tag-nya), isi teksnya tetap tampil,
     //   supaya tidak ada risiko tag/skrip asing ikut ter-render dari data ayat/catatan.
-    // - Untuk SUARA (TTS): seluruh tag dibuang total (tak pernah diucapkan "kurang dari
-    //   p lebih besar dari" dsb), <br>/</p> diganti jeda titik supaya kalimat tidak nyambung.
+    // - Untuk SUARA (TTS): <FR>...<Fr> DAN <sup>...</sup> dibuang TOTAL (tag + ISINYA),
+    //   jadi huruf/angka catatan kaki di dalam <sup> tidak pernah ikut diucapkan. Tag
+    //   lain dibuang tag-nya saja, <br>/</p> diganti jeda titik supaya tak nyambung.
     // =====================================================================
-    const ALLOWED_FORMAT_TAGS = ['p', 'i', 'b', 'u', 'br', 'strong', 'em', 'sub'];
+    const ALLOWED_FORMAT_TAGS = ['p', 'i', 'b', 'u', 'br', 'strong', 'em', 'sub', 'sup'];
 
+    // Buang HANYA tag pembungkus <FR>/<Fr> itu sendiri, PERTAHANKAN isi di dalamnya
+    // (mis. <sup>a</sup>) -- dipakai khusus untuk TAMPILAN.
+    function buangWrapperFRSaja(raw) {
+        let s = String(raw || '');
+        s = s.replace(/<\/?FR[^>]*>/gi, '');
+        s = s.replace(/<\/?Fr[^>]*>/gi, '');
+        return s;
+    }
+
+    // Buang <FR>...<Fr> dan <sup>...</sup> TOTAL (tag + isinya) -- dipakai khusus
+    // untuk SUARA (TTS), supaya penanda catatan kaki tak pernah ikut terbacakan.
     function buangSupDanFR(raw) {
         let s = String(raw || '');
-        // <FR>...<Fr> (atau </Fr>) biasanya membungkus tanda superscript catatan kaki --
-        // seluruh isi di antaranya (termasuk <sup> di dalamnya) dibuang bersama tag-nya.
         s = s.replace(/<FR[^>]*>[\s\S]*?<\/?Fr[^>]*>/gi, '');
-        // Jaga-jaga kalau ada <sup> berdiri sendiri di luar <FR> -- tetap dibuang tag + isinya.
         s = s.replace(/<sup[^>]*>[\s\S]*?<\/sup>/gi, '');
         return s;
     }
 
     // Dipakai untuk TAMPILAN (ayat & catatan): hasilnya HTML aman yang boleh langsung
-    // dimasukkan ke innerHTML -- <p><i><b><u><br> dst akan benar-benar terbentuk formatnya.
+    // dimasukkan ke innerHTML -- <p><i><b><u><br><sup> dst akan benar-benar terbentuk
+    // formatnya, termasuk <sup>a</sup> tetap tertulis sbg superscript kecil.
     function sanitizeTampilanHtml(raw) {
-        let s = buangSupDanFR(raw);
+        let s = buangWrapperFRSaja(raw);
         s = s.replace(/<\/?([a-zA-Z0-9]+)([^>]*)>/g, (m, tag) => {
             let t = String(tag).toLowerCase();
             if (!ALLOWED_FORMAT_TAGS.includes(t)) return '';
@@ -2091,7 +2104,8 @@
     }
 
     // Dipakai untuk SUARA (TTS): teks polos tanpa tag sama sekali, dengan jeda wajar
-    // di titik <br>/</p> supaya tidak terbaca menyambung tanpa jeda.
+    // di titik <br>/</p> supaya tidak terbaca menyambung tanpa jeda. Isi <sup>...</sup>
+    // (penanda catatan kaki) dibuang total, tidak pernah ikut diucapkan.
     function teksUntukSuara(raw) {
         let s = buangSupDanFR(raw);
         s = s.replace(/<br\s*\/?>/gi, '. ');
