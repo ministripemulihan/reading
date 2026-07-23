@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12.09 E-Bible </title>
+    <title>13.22 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -60,7 +60,12 @@
            tema, pin, dan panah — semua elemen sirkular, gampang ditambah tombol
            baru tanpa pernah pecah jadi banyak baris (overflow:hidden + ellipsis).
            ===================================================================== */
-        .top-nav-bar { background: var(--card); border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        /* PERBAIKAN BUG PIN: sebelumnya overflow:hidden di sini membuat position:sticky pada
+           .nav-summary-row (baris ke-2) TIDAK PERNAH bisa menempel saat discroll — elemen sticky
+           selalu "terpotong" mengikuti kotak induknya, sehingga saat 📌 di-tap, baris tetap ikut
+           hilang ke atas alih-alih menempel di layar. Border radius tetap aman tanpa overflow:hidden
+           karena baris-baris di dalamnya sudah punya margin sendiri (tidak menyentuh tepi kotak). */
+        .top-nav-bar { background: var(--card); border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-direction: column; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
 
         .nav-tabs { display: flex; gap: 6px; padding: 8px 8px 0 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
         .nav-tabs::-webkit-scrollbar { display: none; }
@@ -83,9 +88,19 @@
 
         /* TOMBOL PIN bulat: ON = baris navigasi menempel tetap di atas layar walau discroll */
         .btn-pin.active-pin { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
-        .nav-summary-row.sticky-active { position: sticky; top: 0; z-index: 500; box-shadow: 0 4px 14px rgba(0,0,0,0.18); border-radius: 999px; margin-top: 0; }
+        .nav-summary-row.sticky-active { position: sticky; top: 8px; z-index: 500; box-shadow: 0 6px 20px rgba(0,0,0,0.18); border-radius: 999px; backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4); background: color-mix(in srgb, var(--btn-bg) 88%, transparent); }
 
         .nav-chevron { flex: 0 0 auto; width: 16px; text-align: center; font-size: 11px; opacity: 0.55; }
+
+        /* Toggle switch gaya iOS untuk opsi suara: "Baca Nama Kitab" & "Baca Catatan" */
+        .tts-opts { display: flex; flex-wrap: wrap; gap: 16px; padding: 8px 4px; }
+        .tts-opt { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+        .ios-switch { position: relative; width: 38px; height: 22px; flex: 0 0 auto; }
+        .ios-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
+        .ios-switch .track { position: absolute; inset: 0; background: var(--border); border-radius: 999px; transition: background 0.2s ease; }
+        .ios-switch .thumb { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: left 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+        .ios-switch input:checked ~ .track { background: var(--primary); }
+        .ios-switch input:checked ~ .thumb { left: 18px; }
         .btn-signout { background: #ff3b30; color: white; border-radius: 999px; padding: 10px; font-size: 14px; border: none; cursor: pointer; width: 100%; }
         /* Dipakai khusus label mode di viewer Jadwal (bukan lagi di 4 nav utama) */
         .nav-user-title { flex: 0 0 auto; font-size: 11px; font-weight: 600; opacity: 0.75; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
@@ -175,7 +190,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 12.09</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 13.22</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -234,6 +249,70 @@
         </div>
     </div>
 
+    <!-- MODAL SETTING AKUN: ganti password + bahasa default (semua user), + kelola user (khusus administrator) -->
+    <div id="modal-akun-setting" class="modal hidden" onclick="this.classList.add('hidden')">
+        <div class="modal-content card" onclick="event.stopPropagation()" style="max-width:480px; text-align:left;">
+            <h3 style="text-align:center; margin-top:0;">⚙️ Setting Akun</h3>
+
+            <div style="font-size:12px; font-weight:bold; color:gray; margin-top:6px;">🌐 Bahasa Default Pembacaan Alkitab</div>
+            <select id="acc-default-lang">
+                <option value="ind">Indonesia</option>
+                <option value="eng">English</option>
+                <option value="kjv">English (KJV)</option>
+                <option value="chs">Chinese (简体)</option>
+                <option value="chssmp">Chinese Simple</option>
+                <option value="jawa">Jawa</option>
+                <option value="rvind">Revisi Indonesia</option>
+                <option value="rveng">Revised English</option>
+            </select>
+
+            <div style="font-size:12px; font-weight:bold; color:gray; margin-top:14px;">🔑 Ganti Password</div>
+            <input type="password" id="acc-pass1" placeholder="Password baru (kosongkan jika tidak ganti)">
+            <input type="password" id="acc-pass2" placeholder="Ulangi password baru">
+            <p style="font-size:11px; color:#ff9500; line-height:1.5; margin:6px 2px;">⚠️ Password di sistem ini bisa dibaca langsung oleh administrator (tidak terenkripsi). Jangan gunakan password yang sama dengan akun penting lain (email, bank, dll).</p>
+
+            <button style="background:var(--primary); color:white;" onclick="simpanAkunSetting()">💾 Simpan Setting Saya</button>
+            <p id="acc-setting-status" style="font-size:12px; text-align:center; min-height:16px;"></p>
+
+            <div id="admin-user-panel" class="hidden">
+                <hr style="border-color:var(--border); margin:16px 0;">
+                <div style="font-size:12px; font-weight:bold; color:gray;">👑 Kelola User (khusus Administrator)</div>
+                <div id="admin-user-list" style="max-height:220px; overflow-y:auto; margin:8px 0;"></div>
+                <button class="icon-btn" style="background:#34c759; color:white;" onclick="bukaFormUserBaru(null)">➕ Tambah User Baru</button>
+
+                <div id="admin-user-form" class="hidden" style="margin-top:10px; border-top:1px dashed var(--border); padding-top:10px;">
+                    <input type="hidden" id="usr-original-username">
+                    <label style="font-size:12px; color:gray;">Username:</label>
+                    <input type="text" id="usr-username" placeholder="Username">
+                    <label style="font-size:12px; color:gray;">Password (kosongkan saat edit = tidak berubah):</label>
+                    <input type="password" id="usr-password" placeholder="Password baru">
+                    <label style="font-size:12px; color:gray;">Bahasa Default:</label>
+                    <select id="usr-language">
+                        <option value="ind">Indonesia</option><option value="eng">English</option><option value="kjv">English (KJV)</option>
+                        <option value="chs">Chinese</option><option value="chssmp">Chinese Simple</option><option value="jawa">Jawa</option>
+                        <option value="rvind">Revisi Indonesia</option><option value="rveng">Revised English</option>
+                    </select>
+                    <label style="font-size:12px; color:gray;">Level:</label>
+                    <select id="usr-level">
+                        <option value="user">User</option>
+                        <option value="administrator">Administrator</option>
+                    </select>
+                    <label style="font-size:12px; color:gray;">Status:</label>
+                    <select id="usr-status">
+                        <option value="aktif">Aktif</option>
+                        <option value="nonaktif">Nonaktif</option>
+                    </select>
+                    <div class="icon-bar" style="margin-top:8px;">
+                        <button style="background:var(--primary); color:white;" onclick="simpanUserAdmin()">💾 Simpan User</button>
+                        <button style="background:#8e8e93;" onclick="document.getElementById('admin-user-form').classList.add('hidden')">✖ Batal</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="document.getElementById('modal-akun-setting').classList.add('hidden')" style="background:#ff3b30; margin-top:15px;">Tutup</button>
+        </div>
+    </div>
+
     <!-- MODAL RIWAYAT PEMBACAAN: terakhir dibaca, tanggal mulai, dan daftar hari yang sudah/belum dibaca -->
     <div id="modal-riwayat" class="modal hidden" onclick="this.classList.add('hidden')">
         <div class="modal-content card" onclick="event.stopPropagation()">
@@ -286,6 +365,7 @@
             </div>
             
             <div class="nav-full-menu" id="search-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
                 <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🌐 Bandingkan Bahasa</div>
                 <div class="icon-bar">
@@ -350,6 +430,10 @@
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('search-results', 'search')">▶</button>
                     <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
                 </div>
+                <div class="tts-opts">
+                    <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-search" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
+                    <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-note-search"><span class="track"></span><span class="thumb"></span></span> Baca Catatan</label>
+                </div>
 
                 <hr style="border-color: var(--border); margin: 10px 0;">
                 <div class="icon-bar">
@@ -398,6 +482,7 @@
             </div>
             
             <div class="nav-full-menu" id="read-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
                 <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">⚙️ Navigasi Hari</div>
                 <div class="icon-bar">
@@ -459,6 +544,10 @@
                     <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('reading-content', 'read')">▶</button>
                     <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
                 </div>
+                <div class="tts-opts">
+                    <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-read" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
+                    <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-note-read"><span class="track"></span><span class="thumb"></span></span> Baca Catatan</label>
+                </div>
 
                 <hr style="border-color: var(--border); margin: 10px 0;">
                 <div class="icon-bar">
@@ -500,6 +589,7 @@
                 <span class="nav-chevron" id="chevron-log">▼</span>
             </div>
             <div class="nav-full-menu" id="log-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
                 <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">🗓️ Tentang Jadwal</div>
                 <p style="font-size:13px; margin: 4px 0 10px 0;">Simpan ayat/pasal pilihan Anda ke sebuah Jadwal bernama (misal "SPR 21 Juli 2026", "Anak 25 Mei 2026", "CGM 22 Jan 2026") dari Mode Baca atau Mode Cari. Setiap Jadwal bisa berisi banyak ayat tersimpan (misal Filipi 1:10, Matius 1:1-12, dst), lengkap dengan isi ayatnya. Klik salah satu ayat untuk langsung tampil cepat tanpa perlu keluar.</p>
@@ -549,6 +639,7 @@
                 <span class="nav-chevron" id="chevron-announce">▼</span>
             </div>
             <div class="nav-full-menu" id="announce-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
                 <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">📢 Tentang Pengumuman</div>
                 <p style="font-size:13px; margin: 4px 0 10px 0;">Pengumuman yang berstatus <b>done</b> dan sedang berada di antara tanggal mulai &amp; tanggal akhir akan tampil otomatis di bagian atas menu terkait dan bisa ditutup dengan tanda ✕. Hanya administrator yang bisa menambah/mengubah/menghapus pengumuman.</p>
@@ -624,6 +715,8 @@
     <div class="nav-summary-row" onclick="toggleNavMenu('viewer-toolbar', 'chevron-viewer')">
         <span class="nav-ref-title"><b id="viewer-title" style="font-weight:700;">-</b></span>
         <span class="nav-user-title" id="viewer-mode-label"></span>
+        <button class="nav-circle-btn" onclick="event.stopPropagation(); viewerPrev()" title="Sebelumnya (◀ / panah kiri)">◀</button>
+        <button class="nav-circle-btn" onclick="event.stopPropagation(); viewerNext()" title="Berikutnya (▶ / panah kanan)">▶</button>
         <button class="btn-icon-top" onclick="event.stopPropagation(); tutupViewer()" title="Tutup">✕</button>
         <span class="nav-chevron" id="chevron-viewer">▼</span>
     </div>
@@ -670,13 +763,17 @@
             <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeksViewer()">▶</button>
             <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
         </div>
+        <div class="tts-opts">
+            <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-viewer" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
+            <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-note-viewer"><span class="track"></span><span class="thumb"></span></span> Baca Catatan</label>
+        </div>
     </div>
     <div class="viewer-body reading-area" id="viewer-content"></div>
 </div>
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwz7AWqANBTGuy7RpTgNQyYeO0Bzw1gguEfVJ-SWq0COeVZiEP21q1WAtP9WaUaLGdCCQ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1tW3MqXfEkZ7Y62PvTGBGy1uGftkWLozSjmTz8r7SVmzpDumf4sK_S3TWV4L_GAXDJA/exec';
     
     let userSession = {};
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
@@ -694,6 +791,8 @@
     let ttsHeartbeatTimer = null;        // Heartbeat resume() utk mengatasi bug Chrome/Android yg mem-pause speechSynthesis
     let sudahBacaJudulAwal = false;      // Judul kitab+pasal+ayat hanya dibacakan SEKALI di awal, bukan diulang tiap ayat
     let lastAyatNumberDibaca = null;     // Nomor ayat terakhir yang sudah diumumkan lewat suara
+    let ttsBacaNamaKitab = true;         // Checklist "Baca Nama Kitab": ON = baca judul kitab/pasal/ayat spt biasa, OFF = hanya baca isi ayat saja
+    let ttsBacaNote = false;             // Checklist "Baca Catatan": OFF (default) = catatan/note TIDAK dibacakan, ON = dibacakan setelah teks ayat
     
     let currentLayoutMode = 0; 
     let isClickHighlightOn = false;
@@ -928,7 +1027,9 @@
             isi: isi,
             status: document.getElementById('pgm-status').value,
             tanggal_start: document.getElementById('pgm-tanggal-start').value,
-            tanggal_akhir: document.getElementById('pgm-tanggal-akhir').value
+            tanggal_akhir: document.getElementById('pgm-tanggal-akhir').value,
+            link_foto: document.getElementById('pgm-link-foto').value.trim(),
+            link_video: document.getElementById('pgm-link-video').value.trim()
         };
         const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
         const out = await res.json();
@@ -1422,6 +1523,17 @@
         document.getElementById('log-viewer').classList.add('hidden');
     }
 
+    // Navigasi keyboard (◀ / ▶) untuk viewer "Tampilkan Satu-satu", aktif hanya saat viewer sedang terbuka
+    // dan fokus tidak sedang berada di kolom input/select/textarea.
+    document.addEventListener('keydown', (e) => {
+        const viewer = document.getElementById('log-viewer');
+        if (!viewer || viewer.classList.contains('hidden')) return;
+        const tag = (document.activeElement && document.activeElement.tagName) || '';
+        if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft') { e.preventDefault(); viewerPrev(); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); viewerNext(); }
+    });
+
     function toggleNote(noteId) {
         const noteEl = document.getElementById(noteId);
         if(noteEl) noteEl.classList.toggle('open');
@@ -1544,7 +1656,10 @@
 
         verseQueue = Array.from(document.querySelectorAll(`#${containerId} .verse-text[data-lang="${langCodeToRead}"]`));
         if (verseQueue.length === 0) return alert("Belum ada teks bahasa tersebut.");
-        
+
+        ttsBacaNamaKitab = document.getElementById(`chk-baca-kitab-${page}`).checked;
+        ttsBacaNote = document.getElementById(`chk-baca-note-${page}`).checked;
+
         isReading = true; currentVerseIndex = 0;
         sudahBacaJudulAwal = false; lastAyatNumberDibaca = null;
         mintaWakeLock(); mulaiHeartbeatTTS();
@@ -1566,6 +1681,9 @@
         verseQueue = Array.from(document.querySelectorAll(`#viewer-content .verse-text[data-lang="${langCodeToRead}"]`));
         if (verseQueue.length === 0) return alert("Belum ada teks bahasa tersebut di ayat ini.");
 
+        ttsBacaNamaKitab = document.getElementById('chk-baca-kitab-viewer').checked;
+        ttsBacaNote = document.getElementById('chk-baca-note-viewer').checked;
+
         isReading = true; currentVerseIndex = 0;
         sudahBacaJudulAwal = false; lastAyatNumberDibaca = null;
         mintaWakeLock(); mulaiHeartbeatTTS();
@@ -1584,10 +1702,11 @@
         let rate = parseFloat(document.getElementById(`voice-speed-${page}`).value);
         let pitch = parseFloat(document.getElementById(`voice-pitch-${page}`).value);
 
-        // Judul (kitab + pasal + daftar ayat) hanya dibacakan SEKALI di awal sesi, sebelum ayat pertama.
+        // Judul (kitab + pasal + daftar ayat) hanya dibacakan SEKALI di awal sesi, sebelum ayat pertama --
+        // dan HANYA kalau checklist "Baca Nama Kitab" sedang ON. Kalau OFF, judul ini dilewati sepenuhnya.
         if (!sudahBacaJudulAwal) {
             sudahBacaJudulAwal = true;
-            let judulSuara = bangunJudulSuaraDariQueue(verseQueue);
+            let judulSuara = ttsBacaNamaKitab ? bangunJudulSuaraDariQueue(verseQueue) : '';
             if (judulSuara) {
                 let msgJudul = new SpeechSynthesisUtterance(judulSuara);
                 msgJudul.lang = 'id-ID';
@@ -1600,16 +1719,36 @@
             }
         }
 
-        // Setiap kali ganti ayat (nomor ayat berbeda dari yang terakhir dibacakan), sebutkan nomornya dulu.
+        // Setiap kali ganti ayat (nomor ayat berbeda dari yang terakhir dibacakan), sebutkan nomornya dulu --
+        // TAPI hanya kalau checklist "Baca Nama Kitab" ON. Kalau OFF: tidak baca kata "Ayat" sama sekali,
+        // hanya isi ayatnya saja yang dibacakan (persis sesuai permintaan).
         let nomorAyatSekarang = grup.getAttribute('data-verse');
-        let awalanAyat = (nomorAyatSekarang && nomorAyatSekarang !== lastAyatNumberDibaca) ? `Ayat ${nomorAyatSekarang}. ` : '';
+        let awalanAyat = (ttsBacaNamaKitab && nomorAyatSekarang && nomorAyatSekarang !== lastAyatNumberDibaca) ? `Ayat ${nomorAyatSekarang}. ` : '';
         lastAyatNumberDibaca = nomorAyatSekarang;
 
         let msg = new SpeechSynthesisUtterance(awalanAyat + elTeks.innerText);
         if(allVoices[selIdx]) msg.voice = allVoices[selIdx];
         msg.rate = rate; msg.pitch = pitch;
 
-        msg.onend = () => { currentVerseIndex++; bacaAyatSelanjutnya(page); };
+        // Setelah teks ayat selesai dibacakan: kalau checklist "Baca Catatan" ON dan ayat ini punya
+        // catatan/note, bacakan catatannya dulu (mis. "Catatan ayat 5. ..."), baru lanjut ke ayat
+        // berikutnya. Wake Lock & heartbeat TTS tetap aktif sepanjang ini (tidak mati sendiri di HP)
+        // karena masih 1 sesi speechSynthesis yang sama, belum dipanggil hentikanSuara().
+        let lanjutKeAyatBerikutnya = () => { currentVerseIndex++; bacaAyatSelanjutnya(page); };
+        msg.onend = () => {
+            let teksNote = ttsBacaNote ? (grup.getAttribute('data-note') || '').trim() : '';
+            if (teksNote) {
+                let awalanNote = ttsBacaNamaKitab ? `Catatan ayat ${nomorAyatSekarang}. ` : `Catatan. `;
+                let msgNote = new SpeechSynthesisUtterance(awalanNote + teksNote);
+                if (allVoices[selIdx]) msgNote.voice = allVoices[selIdx];
+                msgNote.rate = rate; msgNote.pitch = pitch;
+                msgNote.onend = lanjutKeAyatBerikutnya;
+                msgNote.onerror = lanjutKeAyatBerikutnya;
+                window.speechSynthesis.speak(msgNote);
+            } else {
+                lanjutKeAyatBerikutnya();
+            }
+        };
         msg.onerror = () => { hentikanSuara(); };
         window.speechSynthesis.speak(msg);
     }
@@ -1802,7 +1941,8 @@
                 currentHeaderKey = headerKey;
                 currentHeaderBookName = headerBookName || "";
             }
-            htmlOut += `<div class="verse-group" data-book="${currentHeaderBookName.replace(/"/g,'&quot;')}" data-chapter="${g.c}" data-verse="${g.v}">`;
+            let noteAttr = (g.note || '').replace(/"/g,'&quot;');
+            htmlOut += `<div class="verse-group" data-book="${currentHeaderBookName.replace(/"/g,'&quot;')}" data-chapter="${g.c}" data-verse="${g.v}" data-note="${noteAttr}">`;
 
             // Render BERDASARKAN URUTAN array dropdown (selectedLangsArray), bukan urutan acak JavaScript
             selectedLangsArray.forEach(langCode => {
@@ -2311,6 +2451,105 @@
     }
 
     function logout() { hentikanSuara(); location.reload(); }
+
+    // =====================================================================
+    // MENU SETTING: ganti password + bahasa default (semua user), + kelola user (khusus administrator)
+    // =====================================================================
+    function bukaAkunSetting() {
+        document.getElementById('acc-default-lang').value = userSession.language || 'ind';
+        document.getElementById('acc-pass1').value = '';
+        document.getElementById('acc-pass2').value = '';
+        document.getElementById('acc-setting-status').innerText = '';
+        document.getElementById('admin-user-form').classList.add('hidden');
+        let isAdmin = userSession.level === 'administrator';
+        document.getElementById('admin-user-panel').classList.toggle('hidden', !isAdmin);
+        if (isAdmin) muatDaftarUserAdmin();
+        document.getElementById('modal-akun-setting').classList.remove('hidden');
+    }
+
+    async function simpanAkunSetting() {
+        let p1 = document.getElementById('acc-pass1').value;
+        let p2 = document.getElementById('acc-pass2').value;
+        if (p1 || p2) {
+            if (p1 !== p2) return alert('Password baru dan ulangannya tidak sama.');
+            if (p1.length < 4) return alert('Password minimal 4 karakter.');
+        }
+        const statusEl = document.getElementById('acc-setting-status');
+        statusEl.style.color = 'gray';
+        statusEl.innerText = 'Menyimpan...';
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: 'saveUserSettings', username: userSession.username,
+                new_password: p1 || '', language: document.getElementById('acc-default-lang').value
+            }) });
+            const out = await res.json();
+            if (out.status === 'success') {
+                userSession.language = document.getElementById('acc-default-lang').value;
+                document.getElementById('acc-pass1').value = ''; document.getElementById('acc-pass2').value = '';
+                statusEl.style.color = '#34c759';
+                statusEl.innerText = '✅ Setting tersimpan.';
+            } else {
+                statusEl.style.color = '#ff3b30';
+                statusEl.innerText = out.message || 'Gagal menyimpan.';
+            }
+        } catch (e) {
+            statusEl.style.color = '#ff3b30';
+            statusEl.innerText = 'Gagal koneksi ke server.';
+        }
+    }
+
+    let daftarUserAdmin = [];
+    async function muatDaftarUserAdmin() {
+        const box = document.getElementById('admin-user-list');
+        box.innerHTML = '<i>Memuat daftar user...</i>';
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'adminListUsers', username: userSession.username }) });
+            const out = await res.json();
+            if (out.status !== 'success') { box.innerHTML = `<span style="color:#ff3b30;">${out.message || 'Gagal memuat user.'}</span>`; return; }
+            daftarUserAdmin = out.users || [];
+            box.innerHTML = daftarUserAdmin.map((u, idx) => `
+                <div class="log-item-card" style="display:flex; align-items:center; gap:8px;">
+                    <span style="flex:1;">
+                        <b>${u.username}</b><br>
+                        <span style="font-size:11px; opacity:0.7;">${u.level === 'administrator' ? '👑 Admin' : '👤 User'} • ${u.language.toUpperCase()} • ${u.status === 'nonaktif' ? '⛔ Nonaktif' : '✅ Aktif'}</span>
+                    </span>
+                    <button class="icon-btn" style="width:auto; padding:6px 12px;" onclick="bukaFormUserBaru(daftarUserAdmin[${idx}])">✏️ Edit</button>
+                </div>`).join('') || '<i>Belum ada user.</i>';
+        } catch (e) { box.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
+    }
+
+    function bukaFormUserBaru(userData) {
+        document.getElementById('admin-user-form').classList.remove('hidden');
+        document.getElementById('usr-original-username').value = userData ? userData.username : '';
+        document.getElementById('usr-username').value = userData ? userData.username : '';
+        document.getElementById('usr-password').value = '';
+        document.getElementById('usr-language').value = userData ? userData.language : 'ind';
+        document.getElementById('usr-level').value = userData ? userData.level : 'user';
+        document.getElementById('usr-status').value = userData ? userData.status : 'aktif';
+    }
+
+    async function simpanUserAdmin() {
+        let username = document.getElementById('usr-username').value.trim();
+        if (!username) return alert('Username wajib diisi.');
+        let targetUsername = document.getElementById('usr-original-username').value;
+        let password = document.getElementById('usr-password').value;
+        if (!targetUsername && !password) return alert('Password wajib diisi untuk user baru.');
+
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: 'adminSaveUser', admin_username: userSession.username,
+                target_username: targetUsername, new_username: username, new_password: password,
+                language: document.getElementById('usr-language').value,
+                level: document.getElementById('usr-level').value,
+                status: document.getElementById('usr-status').value
+            }) });
+            const out = await res.json();
+            if (out.status === 'success') {
+                document.getElementById('admin-user-form').classList.add('hidden');
+                muatDaftarUserAdmin();
+            } else { alert(out.message || 'Gagal menyimpan user.'); }
+        } catch (e) { alert('Gagal koneksi ke server.'); }
+    }
 </script>
 </body>
 </html>
