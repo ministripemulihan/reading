@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>14.54 E-Bible </title>
+    <title>15.25 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -201,7 +201,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 14.54</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 15.25</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -1937,6 +1937,28 @@
     // sehingga hanya bahasa yang datanya "menang" (biasanya yang terakhir diproses, chs)
     // yang tampil. Kunci berbasis kitab+pasal+ayat selalu sama untuk ketiga bahasa,
     // sehingga ketiganya pasti tergabung dan tampil bersamaan.
+    // PERBAIKAN BUG "NOTE TIDAK BISA DIBACAKAN": kalau isi note/nama kitab mengandung tanda kutip ("),
+    // simbol &, <, >, atau baris baru, dan itu ditaruh mentah-mentah ke dalam atribut HTML
+    // (mis. data-note="..."), atribut itu bisa RUSAK/TERPOTONG di titik karakter tsb -- akibatnya
+    // grup.getAttribute('data-note') di bacaAyatSelanjutnya() mengembalikan teks kosong/salah,
+    // sehingga catatan tampak "tidak pernah dibacakan" walau checklist "Baca Catatan" sudah ON.
+    // escAttr() dipakai untuk teks yang masuk ke dalam atribut (data-note, data-book, dst).
+    // escHtml() dipakai untuk teks yang tampil sebagai isi/innerHTML biasa (mis. di dalam <div>).
+    function escAttr(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\r?\n/g, ' ');
+    }
+    function escHtml(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
     function buildAyatHtml(ayatArray, selectedLangsArray) {
         // PERBAIKAN BUG 3-BAHASA: kunci pengelompokan SEKARANG memakai nomor kitab (bn) +
         // pasal (c) + ayat (v) -- angka ini sama persis di semua bahasa. Sebelumnya kunci
@@ -1969,12 +1991,12 @@
                     let fallbackLang = selectedLangsArray.find(l => g.bNames[l]);
                     headerBookName = fallbackLang ? g.bNames[fallbackLang] : Object.values(g.bNames)[0];
                 }
-                htmlOut += `<div class="book-title">${headerBookName} ${g.c}</div>`;
+                htmlOut += `<div class="book-title">${escHtml(headerBookName)} ${g.c}</div>`;
                 currentHeaderKey = headerKey;
                 currentHeaderBookName = headerBookName || "";
             }
-            let noteAttr = (g.note || '').replace(/"/g,'&quot;');
-            htmlOut += `<div class="verse-group" data-book="${currentHeaderBookName.replace(/"/g,'&quot;')}" data-chapter="${g.c}" data-verse="${g.v}" data-note="${noteAttr}">`;
+            let noteAttr = escAttr(g.note);
+            htmlOut += `<div class="verse-group" data-book="${escAttr(currentHeaderBookName)}" data-chapter="${g.c}" data-verse="${g.v}" data-note="${noteAttr}">`;
 
             // Render BERDASARKAN URUTAN array dropdown (selectedLangsArray), bukan urutan acak JavaScript
             selectedLangsArray.forEach(langCode => {
@@ -1988,7 +2010,7 @@
             });
 
             if (g.note) {
-                htmlOut += `<div id="note-${safeId}" class="verse-note">💡 <b>Catatan:</b> ${g.note}</div>`;
+                htmlOut += `<div id="note-${safeId}" class="verse-note">💡 <b>Catatan:</b> ${escHtml(g.note)}</div>`;
             }
             htmlOut += `</div>`;
         });
