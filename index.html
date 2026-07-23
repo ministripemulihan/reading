@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>16.22 E-Bible </title>
+    <title>17.30 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -202,15 +202,18 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 16.22</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.30</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
         <label style="font-size: 13px; color: gray; margin-top: 8px; display:block;">Bahasa Default:</label>
         <select id="login-language">
             <option value="ind">Indonesia (ind)</option>
-            <option value="chs">Chinese (chs)</option>
+            <option value="chs">Chinese (简体)</option>
             <option value="eng">English (eng)</option>
+            <option value="rvind">Indonesia pemulihan(rvind)</option>
+            <option value="rveng">English rcv(rveng)</option>
+            <option value="chssmp">Chinese Simple</option>
             <option value="kjv">KJV</option>
             <option value="jawa">Jawa</option>
         </select>
@@ -274,8 +277,8 @@
                 <option value="chs">Chinese (简体)</option>
                 <option value="chssmp">Chinese Simple</option>
                 <option value="jawa">Jawa</option>
-                <option value="rvind">Revisi Indonesia</option>
-                <option value="rveng">Revised English</option>
+                <option value="rvind">Indonesia Pemulihan</option>
+                <option value="rveng">English Recovery</option>
             </select>
 
             <div style="font-size:12px; font-weight:bold; color:gray; margin-top:14px;">🔑 Ganti Password</div>
@@ -302,7 +305,7 @@
                     <select id="usr-language">
                         <option value="ind">Indonesia</option><option value="eng">English</option><option value="kjv">English (KJV)</option>
                         <option value="chs">Chinese</option><option value="chssmp">Chinese Simple</option><option value="jawa">Jawa</option>
-                        <option value="rvind">Revisi Indonesia</option><option value="rveng">Revised English</option>
+                        <option value="rvind">Indonesia Pemulihan</option><option value="rveng">English Recovery</option>
                     </select>
                     <label style="font-size:12px; color:gray;">Level:</label>
                     <select id="usr-level">
@@ -520,9 +523,9 @@
                 
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:10px;">🌐 Bandingkan Bahasa</div>
                 <div class="icon-bar">
-                    <select id="lang1-read" class="icon-btn"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">Indo Pemulihan</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
-                    <select id="lang2-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">Indo Pemulihan</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
-                    <select id="lang3-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">Indo Pemulihan</option><option value="chssmp">Chinese Simple(chssmp)</option><option value="rveng">English (rv eng)</option></select>
+                    <select id="lang1-read" class="icon-btn"><option value="ind">Ind</option><option value="chs">Chinese (chs)</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">Indo Pemulihan</option><option value="chssmp">Chinese Simple</option><option value="rveng">English RCV<option></select>
+                    <select id="lang2-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese</option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">Indo Pemulihan</option><option value="chssmp">Chinese Simple</option><option value="rveng">English RCV</option></select>
+                    <select id="lang3-read" class="icon-btn"><option value="">- Kosong -</option><option value="ind">Ind</option><option value="chs">Chinese </option><option value="eng">English (eng)</option><option value="kjv">KJV</option><option value="jawa">Jawa</option><option value="rvind">Indo Pemulihan</option><option value="chssmp">Chinese Simple</option><option value="rveng">English RCV</option></select>
                 </div>
                 <button class="icon-btn" style="background:var(--primary); color:white; width:100%; margin: 10px 0;" onclick="muatAyatServer()">🔄 Muat Ulang Bahasa</button>
 
@@ -823,8 +826,9 @@
     let currentVerseIndex = 0;
     let wakeLockRef = null;              // Wake Lock aktif selama TTS berjalan, supaya layar (& suara) tidak mati sendiri
     let ttsHeartbeatTimer = null;        // Heartbeat resume() utk mengatasi bug Chrome/Android yg mem-pause speechSynthesis
-    let sudahBacaJudulAwal = false;      // Judul kitab+pasal+ayat hanya dibacakan SEKALI di awal, bukan diulang tiap ayat
     let lastAyatNumberDibaca = null;     // Nomor ayat terakhir yang sudah diumumkan lewat suara
+    let lastBookDibaca = null;           // Nama kitab terakhir yang judulnya sudah diumumkan lewat suara
+    let lastChapterDibaca = null;        // Nomor pasal terakhir yang judulnya sudah diumumkan lewat suara
     let ttsBacaNamaKitab = true;         // Checklist "Baca Nama Kitab": ON = baca judul kitab/pasal/ayat spt biasa, OFF = hanya baca isi ayat saja
     let ttsBacaNote = false;             // Checklist "Baca Catatan": OFF (default) = catatan/note TIDAK dibacakan, ON = dibacakan setelah teks ayat
     
@@ -1725,27 +1729,55 @@
     }
 
     // Bangun kalimat pembuka "kitab X pasal Y ayat Z" / "...ayat 3 sampai ayat 5, dan ayat 8" dari
-    // urutan verse-group pertama yang akan dibacakan (kitab+pasal pertama pada antrian).
-    function bangunJudulSuaraDariQueue(queue) {
+    // urutan verse-group yang akan dibacakan, DIMULAI dari mulaiDariIndex pada antrian (default 0).
+    // Dipakai bukan hanya di awal sesi, tapi setiap kali antrian pindah ke kitab/pasal baru --
+    // mis. pindah dari Matius ke Lukas di tengah sesi -- supaya judul kitab baru ikut diumumkan.
+    function bangunJudulSuaraDariQueue(queue, mulaiDariIndex) {
         if (!queue || queue.length === 0) return '';
-        let grupPertama = queue[0].closest('.verse-group');
+        let idx = mulaiDariIndex || 0;
+        let grupPertama = queue[idx] && queue[idx].closest('.verse-group');
         if (!grupPertama) return '';
         let book = grupPertama.getAttribute('data-book') || '';
         let chapter = grupPertama.getAttribute('data-chapter') || '';
         if (!book || !chapter) return '';
 
         let nomorSet = [];
-        queue.forEach(el => {
-            let grp = el.closest('.verse-group');
-            if (!grp) return;
-            if (grp.getAttribute('data-book') === book && grp.getAttribute('data-chapter') === chapter) {
-                let v = parseInt(grp.getAttribute('data-verse'));
-                if (!isNaN(v) && nomorSet.indexOf(v) === -1) nomorSet.push(v);
-            }
-        });
+        for (let i = idx; i < queue.length; i++) {
+            let grp = queue[i].closest('.verse-group');
+            if (!grp) continue;
+            if (grp.getAttribute('data-book') !== book || grp.getAttribute('data-chapter') !== chapter) break;
+            let v = parseInt(grp.getAttribute('data-verse'));
+            if (!isNaN(v) && nomorSet.indexOf(v) === -1) nomorSet.push(v);
+        }
         nomorSet.sort((a, b) => a - b);
         if (nomorSet.length === 0) return '';
         return `kitab ${book} pasal ${chapter} ${formatDaftarAyatUntukSuara(nomorSet)}`;
+    }
+
+    // =====================================================================
+    // PERBAIKAN BUG "SUARA MACET DI TENGAH JALAN" (berhenti di satu ayat/catatan lalu diam,
+    // tidak lanjut ke ayat/kitab berikutnya sama sekali):
+    // Chrome/Android punya bug lama -- speechSynthesis.speak() yang dipanggil LANGSUNG di dalam
+    // onend utterance sebelumnya kadang gagal mulai sama sekali secara diam-diam (tidak ada error,
+    // onend/onerror juga tidak pernah terpanggil -- sesi terlihat "macet" tepat di titik itu).
+    // Ini berlaku untuk SEMUA rantai speak()->speak() dalam sesi ini (judul->ayat, ayat->ayat
+    // berikutnya, ayat->catatan, catatan->ayat berikutnya), bukan cuma ayat->catatan seperti
+    // sebelumnya. Solusi dipusatkan di sini supaya konsisten di semua rantai: (1) beri jeda kecil
+    // sebelum speak() lewat setTimeout, (2) pasang watchdog -- kalau onend/onerror belum terpanggil
+    // dalam batas waktu wajar (estimasi lama bicara dari jumlah karakter), paksa lanjut ke langkah
+    // berikutnya supaya sesi TIDAK PERNAH macet permanen di satu titik.
+    // =====================================================================
+    function ucapkanAman(msg, teksUntukEstimasi, rate, lanjut) {
+        let sudahLanjut = false;
+        let selesai = () => { if (sudahLanjut) return; sudahLanjut = true; clearTimeout(watchdog); lanjut(); };
+        msg.onend = selesai;
+        msg.onerror = selesai;
+        let estimasiDetik = Math.max(3, (teksUntukEstimasi || '').length / (14 * (rate || 1))) + 4;
+        let watchdog = setTimeout(selesai, estimasiDetik * 1000);
+        setTimeout(() => {
+            if (!isReading) { clearTimeout(watchdog); return; }
+            try { window.speechSynthesis.speak(msg); } catch (e) { selesai(); }
+        }, 120);
     }
 
     function bacakanTeks(containerId, page) {
@@ -1764,7 +1796,7 @@
         ttsBacaNote = document.getElementById(`chk-baca-note-${page}`).checked;
 
         isReading = true; currentVerseIndex = 0;
-        sudahBacaJudulAwal = false; lastAyatNumberDibaca = null;
+        lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
         mintaWakeLock(); mulaiHeartbeatTTS();
         bacaAyatSelanjutnya(page);
     }
@@ -1788,7 +1820,7 @@
         ttsBacaNote = document.getElementById('chk-baca-note-viewer').checked;
 
         isReading = true; currentVerseIndex = 0;
-        sudahBacaJudulAwal = false; lastAyatNumberDibaca = null;
+        lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
         mintaWakeLock(); mulaiHeartbeatTTS();
         bacaAyatSelanjutnya('viewer');
     }
@@ -1805,21 +1837,25 @@
         let rate = parseFloat(document.getElementById(`voice-speed-${page}`).value);
         let pitch = parseFloat(document.getElementById(`voice-pitch-${page}`).value);
 
-        // Judul (kitab + pasal + daftar ayat) hanya dibacakan SEKALI di awal sesi, sebelum ayat pertama --
-        // dan HANYA kalau checklist "Baca Nama Kitab" sedang ON. Kalau OFF, judul ini dilewati sepenuhnya.
-        if (!sudahBacaJudulAwal) {
-            sudahBacaJudulAwal = true;
-            let judulSuara = ttsBacaNamaKitab ? bangunJudulSuaraDariQueue(verseQueue) : '';
+        // Judul (kitab + pasal + daftar ayat) diucapkan setiap kali antrian PINDAH ke kitab dan/atau
+        // pasal yang berbeda dari yang terakhir diumumkan -- baik di awal sesi maupun di tengah sesi
+        // (mis. pindah dari "Matius pasal 4" ke "Lukas pasal 1") -- dan HANYA kalau checklist
+        // "Baca Nama Kitab" sedang ON. Kalau OFF, judul ini dilewati sepenuhnya di sepanjang sesi.
+        let bookSekarang = grup.getAttribute('data-book') || '';
+        let chapterSekarang = grup.getAttribute('data-chapter') || '';
+        if (ttsBacaNamaKitab && (bookSekarang !== lastBookDibaca || chapterSekarang !== lastChapterDibaca)) {
+            lastBookDibaca = bookSekarang; lastChapterDibaca = chapterSekarang;
+            let judulSuara = bangunJudulSuaraDariQueue(verseQueue, currentVerseIndex);
             if (judulSuara) {
                 let msgJudul = new SpeechSynthesisUtterance(judulSuara);
                 msgJudul.lang = 'id-ID';
                 if (allVoices[selIdx]) msgJudul.voice = allVoices[selIdx];
                 msgJudul.rate = rate; msgJudul.pitch = pitch;
-                msgJudul.onend = () => bacaAyatSelanjutnya(page);
-                msgJudul.onerror = () => bacaAyatSelanjutnya(page);
-                window.speechSynthesis.speak(msgJudul);
-                return; // ayat pertama menyusul lewat rekursi di atas setelah judul selesai
+                ucapkanAman(msgJudul, judulSuara, rate, () => bacaAyatSelanjutnya(page));
+                return; // ayat pertama kelompok ini menyusul lewat callback di atas setelah judul selesai
             }
+        } else {
+            lastBookDibaca = bookSekarang; lastChapterDibaca = chapterSekarang;
         }
 
         // Setiap kali ganti ayat (nomor ayat berbeda dari yang terakhir dibacakan), sebutkan nomornya dulu --
@@ -1832,26 +1868,18 @@
         // Pakai data-speech (teks polos, sudah dibersihkan dari <sup>/<FR>/tag HTML lain) supaya
         // suara TIDAK PERNAH ikut membaca tag atau isi superscript catatan kaki.
         let teksAyatUntukSuara = elTeks.getAttribute('data-speech') || elTeks.innerText;
-        let msg = new SpeechSynthesisUtterance(awalanAyat + teksAyatUntukSuara);
+        let teksLengkapAyat = awalanAyat + teksAyatUntukSuara;
+        let msg = new SpeechSynthesisUtterance(teksLengkapAyat);
         if(allVoices[selIdx]) msg.voice = allVoices[selIdx];
         msg.rate = rate; msg.pitch = pitch;
 
         // Setelah teks ayat selesai dibacakan: kalau checklist "Baca Catatan" ON dan ayat ini punya
         // catatan/note, bacakan catatannya dulu (mis. "Catatan ayat 5. ..."), baru lanjut ke ayat
-        // berikutnya. Wake Lock & heartbeat TTS tetap aktif sepanjang ini (tidak mati sendiri di HP)
-        // karena masih 1 sesi speechSynthesis yang sama, belum dipanggil hentikanSuara().
-        //
-        // PERBAIKAN BUG "NOTE TIDAK PERNAH DIBACAKAN": Chrome/Android punya bug lama di mana
-        // speechSynthesis.speak() yang dipanggil LANGSUNG di dalam onend utterance sebelumnya
-        // kadang gagal mulai sama sekali secara diam-diam (tidak ada error, onend/onerror juga
-        // tidak pernah terpanggil -- sesi terlihat "macet" tepat di titik note). Ini jauh lebih
-        // mudah terjadi di rantai speak() yang KEDUA (ayat -> note) dibanding yang pertama
-        // (ayat -> ayat berikutnya), karena mesin TTS butuh sedikit jeda untuk benar-benar
-        // "reset" antar utterance. Perbaikan: (1) beri jeda kecil sebelum speak() lewat
-        // setTimeout, (2) pasang watchdog -- kalau onend/onerror belum terpanggil dalam batas
-        // waktu wajar, paksa lanjut ke ayat berikutnya supaya sesi TIDAK PERNAH macet permanen.
+        // berikutnya (lewat ucapkanAman -> lihat definisinya di atas untuk penjelasan bug & perbaikan).
+        // Wake Lock & heartbeat TTS tetap aktif sepanjang ini (tidak mati sendiri di HP) karena masih
+        // 1 sesi speechSynthesis yang sama, belum dipanggil hentikanSuara().
         let lanjutKeAyatBerikutnya = () => { currentVerseIndex++; bacaAyatSelanjutnya(page); };
-        msg.onend = () => {
+        ucapkanAman(msg, teksLengkapAyat, rate, () => {
             let teksNote = ttsBacaNote ? (grup.getAttribute('data-note') || '').trim() : '';
             if (teksNote) {
                 let awalanNote = ttsBacaNamaKitab ? `Catatan ayat ${nomorAyatSekarang}. ` : `Catatan. `;
@@ -1859,30 +1887,16 @@
                 let msgNote = new SpeechSynthesisUtterance(teksLengkapNote);
                 if (allVoices[selIdx]) msgNote.voice = allVoices[selIdx];
                 msgNote.rate = rate; msgNote.pitch = pitch;
-
-                let sudahLanjut = false;
-                let lanjutSekaliSaja = () => { if (sudahLanjut) return; sudahLanjut = true; clearTimeout(watchdogNote); lanjutKeAyatBerikutnya(); };
-                msgNote.onend = lanjutSekaliSaja;
-                msgNote.onerror = lanjutSekaliSaja;
-
-                // Watchdog: estimasi lama bicara dari jumlah karakter (±14 karakter/detik di rate 1.0),
-                // ditambah buffer 4 detik. Kalau tidak juga selesai/gagal dalam waktu itu, paksa lanjut.
-                let estimasiDetik = Math.max(3, teksLengkapNote.length / (14 * rate)) + 4;
-                let watchdogNote = setTimeout(lanjutSekaliSaja, estimasiDetik * 1000);
-
-                // Jeda kecil sebelum speak() kedua ini -- menghindari bug "silent fail" di atas.
-                setTimeout(() => { try { window.speechSynthesis.speak(msgNote); } catch (e) { lanjutSekaliSaja(); } }, 120);
+                ucapkanAman(msgNote, teksLengkapNote, rate, lanjutKeAyatBerikutnya);
             } else {
                 lanjutKeAyatBerikutnya();
             }
-        };
-        msg.onerror = () => { hentikanSuara(); };
-        window.speechSynthesis.speak(msg);
+        });
     }
 
     function hentikanSuara() {
         isReading = false;
-        sudahBacaJudulAwal = false; lastAyatNumberDibaca = null;
+        lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
         window.speechSynthesis.cancel();
         hapusHighlight();
         hentikanHeartbeatTTS();
@@ -2475,8 +2489,22 @@
         function parseChapterVerse(bagianPasal, groupRef) {
             bagianPasal = bagianPasal.trim();
             if (!bagianPasal) return;
-            let [chapterStr, ayatStr] = bagianPasal.split(':');
-            let chapter = parseInt(chapterStr, 10);
+
+            let chapter, ayatStr;
+            if (bagianPasal.indexOf(':') !== -1) {
+                // Ada ":" -> bagian ini menyebut pasal secara eksplisit, mis. "4:1".
+                let [chapterStr, sisaAyat] = bagianPasal.split(':');
+                chapter = parseInt(chapterStr, 10);
+                ayatStr = sisaAyat;
+            } else {
+                // TIDAK ada ":" -> bagian ini HANYA berisi nomor ayat (atau rentang ayat), tanpa nomor
+                // pasal. Artinya lanjutan dari PASAL TERAKHIR yang sudah disebut di kelompok kitab ini,
+                // mis. "matius 1:1;17" -> "17" berarti pasal 1 ayat 17 (pasal sama dgn segmen sebelumnya),
+                // dan "4:1;4-10" -> "4-10" berarti pasal 4 ayat 4 sampai 10.
+                if (!groupRef.segments.length) return; // belum ada pasal acuan sama sekali -> abaikan
+                chapter = groupRef.segments[groupRef.segments.length - 1].chapter;
+                ayatStr = bagianPasal;
+            }
             if (!chapter || !ayatStr) return;
 
             let ranges = [];
@@ -2491,7 +2519,17 @@
                     if (v) { ranges.push([v, v]); groupRef.total_verses += 1; }
                 }
             });
-            if (ranges.length) { groupRef.segments.push({ chapter: chapter, ranges: ranges }); groupRef.verse_spec_parts.push(bagianPasal); }
+            if (!ranges.length) return;
+
+            // Kalau pasalnya sama dengan segmen terakhir yang sudah ada (lanjutan tanpa ":"), gabungkan
+            // ke segmen itu supaya urutan ayat tetap rapi, bukan bikin segmen "pasal sama" yang terpisah.
+            let segTerakhir = groupRef.segments[groupRef.segments.length - 1];
+            if (segTerakhir && segTerakhir.chapter === chapter && bagianPasal.indexOf(':') === -1) {
+                segTerakhir.ranges = segTerakhir.ranges.concat(ranges);
+            } else {
+                groupRef.segments.push({ chapter: chapter, ranges: ranges });
+            }
+            groupRef.verse_spec_parts.push(bagianPasal);
         }
 
         let groups = [];
