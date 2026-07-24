@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>17.54 E-Bible </title>
+    <title>18.31 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -206,6 +206,21 @@
         .highlight-tts { background-color: rgba(255, 235, 59, 0.4) !important; box-shadow: 0 0 5px rgba(255, 235, 59, 0.5); padding: 5px; border-radius: 5px; }
         .user-highlight { background-color: rgba(135, 206, 250, 0.4) !important; padding: 5px; border-radius: 5px; } /* Warna Highlight Klik */
 
+        /* ===== ANOTASI & HIGHLIGHT (per user, tersimpan di database) ===== */
+        .verse-group.anot-merah  { background-color: rgba(255, 59, 48, 0.18) !important; padding: 6px; border-radius: 6px; }
+        .verse-group.anot-biru   { background-color: rgba(0, 122, 255, 0.16) !important; padding: 6px; border-radius: 6px; }
+        .verse-group.anot-hijau  { background-color: rgba(52, 199, 89, 0.18) !important; padding: 6px; border-radius: 6px; }
+        .verse-group.anot-kuning { background-color: rgba(255, 204, 0, 0.22) !important; padding: 6px; border-radius: 6px; }
+        .verse-annot-btn { cursor: pointer; font-size: 13px; margin-left: 6px; opacity: 0.75; user-select: none; }
+        .verse-annot-btn.ada-catatan { opacity: 1; }
+        .anot-catatan-badge { background: var(--btn-bg); border-left: 4px solid #ffcc00; padding: 8px 12px; margin: 5px 0 10px 0; font-size: 0.85em; border-radius: 0 8px 8px 0; color: var(--text); }
+        .anot-catatan-badge .anot-tgl { font-size: 11px; color: gray; margin-top: 4px; }
+        .anot-swatch-row { display: flex; gap: 12px; justify-content: center; margin: 14px 0; }
+        .anot-swatch { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; }
+        .anot-swatch.dipilih { border-color: var(--text); transform: scale(1.12); }
+        .anot-swatch-none { background: var(--btn-bg) !important; color: var(--text) !important; border: 2px dashed var(--border) !important; }
+        .sk-preset-btn { width: auto; font-size: 11px; padding: 6px 10px; }
+
         .hidden { display: none !important; }
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
         .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; margin-top: 10vh; margin-bottom: auto;}
@@ -228,7 +243,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.54</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 18.31</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -398,6 +413,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn" id="tab-searchkata" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
@@ -522,6 +538,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-2" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-2" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn" id="tab-searchkata-2" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi-2" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
@@ -647,6 +664,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-3" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-3" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn" id="tab-searchkata-3" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi-3" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
@@ -700,6 +718,7 @@
                 <button type="button" class="nav-tab-btn active-tab" id="tab-pengumuman-4" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-4" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn" id="tab-searchkata-4" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi-4" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('announce-menu', 'chevron-announce')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
@@ -790,6 +809,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-5" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-outline-5" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn" id="tab-searchkata-5" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi-5" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('outline-menu', 'chevron-outline')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="outline-ref-title">📚 Garis Besar &amp; Video</span></span>
@@ -801,7 +821,7 @@
                 <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
                 <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">📚 Tentang Menu Ini</div>
-                <p style="font-size:13px; margin: 4px 0 10px 0;">Garis besar berisi uraian tiap kitab -- kata/frasa yang digarisbawahi bisa diklik untuk langsung membuka ayatnya di menu Cari. Video YouTube tersusun berurutan dari pasal & ayat pertama sampai terakhir. Hanya administrator yang bisa menambah/mengubah/menghapus isinya.</p>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Garis besar berisi uraian tiap kitab -- kata/frasa yang digarisbawahi bisa diklik untuk langsung membuka ayatnya di menu Cari. Video YouTube, Audio MP3, dan Video MP4 (2 yang terakhir dari Google Drive) tersusun berurutan dari pasal & ayat pertama sampai terakhir, dan diputar langsung di dalam web ini (tidak keluar halaman). Hanya administrator yang bisa menambah/mengubah/menghapus isinya.</p>
             </div>
         </div>
 
@@ -812,6 +832,8 @@
         <div class="nav-tabs" style="padding: 8px;">
             <button type="button" class="nav-tab-btn active-tab" id="outline-subtab-garis" onclick="gantiSubTabOutline('garis')" style="flex:1;">📖 Garis Besar</button>
             <button type="button" class="nav-tab-btn" id="outline-subtab-video" onclick="gantiSubTabOutline('video')" style="flex:1;">🎥 Video YouTube</button>
+            <button type="button" class="nav-tab-btn" id="outline-subtab-mp3" onclick="gantiSubTabOutline('mp3')" style="flex:1;">🎧 Audio MP3</button>
+            <button type="button" class="nav-tab-btn" id="outline-subtab-mp4" onclick="gantiSubTabOutline('mp4')" style="flex:1;">🎬 Video MP4</button>
         </div>
 
         <!-- SUB-TAB: GARIS BESAR -->
@@ -883,6 +905,73 @@
                 <i>Memuat daftar video...</i>
             </div>
         </div>
+
+        <!-- SUB-TAB: AUDIO MP3 (Google Drive) -->
+        <div id="outline-tab-mp3" class="hidden">
+            <button id="outline-btn-tambah-mp3" class="icon-btn hidden" style="background:#34c759; color:white; margin:0 8px 10px 8px; width:calc(100% - 16px);" onclick="bukaFormGdriveBaru('mp3')">➕ Tambah Audio MP3 Baru</button>
+            <div id="outline-mp3-list" class="reading-area card" style="background: var(--card);">
+                <i>Memuat daftar audio...</i>
+            </div>
+        </div>
+
+        <!-- SUB-TAB: VIDEO MP4 (Google Drive) -->
+        <div id="outline-tab-mp4" class="hidden">
+            <button id="outline-btn-tambah-mp4" class="icon-btn hidden" style="background:#34c759; color:white; margin:0 8px 10px 8px; width:calc(100% - 16px);" onclick="bukaFormGdriveBaru('mp4')">➕ Tambah Video MP4 Baru</button>
+            <div id="outline-mp4-list" class="reading-area card" style="background: var(--card);">
+                <i>Memuat daftar video mp4...</i>
+            </div>
+        </div>
+
+        <!-- FORM ADMIN BERSAMA untuk Audio MP3 & Video MP4 (Google Drive) -->
+        <div id="outline-gdrive-admin-form" class="pgm-admin-card hidden" style="margin: 0 8px 10px 8px;">
+            <h3 id="outline-gdrive-form-title" style="margin-top:0;">➕ Tambah Media</h3>
+            <input type="hidden" id="outline-gdrive-id">
+            <label style="font-size:12px; color:gray;">Urutan Tampil (mis. 1, 2, 3, ...):</label>
+            <input type="number" id="outline-gdrive-urutan" min="1" step="1">
+
+            <label style="font-size:12px; color:gray; margin-top:6px; display:block;">Judul:</label>
+            <input type="text" id="outline-gdrive-judul" placeholder="mis. Silsilah & Kelahiran Yesus">
+
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Pasal Mulai:</label>
+                    <input type="number" id="outline-gdrive-pasal-mulai" min="1" step="1">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Ayat Mulai:</label>
+                    <input type="number" id="outline-gdrive-ayat-mulai" min="1" step="1">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Pasal Selesai:</label>
+                    <input type="number" id="outline-gdrive-pasal-selesai" min="1" step="1">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Ayat Selesai:</label>
+                    <input type="number" id="outline-gdrive-ayat-selesai" min="1" step="1">
+                </div>
+            </div>
+
+            <label style="font-size:12px; color:gray;">Link Google Drive (harus dibagikan "Semua yang memiliki link bisa melihat"):</label>
+            <input type="url" id="outline-gdrive-url" placeholder="https://drive.google.com/file/d/XXXXXXXX/view?usp=sharing">
+
+            <div class="icon-bar" style="margin-top:10px;">
+                <button class="icon-btn" style="background:var(--primary); color:white;" onclick="simpanGdriveMedia()">💾 Simpan</button>
+                <button class="icon-btn" onclick="document.getElementById('outline-gdrive-admin-form').classList.add('hidden')">✖ Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PEMUTAR AUDIO MP3 / VIDEO MP4 DARI GOOGLE DRIVE (tetap di dalam web ini, tidak keluar) -->
+    <div id="modal-gdrive-outline" class="modal hidden" onclick="tutupGdriveOutline()">
+        <div class="modal-content card" onclick="event.stopPropagation()" style="max-width:640px; padding:10px;">
+            <h3 id="gdrive-modal-title" style="text-align:center; margin:6px 0;"></h3>
+            <div id="gdrive-modal-box" style="position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
+                <iframe id="gdrive-modal-iframe" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay" allowfullscreen></iframe>
+            </div>
+            <button onclick="tutupGdriveOutline()" style="background:#ff3b30; margin-top:15px;">Tutup</button>
+        </div>
     </div>
 
     <!-- MENU BARU: CARI KATA (di isi ayat & catatan), filter kitab, mode OR/AND, beberapa bahasa -->
@@ -895,6 +984,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-6" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-6" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-searchkata-6" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi-6" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('searchkata-menu', 'chevron-searchkata')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="searchkata-ref-title">🔎 Cari Kata di Ayat &amp; Catatan</span></span>
@@ -934,6 +1024,13 @@
                     <option value="all">Semua Kitab</option>
                     <option value="pilih">Pilih Kitab (boleh lebih dari satu)</option>
                 </select>
+            </div>
+            <div id="sk-book-preset-row" class="icon-bar hidden" style="flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('semua')">☑️ Centang Semua</button>
+                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('kosong')">◻️ Kosongkan Semua</button>
+                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('injil')">✝️ Kitab Injil</button>
+                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('pb')">📗 Perjanjian Baru</button>
+                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('pl')">📘 Perjanjian Lama</button>
             </div>
             <div id="sk-book-checklist" class="pgm-kategori-checks hidden" style="max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:8px;"></div>
 
@@ -1037,7 +1134,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqQ3Bd4FRvppBpsB9aEpmWrsG8QRzd-mK9s-F0or3Y2uDh9cdLJNP92CzVSzyEif1lpg/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyV68q92ZtU7_3a50yKYRFqA_huWYIS07NCSxCBWTpYjm__fDEtg3nCI52ZLkPNIH2CkA/exec';
     
     let userSession = {};
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
@@ -1438,6 +1535,8 @@
         let isAdmin = (userSession.level === 'administrator');
         document.getElementById('outline-btn-edit-garis').classList.toggle('hidden', !isAdmin);
         document.getElementById('outline-btn-tambah-video').classList.toggle('hidden', !isAdmin);
+        document.getElementById('outline-btn-tambah-mp3').classList.toggle('hidden', !isAdmin);
+        document.getElementById('outline-btn-tambah-mp4').classList.toggle('hidden', !isAdmin);
     }
 
     function sinkronisasiBukuOutline() {
@@ -1453,9 +1552,16 @@
     function gantiSubTabOutline(tab) {
         document.getElementById('outline-subtab-garis').classList.toggle('active-tab', tab === 'garis');
         document.getElementById('outline-subtab-video').classList.toggle('active-tab', tab === 'video');
+        document.getElementById('outline-subtab-mp3').classList.toggle('active-tab', tab === 'mp3');
+        document.getElementById('outline-subtab-mp4').classList.toggle('active-tab', tab === 'mp4');
         document.getElementById('outline-tab-garis').classList.toggle('hidden', tab !== 'garis');
         document.getElementById('outline-tab-video').classList.toggle('hidden', tab !== 'video');
+        document.getElementById('outline-tab-mp3').classList.toggle('hidden', tab !== 'mp3');
+        document.getElementById('outline-tab-mp4').classList.toggle('hidden', tab !== 'mp4');
+        document.getElementById('outline-gdrive-admin-form').classList.add('hidden');
         if (tab === 'video') muatVideoYoutube();
+        if (tab === 'mp3') muatAudioMp3();
+        if (tab === 'mp4') muatVideoMp4();
     }
 
     function gantiBukuOutline() {
@@ -1463,8 +1569,11 @@
         currentOutlineBookName = document.getElementById('outline-book').selectedOptions[0].text;
         document.getElementById('outline-garis-admin-form').classList.add('hidden');
         document.getElementById('outline-video-admin-form').classList.add('hidden');
+        document.getElementById('outline-gdrive-admin-form').classList.add('hidden');
         muatGarisBesarKitab();
         if (!document.getElementById('outline-tab-video').classList.contains('hidden')) muatVideoYoutube();
+        if (!document.getElementById('outline-tab-mp3').classList.contains('hidden')) muatAudioMp3();
+        if (!document.getElementById('outline-tab-mp4').classList.contains('hidden')) muatVideoMp4();
     }
 
     // Ubah format [[kata yang diklik|Kitab Pasal:Ayat]] jadi <span> yang bisa diklik utk langsung
@@ -1652,6 +1761,153 @@
         } catch (e) { alert("Koneksi terputus."); }
     }
 
+    // =====================================================================
+    // AUDIO MP3 & VIDEO MP4 (GOOGLE DRIVE) -- sub-menu tambahan di "Alur", modelnya
+    // persis seperti Video YouTube (urutan + rentang pasal:ayat + judul + link), hanya
+    // linknya dari Google Drive. Diputar di dalam modal <iframe> supaya TIDAK KELUAR
+    // dari web ini (memakai https://drive.google.com/file/d/FILE_ID/preview).
+    // =====================================================================
+    let lastAudioMp3List = [], lastVideoMp4List = [];
+    let currentGdriveFormTipe = 'mp3';
+
+    async function muatAudioMp3() {
+        const box = document.getElementById('outline-mp3-list');
+        box.innerHTML = "<i>Memuat daftar audio...</i>";
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getAudioMp3", book_number: currentOutlineBookNum }) });
+            const out = await res.json();
+            if (out.status !== "success") { box.innerHTML = `<span style="color:red;">${out.message || "Gagal memuat."}</span>`; return; }
+            lastAudioMp3List = out.list || [];
+            renderDaftarGdriveMedia(lastAudioMp3List, box, 'mp3');
+        } catch (e) { box.innerHTML = "<span style='color:red;'>Koneksi terputus.</span>"; }
+    }
+
+    async function muatVideoMp4() {
+        const box = document.getElementById('outline-mp4-list');
+        box.innerHTML = "<i>Memuat daftar video mp4...</i>";
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getVideoMp4", book_number: currentOutlineBookNum }) });
+            const out = await res.json();
+            if (out.status !== "success") { box.innerHTML = `<span style="color:red;">${out.message || "Gagal memuat."}</span>`; return; }
+            lastVideoMp4List = out.list || [];
+            renderDaftarGdriveMedia(lastVideoMp4List, box, 'mp4');
+        } catch (e) { box.innerHTML = "<span style='color:red;'>Koneksi terputus.</span>"; }
+    }
+
+    // Ambil FILE_ID dari berbagai bentuk link Google Drive (file/d/ID/..., ?id=ID, uc?id=ID)
+    function idFileGdrive(url) {
+        let s = String(url || "");
+        let m = s.match(/\/file\/d\/([-\w]{10,})/) || s.match(/[?&]id=([-\w]{10,})/);
+        return m ? m[1] : null;
+    }
+
+    function renderDaftarGdriveMedia(list, box, tipe) {
+        if (list.length === 0) { box.innerHTML = `<i>Belum ada ${tipe === 'mp3' ? 'audio' : 'video'} untuk kitab ini.</i>`; return; }
+        let isAdmin = (userSession.level === 'administrator');
+        box.innerHTML = list.map((v, i) => {
+            let rangeLabel = (v.pasal_mulai === v.pasal_selesai)
+                ? `${currentOutlineBookName} ${v.pasal_mulai}:${v.ayat_mulai}-${v.ayat_selesai}`
+                : `${currentOutlineBookName} ${v.pasal_mulai}:${v.ayat_mulai} — ${v.pasal_selesai}:${v.ayat_selesai}`;
+            return `
+            <div class="log-item-card" style="align-items:flex-start; flex-direction:column; cursor:pointer;" onclick="putarGdriveOutline('${tipe}', ${i})">
+                <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                    <b>${tipe === 'mp3' ? '🎧' : '🎬'} #${v.urutan} — ${escHtml(v.judul)}</b>
+                    <span style="font-size:20px;">▶️</span>
+                </div>
+                <div style="font-size:12px; color:gray;">${rangeLabel}</div>
+                ${isAdmin ? `<div class="icon-bar" style="width:100%; margin-top:8px;" onclick="event.stopPropagation()">
+                    <button class="icon-btn" onclick="editGdriveMedia('${tipe}', ${i})">✏️ Ubah</button>
+                    <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hapusGdriveMedia('${tipe}', '${v.id}')">🗑️ Hapus</button>
+                </div>` : ``}
+            </div>`;
+        }).join("");
+    }
+
+    // Diputar dalam iframe (preview Google Drive) DI DALAM MODAL web ini -- tidak pernah keluar/pindah tab.
+    function putarGdriveOutline(tipe, idx) {
+        let v = (tipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List)[idx];
+        let fid = idFileGdrive(v.url);
+        if (!fid) return alert('Link Google Drive tidak dikenali. Pastikan link berbentuk https://drive.google.com/file/d/FILE_ID/view dan sudah dibagikan ("Semua yang memiliki link bisa melihat").');
+        document.getElementById('gdrive-modal-title').innerText = `${tipe === 'mp3' ? '🎧' : '🎬'} #${v.urutan} — ${v.judul}`;
+        document.getElementById('gdrive-modal-iframe').src = `https://drive.google.com/file/d/${fid}/preview`;
+        const kotak = document.getElementById('gdrive-modal-box');
+        if (tipe === 'mp3') { kotak.style.paddingTop = '0'; kotak.style.height = '110px'; }
+        else { kotak.style.paddingTop = '56.25%'; kotak.style.height = '0'; }
+        document.getElementById('modal-gdrive-outline').classList.remove('hidden');
+    }
+
+    function tutupGdriveOutline() {
+        document.getElementById('gdrive-modal-iframe').src = '';
+        document.getElementById('modal-gdrive-outline').classList.add('hidden');
+    }
+
+    function bukaFormGdriveBaru(tipe) {
+        currentGdriveFormTipe = tipe;
+        let list = (tipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List);
+        document.getElementById('outline-gdrive-form-title').innerText = tipe === 'mp3' ? "➕ Tambah Audio MP3" : "➕ Tambah Video MP4";
+        document.getElementById('outline-gdrive-id').value = '';
+        document.getElementById('outline-gdrive-urutan').value = (list.length ? Math.max(...list.map(v => v.urutan)) + 1 : 1);
+        document.getElementById('outline-gdrive-judul').value = '';
+        document.getElementById('outline-gdrive-pasal-mulai').value = '';
+        document.getElementById('outline-gdrive-ayat-mulai').value = '';
+        document.getElementById('outline-gdrive-pasal-selesai').value = '';
+        document.getElementById('outline-gdrive-ayat-selesai').value = '';
+        document.getElementById('outline-gdrive-url').value = '';
+        document.getElementById('outline-gdrive-admin-form').classList.remove('hidden');
+    }
+
+    function editGdriveMedia(tipe, idx) {
+        currentGdriveFormTipe = tipe;
+        let v = (tipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List)[idx];
+        document.getElementById('outline-gdrive-form-title').innerText = tipe === 'mp3' ? "✏️ Ubah Audio MP3" : "✏️ Ubah Video MP4";
+        document.getElementById('outline-gdrive-id').value = v.id;
+        document.getElementById('outline-gdrive-urutan').value = v.urutan;
+        document.getElementById('outline-gdrive-judul').value = v.judul;
+        document.getElementById('outline-gdrive-pasal-mulai').value = v.pasal_mulai;
+        document.getElementById('outline-gdrive-ayat-mulai').value = v.ayat_mulai;
+        document.getElementById('outline-gdrive-pasal-selesai').value = v.pasal_selesai;
+        document.getElementById('outline-gdrive-ayat-selesai').value = v.ayat_selesai;
+        document.getElementById('outline-gdrive-url').value = v.url;
+        document.getElementById('outline-gdrive-admin-form').classList.remove('hidden');
+    }
+
+    async function simpanGdriveMedia() {
+        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengatur ini.");
+        let tipe = currentGdriveFormTipe;
+        const payload = {
+            action: tipe === 'mp3' ? "saveAudioMp3" : "saveVideoMp4",
+            username: userSession.username,
+            id: document.getElementById('outline-gdrive-id').value || null,
+            book_number: currentOutlineBookNum, book_name: currentOutlineBookName,
+            urutan: document.getElementById('outline-gdrive-urutan').value,
+            judul: document.getElementById('outline-gdrive-judul').value,
+            pasal_mulai: document.getElementById('outline-gdrive-pasal-mulai').value,
+            ayat_mulai: document.getElementById('outline-gdrive-ayat-mulai').value,
+            pasal_selesai: document.getElementById('outline-gdrive-pasal-selesai').value,
+            ayat_selesai: document.getElementById('outline-gdrive-ayat-selesai').value,
+            url: document.getElementById('outline-gdrive-url').value
+        };
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const out = await res.json();
+            if (out.status === "success") {
+                document.getElementById('outline-gdrive-admin-form').classList.add('hidden');
+                if (tipe === 'mp3') muatAudioMp3(); else muatVideoMp4();
+            } else { alert(out.message || "Gagal menyimpan."); }
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
+    async function hapusGdriveMedia(tipe, id) {
+        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh menghapus ini.");
+        if (!confirm("Hapus item ini?")) return;
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: tipe === 'mp3' ? "deleteAudioMp3" : "deleteVideoMp4", username: userSession.username, id: id }) });
+            const out = await res.json();
+            if (out.status === "success") { if (tipe === 'mp3') muatAudioMp3(); else muatVideoMp4(); }
+            else alert(out.message || "Gagal menghapus.");
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
     function bukaPencarian() {
         hentikanSuara();
         tutupSemuaNavMenu();
@@ -1792,6 +2048,12 @@
         isiChecklistKitabSearchKata();
     }
 
+    // Menu ketujuh (Anotasi & Highlight per user) -- SEDANG DIKEMBANGKAN, belum aktif.
+    // Ditaruh sbg stub dulu supaya tombolnya tidak error saat diklik; menyusul di update berikutnya.
+    function bukaAnotasi() {
+        alert("🖊️ Fitur Anotasi & Highlight (per user, tersimpan di database) sedang dikembangkan dan akan segera hadir di update berikutnya.");
+    }
+
     // Isi daftar checkbox kitab (sekali saja) memakai daftar nama kitab bahasa Indonesia
     function isiChecklistKitabSearchKata() {
         if (skBookChecklistTerisi) return;
@@ -1804,6 +2066,17 @@
     function gantiModeKitabSearchKata() {
         const mode = document.getElementById('sk-book-mode').value;
         document.getElementById('sk-book-checklist').classList.toggle('hidden', mode !== 'pilih');
+        document.getElementById('sk-book-preset-row').classList.toggle('hidden', mode !== 'pilih');
+    }
+
+    // Rentang nomor kitab (memakai nomor urut Alkitab 1-66): Perjanjian Lama = 1-39,
+    // Injil (Matius-Yohanes) = 40-43, Perjanjian Baru = 40-66.
+    const SK_RENTANG_KITAB = { semua: [1, 66], injil: [40, 43], pb: [40, 66], pl: [1, 39] };
+    function presetKitabSearchKata(jenis) {
+        const checks = document.querySelectorAll('#sk-book-checklist input[type=checkbox]');
+        if (jenis === 'kosong') { checks.forEach(c => c.checked = false); return; }
+        const [dari, sampai] = SK_RENTANG_KITAB[jenis] || [1, 66];
+        checks.forEach(c => { let n = Number(c.value); c.checked = (n >= dari && n <= sampai); });
     }
 
     // =====================================================================
