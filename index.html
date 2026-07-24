@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>17.26 E-Bible </title>
+    <title>17.54 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -85,6 +85,12 @@
 
         /* Logo bulat kecil tema: cincin warnanya otomatis ikut var(--primary) tema aktif */
         .theme-circle { border: 2px solid var(--primary); background: var(--card); }
+
+        /* TOMBOL PLAY bulat di navigasi 1 baris (dekat ikon tema): fungsinya SAMA PERSIS dengan
+           tombol ▶ hijau yang sudah ada di bawah (bacakanTeks) -- cuma tempatnya ditambah di sini
+           supaya bisa langsung dipencet dari paling atas tanpa perlu scroll ke kartu suara dulu. */
+        .nav-play-circle { background: #34c759; border-color: #34c759; color: #fff; box-shadow: 0 2px 8px rgba(52,199,89,0.35); font-size: 12px; }
+        .nav-play-circle:active { transform: scale(0.9); }
 
         /* TOMBOL PIN bulat: ON = baris navigasi menempel tetap di atas layar walau discroll */
         .btn-pin.active-pin { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
@@ -222,7 +228,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.26</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.54</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -396,6 +402,7 @@
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="search-ref-title">Pencarian Kosong...</span></span>
+                <button class="nav-circle-btn nav-play-circle" onclick="event.stopPropagation(); bacakanTeks('search-results', 'search')" title="Putar suara (sama seperti tombol ▶ di bawah)">▶️</button>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-search">▼</span>
@@ -519,6 +526,7 @@
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="read-ref-title">Mempersiapkan...</span></span>
+                <button class="nav-circle-btn nav-play-circle" onclick="event.stopPropagation(); bacakanTeks('reading-content', 'read')" title="Putar suara (sama seperti tombol ▶ di bawah)">▶️</button>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-read">▼</span>
@@ -917,6 +925,9 @@
                 <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600;"><input type="radio" name="sk-mode" value="and" style="width:auto; margin:0;"> AND (harus semua ketemu)</label>
             </div>
 
+            <div style="font-size:12px; color:gray; margin-bottom:4px;">🧮 Batas Maksimal Hasil Pencarian (klik untuk ganti -- makin besar batas, makin lama & makin banyak memori dipakai):</div>
+            <button type="button" id="sk-limit-toggle" class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:10px; font-weight:700;" onclick="toggleBatasHasilSearchKata()">🧮 Batas Hasil: 500 ayat</button>
+
             <div style="font-size:12px; color:gray; margin-bottom:4px;">📚 Batasan Kitab:</div>
             <div style="display:flex; gap:10px; margin-bottom:6px;">
                 <select id="sk-book-mode" onchange="gantiModeKitabSearchKata()" style="flex:1;">
@@ -1026,7 +1037,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw28Hp-KfUXlLY9vex0XEFmYllbOQHMD72Q2-BqJqfjGUyTE0vKTYgrYpxIn2j6qhT38Q/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqQ3Bd4FRvppBpsB9aEpmWrsG8QRzd-mK9s-F0or3Y2uDh9cdLJNP92CzVSzyEif1lpg/exec';
     
     let userSession = {};
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
@@ -1124,13 +1135,32 @@
     // menekan ▶ untuk pertama kalinya), langsung picu 1 ucapan nyaris tak terdengar
     // supaya mesin TTS sudah "panas" jauh sebelum ▶ yang sungguhan ditekan.
     // =====================================================================
+    // PERBAIKAN LANJUTAN bug di atas: pemanasan versi lama cuma 1x speak() TUNGGAL, ternyata itu
+    // tidak cukup -- pola yang benar-benar dipakai saat membaca adalah RANTAI speak()->speak()
+    // (ayat -> catatan -> ayat berikutnya), dan rantai inilah yang sering gagal spesifik di
+    // percobaan PERTAMA (biasanya di bagian catatan) kalau mesin TTS belum pernah "dilatih" pola
+    // rantai itu. Solusinya: paksa 2 ucapan nyaris tak terdengar SALING BERANTAI (persis pola
+    // ucapkanAman: speak -> onend -> jeda 120ms -> speak lagi) begitu halaman dimuat, dan JANGAN
+    // izinkan tombol ▶ mulai membaca kalau rantai pemanasan ini belum benar-benar selesai.
+    let ttsWarmupSelesai = false;
     function pemanasanAwalTTS() {
         try {
-            let pemanasan = new SpeechSynthesisUtterance('.');
-            pemanasan.volume = 0.01;
-            pemanasan.rate = 3;
-            window.speechSynthesis.speak(pemanasan);
-        } catch (e) { /* abaikan -- ini cuma usaha pemanasan, bukan bagian penting */ }
+            let tandaiSelesai = () => { ttsWarmupSelesai = true; };
+            let p1 = new SpeechSynthesisUtterance('.');
+            p1.volume = 0.01; p1.rate = 3;
+            p1.onend = p1.onerror = () => {
+                setTimeout(() => {
+                    let p2 = new SpeechSynthesisUtterance('.');
+                    p2.volume = 0.01; p2.rate = 3;
+                    p2.onend = p2.onerror = tandaiSelesai;
+                    try { window.speechSynthesis.speak(p2); } catch (e) { tandaiSelesai(); }
+                }, 120);
+            };
+            window.speechSynthesis.speak(p1);
+            // Jaring pengaman: kalau onend/onerror browser tak pernah terpanggil (kasus aneh tertentu),
+            // jangan biarkan tombol ▶ tertahan selamanya -- anggap pemanasan selesai maks. 1.5 detik.
+            setTimeout(tandaiSelesai, 1500);
+        } catch (e) { ttsWarmupSelesai = true; /* abaikan -- ini cuma usaha pemanasan, bukan bagian penting */ }
     }
 
     function toggleNavMenu(menuId, btnId) {
@@ -1776,16 +1806,96 @@
         document.getElementById('sk-book-checklist').classList.toggle('hidden', mode !== 'pilih');
     }
 
-    // Bungkus kata yang cocok dengan tag <mark> supaya kelihatan disorot di hasil pencarian
-    function tandaiKataDicari(teks, keywords) {
-        if (!teks) return "";
-        let hasil = escHtml(teks);
-        keywords.forEach(k => {
-            if (!k) return;
-            let re = new RegExp("(" + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ")", "gi");
-            hasil = hasil.replace(re, '<mark style="background:#ffe066; color:#000; padding:0 2px; border-radius:3px;">$1</mark>');
-        });
-        return hasil;
+    // =====================================================================
+    // TOGGLE "BATAS HASIL" Cari Kata: klik berulang untuk berpindah 500 -> 1000 -> Maksimal ->
+    // kembali lagi ke 500 (sifatnya memang toggle/berputar, TERMASUK bisa kembali ke batas
+    // paling kecil). "Maksimal" dibatasi 5000 di backend (lihat code.gs) supaya proses pencarian
+    // tetap aman dari batas waktu eksekusi Google Apps Script (maks. 6 menit per request).
+    // =====================================================================
+    const SK_LIMIT_TIERS = [500, 1000, 'max'];
+    const SK_LIMIT_LABELS = { 500: '500 ayat', 1000: '1.000 ayat', max: 'Maksimal (±5.000 ayat, bisa lambat)' };
+    let skLimitIdx = 0;
+    function toggleBatasHasilSearchKata() {
+        skLimitIdx = (skLimitIdx + 1) % SK_LIMIT_TIERS.length;
+        let val = SK_LIMIT_TIERS[skLimitIdx];
+        document.getElementById('sk-limit-toggle').innerText = `🧮 Batas Hasil: ${SK_LIMIT_LABELS[val]}`;
+    }
+
+    // Bungkus kata yang cocok dengan tag <mark> supaya kelihatan disorot di hasil pencarian.
+    // Versi lama memakai escHtml() polos, sehingga <br>/<p> dari data ayat/catatan tampil sbg
+    // teks literal "<br>" dst di layar. Sekarang dipakai berpasangan dengan sanitizeTampilanHtml()
+    // (fungsi yang sama dipakai menu Cari/Baca) supaya <br><p><i><b><u> dst benar-benar terbentuk
+    // formatnya (bukan tampil sbg teks), lalu kata yang dicari ditandai <mark> HANYA pada bagian
+    // teks (bukan di dalam tag HTML-nya) supaya tag tidak pernah rusak/tersorot.
+    function tandaiKataDicari(html, keywords) {
+        if (!html) return "";
+        let bagian = html.split(/(<[^>]+>)/g); // pisahkan tag vs teks biasa
+        return bagian.map(potongan => {
+            if (potongan.startsWith('<')) return potongan; // tag HTML, jangan disentuh
+            let seg = potongan;
+            keywords.forEach(k => {
+                if (!k) return;
+                let re = new RegExp("(" + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ")", "gi");
+                seg = seg.replace(re, '<mark style="background:#ffe066; color:#000; padding:0 2px; border-radius:3px;">$1</mark>');
+            });
+            return seg;
+        }).join('');
+    }
+
+    // Versi teks POLOS (tanpa tag sama sekali) dari ayat/catatan -- dipakai utk tombol "Salin" supaya
+    // yang tersalin ke clipboard rapi (baris baru wajar di titik <br>/</p>), bukan HTML mentah.
+    function teksPolosUntukSalin(raw) {
+        let s = buangSupDanFR(String(raw || ''));
+        s = s.replace(/<br\s*\/?>/gi, '\n');
+        s = s.replace(/<\/p>/gi, '\n');
+        s = s.replace(/<[^>]+>/g, '');
+        s = s.replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+        return s.replace(/\n{2,}/g, '\n').trim();
+    }
+
+    // Menyalin teks ke clipboard, dengan fallback utk browser/HP lama yang tak dukung navigator.clipboard.
+    // btnEl (opsional): kalau diisi, tombolnya akan berubah sebentar jadi "✅ Tersalin" sbg konfirmasi visual.
+    async function salinTeks(teks, btnEl) {
+        let berhasil = true;
+        try {
+            await navigator.clipboard.writeText(teks);
+        } catch (e) {
+            try {
+                let ta = document.createElement('textarea');
+                ta.value = teks; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.focus(); ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            } catch (e2) { berhasil = false; }
+        }
+        if (btnEl) {
+            let asli = btnEl.innerHTML;
+            btnEl.innerHTML = berhasil ? "✅ Tersalin" : "⚠️ Gagal salin";
+            setTimeout(() => { btnEl.innerHTML = asli; }, 1500);
+        }
+    }
+
+    // Menyimpan hasil pencarian kata terakhir (dipakai tombol Salin per-ayat & Salin Semua)
+    let skHasilTerakhir = [];
+
+    function salinHasilSatuanSearchKata(idx, btnEl) {
+        let a = skHasilTerakhir[idx];
+        if (!a) return;
+        let teks = `${a.b} ${a.c}:${a.v}`;
+        if (a.t) teks += `\n${teksPolosUntukSalin(a.t)}`;
+        if (a.n) teks += `\nCatatan: ${teksPolosUntukSalin(a.n)}`;
+        salinTeks(teks, btnEl);
+    }
+
+    function salinSemuaHasilSearchKata(btnEl) {
+        if (skHasilTerakhir.length === 0) return;
+        let teks = skHasilTerakhir.map(a => {
+            let t = `${a.b} ${a.c}:${a.v}`;
+            if (a.t) t += `\n${teksPolosUntukSalin(a.t)}`;
+            if (a.n) t += `\nCatatan: ${teksPolosUntukSalin(a.n)}`;
+            return t;
+        }).join('\n\n');
+        salinTeks(teks, btnEl);
     }
 
     async function eksekusiSearchKata() {
@@ -1814,6 +1924,8 @@
         ringkasan.innerHTML = "";
         box.innerHTML = "<i>⏳ Sedang mencari...</i>";
 
+        const batasDipakai = SK_LIMIT_TIERS[skLimitIdx];
+
         try {
             const res = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1825,6 +1937,7 @@
                     mode_logika: modeAnd ? "and" : "or",
                     book_numbers: bookNumbers,
                     languages: languages,
+                    limit: batasDipakai,
                     username: userSession.username, device: userDevice, ip: userIP
                 })
             });
@@ -1832,18 +1945,32 @@
             if (out.status !== "success") { box.innerHTML = `<span style="color:red;">${out.message || "Gagal mencari."}</span>`; return; }
 
             const hasil = out.hasil || [];
-            ringkasan.innerHTML = `📊 Ditemukan <b>${hasil.length}</b> ayat${out.dibatasi ? ' (dibatasi 500 hasil pertama -- persempit kata/kitab untuk hasil lebih rapi)' : ''}`;
+            skHasilTerakhir = hasil;
+
+            let infoTeknis = `⏱️ Waktu proses: <b>${out.waktu_proses_ms != null ? out.waktu_proses_ms : '-'} ms</b> • 💾 Perkiraan memori hasil: <b>${out.perkiraan_memori_kb != null ? out.perkiraan_memori_kb : '-'} KB</b> • 🧮 Batas dipakai: <b>${out.batas_dipakai != null ? out.batas_dipakai : batasDipakai}</b>`;
+            ringkasan.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <span>📊 Ditemukan <b>${hasil.length}</b> ayat${out.dibatasi ? ` (dibatasi ${out.batas_dipakai != null ? out.batas_dipakai : batasDipakai} hasil pertama -- persempit kata/kitab, atau naikkan Batas Hasil, untuk hasil lebih lengkap)` : ''}</span>
+                    ${hasil.length > 0 ? `<button type="button" class="icon-btn" style="width:auto; padding:6px 12px; font-size:12px;" onclick="salinSemuaHasilSearchKata(this)">📋 Salin Semua Hasil</button>` : ``}
+                </div>
+                <div style="font-weight:400; font-size:12px; opacity:0.7; margin-top:4px;">${infoTeknis}</div>`;
 
             if (hasil.length === 0) { box.innerHTML = "<i>Tidak ada ayat yang cocok. Coba kata lain atau ganti mode OR/AND.</i>"; return; }
 
-            box.innerHTML = hasil.map(a => `
+            // TAMPILAN: memakai sanitizeTampilanHtml() -- fungsi yang sama dipakai menu Cari/Baca --
+            // supaya <br><p><i><b><u> dst dari data ayat/catatan benar-benar terbentuk formatnya
+            // (bukan tampil sbg teks "<br>" dst), baru kata yang dicari ditandai <mark> di atasnya.
+            box.innerHTML = hasil.map((a, idx) => `
                 <div class="log-item-card" style="align-items:flex-start; flex-direction:column;">
-                    <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; gap:8px;">
                         <b>${a.b} ${a.c}:${a.v}</b>
-                        <span class="lang-badge">${a.lang.toUpperCase()}</span>
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <span class="lang-badge">${a.lang.toUpperCase()}</span>
+                            <button type="button" class="icon-btn" style="width:auto; padding:4px 10px; font-size:11px;" onclick="salinHasilSatuanSearchKata(${idx}, this)">📋 Salin</button>
+                        </span>
                     </div>
-                    ${cariAyat ? `<div style="margin-top:4px;">${tandaiKataDicari(a.t, keywords)}</div>` : ``}
-                    ${cariNote && a.n ? `<div class="verse-note open" style="margin-top:6px;">📝 ${tandaiKataDicari(a.n, keywords)}</div>` : ``}
+                    ${cariAyat ? `<div style="margin-top:4px;">${tandaiKataDicari(sanitizeTampilanHtml(a.t), keywords)}</div>` : ``}
+                    ${cariNote && a.n ? `<div class="verse-note open" style="margin-top:6px;">📝 ${tandaiKataDicari(sanitizeTampilanHtml(a.n), keywords)}</div>` : ``}
                 </div>`).join("");
         } catch (e) {
             box.innerHTML = "<span style='color:red;'>Koneksi terputus.</span>";
@@ -2290,6 +2417,14 @@
             let genderLabel = v.name.toLowerCase().includes('female') ? '♀' : (v.name.toLowerCase().includes('male') ? '♂' : '⚙️');
             select.appendChild(new Option(`${genderLabel} ${v.name} (${v.lang})`, index));
         });
+        // DEFAULT SUARA = BAHASA INDONESIA: kalau tersedia suara dengan kode bahasa id-ID/id_ID
+        // (mis. "Google Bahasa Indonesia"), otomatis dipilihkan sebagai default -- supaya tombol
+        // ▶ langsung membaca dengan Bahasa Indonesia tanpa user perlu memilih manual dulu.
+        // Prioritas: (1) nama suara mengandung "Indonesia", (2) kode bahasa id-ID, (3) awalan "id".
+        let idxIndonesia = allVoices.findIndex(v => /indonesia/i.test(v.name));
+        if (idxIndonesia === -1) idxIndonesia = allVoices.findIndex(v => /^id[-_]id$/i.test(v.lang));
+        if (idxIndonesia === -1) idxIndonesia = allVoices.findIndex(v => /^id\b/i.test(v.lang));
+        if (idxIndonesia !== -1) select.value = String(idxIndonesia);
     }
 
     function updateSpeedLabel(page) {
@@ -2409,6 +2544,13 @@
     }
 
     function bacakanTeks(containerId, page) {
+        // Kalau pemanasan TTS (lihat pemanasanAwalTTS) belum selesai -- biasanya karena user menekan
+        // ▶ SANGAT cepat setelah halaman terbuka -- tunda sebentar dan coba lagi, supaya percobaan
+        // PERTAMA ini ikut lancar (termasuk bagian catatan), bukan cuma percobaan kedua dst.
+        if (!ttsWarmupSelesai) {
+            setTimeout(() => bacakanTeks(containerId, page), 200);
+            return;
+        }
         hentikanSuara(); 
         let targetLangs = getSelectedLangs(page);
         let targetSelectorIdx = document.getElementById(`voice-target-${page}`).value;
@@ -2444,6 +2586,10 @@
     // (disimpan di currentViewerLangs). Sebelumnya tombol ▶ di sini memanggil bacakanTeksViewer()
     // yang belum pernah dibuat sama sekali -- itu sebabnya fitur suara di menu Jadwal tidak berfungsi.
     function bacakanTeksViewer() {
+        if (!ttsWarmupSelesai) {
+            setTimeout(() => bacakanTeksViewer(), 200);
+            return;
+        }
         hentikanSuara();
         let targetSelectorIdx = document.getElementById('voice-target-viewer').value;
         let idx = parseInt(targetSelectorIdx.replace("lang", "")) - 1;
