@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>18.06 E-Bible </title>
+    <title>16.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -32,7 +32,7 @@
         body::before {
             content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             /* PERBAIKAN: Format link gambar Drive terbaru agar langsung muncul */
-            background-image: url('https://lh3.googleusercontent.com/d/1zjuPZtGdnmdXAUiuCFgUyqOTWdfyBMmb');
+            background-image: url('https://lh3.googleusercontent.com/d/1KJFjezDcxNtIfiPaoUCBA7bgIo8HSfP8');
             background-size: cover; background-position: center; background-attachment: fixed;
             z-index: -1; opacity: 0.15; transition: opacity 0.3s;
         }
@@ -158,6 +158,8 @@
         .verse-text sup { font-size: 0.7em; opacity: 0.75; text-decoration: none; }
         .verse-group.tts-start-pointer { outline: 2px dashed #ff9500; outline-offset: 2px; border-radius: 6px; }
         .verse-group.tts-start-pointer .verse-num { background: #ff9500; color: #fff; border-radius: 50%; padding: 1px 6px; }
+        .outline-link { color: var(--primary); text-decoration: underline; text-decoration-style: dotted; cursor: pointer; font-weight: 600; }
+        .outline-link:active { opacity: 0.6; }
         
         /* DEFAULT MODE */
         .verse-group { margin-bottom: 10px; display: inline-block; width: 100%; transition: background 0.3s; border-radius: 5px;}
@@ -204,21 +206,11 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 18.06</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 16.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
-        <label style="font-size: 13px; color: gray; margin-top: 8px; display:block;">Bahasa Default:</label>
-        <select id="login-language">
-            <option value="ind">Indonesia (ind)</option>
-            <option value="chs">Chinese (简体)</option>
-            <option value="eng">English (eng)</option>
-            <option value="rvind">Indonesia pemulihan(rvind)</option>
-            <option value="rveng">English rcv(rveng)</option>
-            <option value="chssmp">Chinese Simple</option>
-            <option value="kjv">KJV</option>
-            <option value="jawa">Jawa</option>
-        </select>
+        
         <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px; margin-top: 15px;">Masuk Aplikasi</button>
     </div>
 
@@ -372,6 +364,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-outline" onclick="bukaGarisBesar()">📚 Alur</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
@@ -440,14 +433,16 @@
                     </select>
                 </div>
                 
+                <div class="icon-bar" style="gap:10px;">
+                    <span style="font-size:12px; font-weight:bold;" id="speed-label-search">Kec: 1.0 | Art: 1.0</span>
+                    <input type="range" id="voice-speed-search" min="0.5" max="2.5" step="0.1" value="1" style="flex:1; min-width:70px;" oninput="updateSpeedLabel('search')">
+                    <input type="range" id="voice-pitch-search" min="0.1" max="2" step="0.1" value="1" style="flex:1; min-width:70px;" oninput="updateSpeedLabel('search')">
+                </div>
                 <div class="icon-bar">
-                    <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label-search">Kec: 1.0 | Art: 1.0</span>
-                    <input type="range" id="voice-speed-search" min="0.5" max="2.5" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('search')">
-                    <input type="range" id="voice-pitch-search" min="0.1" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('search')">
-                    <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('search-results', 'search')">▶</button>
-                    <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
-                    <button class="icon-btn" style="background:#8e8e93; color:white;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
-                    <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePilihTitikMulai('search')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
+                    <button class="icon-btn" style="background:#34c759; color:white; flex:1;" onclick="bacakanTeks('search-results', 'search')">▶</button>
+                    <button class="icon-btn" style="background:#ff3b30; color:white; flex:1;" onclick="hentikanSuara()">⏹</button>
+                    <button class="icon-btn" style="background:#8e8e93; color:white; flex:1;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
+                    <button class="icon-btn" style="background:#ff9500; color:white; flex:1;" onclick="toggleModePilihTitikMulai('search')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
                 </div>
                 <div class="tts-opts">
                     <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-search" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
@@ -491,6 +486,7 @@
                 <button type="button" class="nav-tab-btn active-tab" id="tab-baca-2" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal-2" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-2" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-outline-2" onclick="bukaGarisBesar()">📚 Alur</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
@@ -565,14 +561,16 @@
                     </select>
                 </div>
                 
+                <div class="icon-bar" style="gap:10px;">
+                    <span style="font-size:12px; font-weight:bold;" id="speed-label-read">Kec: 1.0 | Art: 1.0</span>
+                    <input type="range" id="voice-speed-read" min="0.5" max="2.5" step="0.1" value="1" style="flex:1; min-width:70px;" oninput="updateSpeedLabel('read')">
+                    <input type="range" id="voice-pitch-read" min="0.1" max="2" step="0.1" value="1" style="flex:1; min-width:70px;" oninput="updateSpeedLabel('read')">
+                </div>
                 <div class="icon-bar">
-                    <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label-read">Kec: 1.0 | Art: 1.0</span>
-                    <input type="range" id="voice-speed-read" min="0.5" max="2.5" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('read')">
-                    <input type="range" id="voice-pitch-read" min="0.1" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('read')">
-                    <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeks('reading-content', 'read')">▶</button>
-                    <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
-                    <button class="icon-btn" style="background:#8e8e93; color:white;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
-                    <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePilihTitikMulai('read')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
+                    <button class="icon-btn" style="background:#34c759; color:white; flex:1;" onclick="bacakanTeks('reading-content', 'read')">▶</button>
+                    <button class="icon-btn" style="background:#ff3b30; color:white; flex:1;" onclick="hentikanSuara()">⏹</button>
+                    <button class="icon-btn" style="background:#8e8e93; color:white; flex:1;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
+                    <button class="icon-btn" style="background:#ff9500; color:white; flex:1;" onclick="toggleModePilihTitikMulai('read')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
                 </div>
                 <div class="tts-opts">
                     <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-read" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
@@ -611,6 +609,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-3" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-jadwal-3" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-3" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-outline-3" onclick="bukaGarisBesar()">📚 Alur</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
@@ -662,6 +661,7 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-4" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal-4" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-pengumuman-4" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-outline-4" onclick="bukaGarisBesar()">📚 Alur</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('announce-menu', 'chevron-announce')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
@@ -739,7 +739,120 @@
         </div>
     </div>
 
+    <!-- MENU KELIMA: GARIS BESAR KITAB & VIDEO YOUTUBE -->
+    <div id="outline-page" class="hidden">
+        <div class="top-nav-bar">
+            <div class="nav-tabs">
+                <button type="button" class="nav-tab-btn" id="tab-cari-5" onclick="bukaPencarian()">🔍 Cari</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-5" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-jadwal-5" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn" id="tab-pengumuman-5" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn active-tab" id="tab-outline-5" onclick="bukaGarisBesar()">📚 Alur</button>
+            </div>
+            <div class="nav-summary-row" onclick="toggleNavMenu('outline-menu', 'chevron-outline')">
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="outline-ref-title">📚 Garis Besar &amp; Video</span></span>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-outline">▼</span>
+            </div>
+            <div class="nav-full-menu" id="outline-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">📚 Tentang Menu Ini</div>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Garis besar berisi uraian tiap kitab -- kata/frasa yang digarisbawahi bisa diklik untuk langsung membuka ayatnya di menu Cari. Video YouTube tersusun berurutan dari pasal & ayat pertama sampai terakhir. Hanya administrator yang bisa menambah/mengubah/menghapus isinya.</p>
+            </div>
+        </div>
+
+        <div class="icon-bar" style="padding: 0 8px;">
+            <select id="outline-book" class="icon-btn" style="flex:1;" onchange="gantiBukuOutline()"></select>
+        </div>
+
+        <div class="nav-tabs" style="padding: 8px;">
+            <button type="button" class="nav-tab-btn active-tab" id="outline-subtab-garis" onclick="gantiSubTabOutline('garis')" style="flex:1;">📖 Garis Besar</button>
+            <button type="button" class="nav-tab-btn" id="outline-subtab-video" onclick="gantiSubTabOutline('video')" style="flex:1;">🎥 Video YouTube</button>
+        </div>
+
+        <!-- SUB-TAB: GARIS BESAR -->
+        <div id="outline-tab-garis">
+            <button id="outline-btn-edit-garis" class="icon-btn hidden" style="background:#34c759; color:white; margin:0 8px 10px 8px; width:calc(100% - 16px);" onclick="bukaFormGarisBesar()">✏️ Ubah Garis Besar Kitab Ini</button>
+
+            <div id="outline-garis-admin-form" class="pgm-admin-card hidden">
+                <h3 style="margin-top:0;">✏️ Ubah Garis Besar</h3>
+                <p style="font-size:12px; color:gray; margin-top:-6px;">Sisipkan tautan ke ayat memakai format <code>[[kata yang diklik|Kitab Pasal:Ayat]]</code>, mis. <code>[[silsilah Yesus|Matius 1:1-17]]</code>.</p>
+                <textarea id="outline-garis-konten" rows="14" style="resize:vertical;" placeholder="Tulis garis besar/uraian kitab di sini..."></textarea>
+                <div class="icon-bar" style="margin-top:10px;">
+                    <button class="icon-btn" style="background:var(--primary); color:white;" onclick="simpanGarisBesar()">💾 Simpan</button>
+                    <button class="icon-btn" onclick="document.getElementById('outline-garis-admin-form').classList.add('hidden')">✖ Batal</button>
+                </div>
+            </div>
+
+            <div id="outline-garis-tampil" class="reading-area card" style="background: var(--card); line-height:1.7;">
+                <i>Memuat garis besar...</i>
+            </div>
+        </div>
+
+        <!-- SUB-TAB: VIDEO YOUTUBE -->
+        <div id="outline-tab-video" class="hidden">
+            <button id="outline-btn-tambah-video" class="icon-btn hidden" style="background:#34c759; color:white; margin:0 8px 10px 8px; width:calc(100% - 16px);" onclick="bukaFormVideoBaru()">➕ Tambah Video Baru</button>
+
+            <div id="outline-video-admin-form" class="pgm-admin-card hidden">
+                <h3 id="outline-video-form-title" style="margin-top:0;">➕ Tambah Video</h3>
+                <input type="hidden" id="outline-video-id">
+                <label style="font-size:12px; color:gray;">Urutan Tampil (mis. 1, 2, 3, ...):</label>
+                <input type="number" id="outline-video-urutan" min="1" step="1">
+
+                <label style="font-size:12px; color:gray; margin-top:6px; display:block;">Judul Video:</label>
+                <input type="text" id="outline-video-judul" placeholder="mis. Silsilah & Kelahiran Yesus">
+
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; color:gray;">Pasal Mulai:</label>
+                        <input type="number" id="outline-video-pasal-mulai" min="1" step="1">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; color:gray;">Ayat Mulai:</label>
+                        <input type="number" id="outline-video-ayat-mulai" min="1" step="1">
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; color:gray;">Pasal Selesai:</label>
+                        <input type="number" id="outline-video-pasal-selesai" min="1" step="1">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; color:gray;">Ayat Selesai:</label>
+                        <input type="number" id="outline-video-ayat-selesai" min="1" step="1">
+                    </div>
+                </div>
+
+                <label style="font-size:12px; color:gray;">Link YouTube:</label>
+                <input type="url" id="outline-video-url" placeholder="https://www.youtube.com/watch?v=...">
+
+                <div class="icon-bar" style="margin-top:10px;">
+                    <button class="icon-btn" style="background:var(--primary); color:white;" onclick="simpanVideoYoutube()">💾 Simpan</button>
+                    <button class="icon-btn" onclick="document.getElementById('outline-video-admin-form').classList.add('hidden')">✖ Batal</button>
+                </div>
+            </div>
+
+            <div id="outline-video-list" class="reading-area card" style="background: var(--card);">
+                <i>Memuat daftar video...</i>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<!-- MODAL PEMUTAR VIDEO YOUTUBE (dipakai dari menu Garis Besar & Video) -->
+<div id="modal-video-outline" class="modal hidden" onclick="tutupVideoOutline()">
+    <div class="modal-content card" onclick="event.stopPropagation()" style="max-width:640px; padding:10px;">
+        <h3 id="outline-video-modal-title" style="text-align:center; margin:6px 0;"></h3>
+        <div style="position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
+            <iframe id="outline-video-modal-iframe" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <button onclick="tutupVideoOutline()" style="background:#ff3b30; margin-top:15px;">Tutup</button>
+    </div>
+</div>
+
 
 <!-- VIEWER FULL LAYAR UNTUK FITUR LOG: navigasi 1 baris (bisa diminimize), tombol lengkap saat dibuka -->
 <div id="log-viewer" class="hidden">
@@ -787,14 +900,16 @@
                 <option value="lang1">Kolom 1</option><option value="lang2">Kolom 2</option><option value="lang3">Kolom 3</option>
             </select>
         </div>
+        <div class="icon-bar" style="gap:10px;">
+            <span style="font-size:12px; font-weight:bold;" id="speed-label-viewer">Kec: 1.0 | Art: 1.0</span>
+            <input type="range" id="voice-speed-viewer" min="0.5" max="2.5" step="0.1" value="1" style="flex:1; min-width:70px;" oninput="updateSpeedLabel('viewer')">
+            <input type="range" id="voice-pitch-viewer" min="0.1" max="2" step="0.1" value="1" style="flex:1; min-width:70px;" oninput="updateSpeedLabel('viewer')">
+        </div>
         <div class="icon-bar">
-            <span style="font-size:12px; font-weight:bold; flex:1;" id="speed-label-viewer">Kec: 1.0 | Art: 1.0</span>
-            <input type="range" id="voice-speed-viewer" min="0.5" max="2.5" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('viewer')">
-            <input type="range" id="voice-pitch-viewer" min="0.1" max="2" step="0.1" value="1" style="flex:1;" oninput="updateSpeedLabel('viewer')">
-            <button class="icon-btn" style="background:#34c759; color:white;" onclick="bacakanTeksViewer()">▶</button>
-            <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hentikanSuara()">⏹</button>
-            <button class="icon-btn" style="background:#8e8e93; color:white;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
-            <button class="icon-btn" style="background:#ff9500; color:white;" onclick="toggleModePilihTitikMulai('viewer')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
+            <button class="icon-btn" style="background:#34c759; color:white; flex:1;" onclick="bacakanTeksViewer()">▶</button>
+            <button class="icon-btn" style="background:#ff3b30; color:white; flex:1;" onclick="hentikanSuara()">⏹</button>
+            <button class="icon-btn" style="background:#8e8e93; color:white; flex:1;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
+            <button class="icon-btn" style="background:#ff9500; color:white; flex:1;" onclick="toggleModePilihTitikMulai('viewer')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
         </div>
         <div class="tts-opts">
             <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-viewer" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
@@ -806,7 +921,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1tW3MqXfEkZ7Y62PvTGBGy1uGftkWLozSjmTz8r7SVmzpDumf4sK_S3TWV4L_GAXDJA/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHDOKC_d-ZeRWEQwaJ00iDxStV5t6cdNQ5EZhhfw41rY4XnCXGlk5WMXRmIuY5AMuNtw/exec';
     
     let userSession = {};
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
@@ -888,8 +1003,30 @@
 
     window.onload = () => {
         speechSynthesis.onvoiceschanged = muatDaftarSuara;
-        muatDaftarSuara(); 
+        muatDaftarSuara();
+        pemanasanAwalTTS();
     };
+
+    // =====================================================================
+    // PERBAIKAN BUG "PERCOBAAN PLAY PERTAMA: CATATAN TIDAK IKUT DIBACAKAN, TAPI
+    // PERCOBAAN KEDUA LANCAR": ini bug lama mesin text-to-speech browser (terutama
+    // Chrome/Android) -- rantai speak() -> speak() (ayat -> catatan -> ayat berikutnya)
+    // butuh mesin TTS yang sudah "panas". Kalau rantai ini pertama kali dipicu SANGAT
+    // dekat dengan saat mesin baru pertama kali dipakai di halaman ini, salah satu
+    // speak() di tengah rantai (paling sering bagian catatan) bisa gagal dimulai
+    // secara diam-diam -- padahal percobaan berikutnya selalu lancar karena mesinnya
+    // sudah "menyala". Solusinya: begitu halaman selesai dimuat (BUKAN menunggu user
+    // menekan ▶ untuk pertama kalinya), langsung picu 1 ucapan nyaris tak terdengar
+    // supaya mesin TTS sudah "panas" jauh sebelum ▶ yang sungguhan ditekan.
+    // =====================================================================
+    function pemanasanAwalTTS() {
+        try {
+            let pemanasan = new SpeechSynthesisUtterance('.');
+            pemanasan.volume = 0.01;
+            pemanasan.rate = 3;
+            window.speechSynthesis.speak(pemanasan);
+        } catch (e) { /* abaikan -- ini cuma usaha pemanasan, bukan bagian penting */ }
+    }
 
     function toggleNavMenu(menuId, btnId) {
         const menu = document.getElementById(menuId);
@@ -924,7 +1061,7 @@
 
     // Menandai tab aktif (Cari / Baca / Jadwal) di ketiga salinan tab bar sekaligus
     function setActiveTab(tabName) {
-        const map = { cari: ['tab-cari', 'tab-cari-2', 'tab-cari-3', 'tab-cari-4'], baca: ['tab-baca', 'tab-baca-2', 'tab-baca-3', 'tab-baca-4'], jadwal: ['tab-jadwal', 'tab-jadwal-2', 'tab-jadwal-3', 'tab-jadwal-4'], pengumuman: ['tab-pengumuman', 'tab-pengumuman-2', 'tab-pengumuman-3', 'tab-pengumuman-4'] };
+        const map = { cari: ['tab-cari', 'tab-cari-2', 'tab-cari-3', 'tab-cari-4', 'tab-cari-5'], baca: ['tab-baca', 'tab-baca-2', 'tab-baca-3', 'tab-baca-4', 'tab-baca-5'], jadwal: ['tab-jadwal', 'tab-jadwal-2', 'tab-jadwal-3', 'tab-jadwal-4', 'tab-jadwal-5'], pengumuman: ['tab-pengumuman', 'tab-pengumuman-2', 'tab-pengumuman-3', 'tab-pengumuman-4', 'tab-pengumuman-5'], outline: ['tab-outline', 'tab-outline-2', 'tab-outline-3', 'tab-outline-4', 'tab-outline-5'] };
         Object.keys(map).forEach(key => {
             map[key].forEach(id => {
                 const el = document.getElementById(id);
@@ -1154,6 +1291,213 @@
         }).join("");
     }
 
+    // =====================================================================
+    // FITUR "GARIS BESAR KITAB & VIDEO YOUTUBE"
+    // =====================================================================
+    let currentOutlineBookNum = 1;
+    let currentOutlineBookName = "";
+
+    function toggleAdminOutlineUI() {
+        let isAdmin = (userSession.level === 'administrator');
+        document.getElementById('outline-btn-edit-garis').classList.toggle('hidden', !isAdmin);
+        document.getElementById('outline-btn-tambah-video').classList.toggle('hidden', !isAdmin);
+    }
+
+    function sinkronisasiBukuOutline() {
+        const langSelected = document.getElementById('lang1-search') ? (document.getElementById('lang1-search').value || 'ind') : 'ind';
+        const sel = document.getElementById('outline-book');
+        if (sel.options.length > 0) return; // sudah pernah diisi, tidak perlu diulang tiap buka menu
+        const books = bookData[langSelected] || bookData['ind'];
+        books.forEach((bookName, index) => sel.appendChild(new Option(bookName, index + 1)));
+        sel.value = String(currentOutlineBookNum);
+        currentOutlineBookName = sel.selectedOptions[0] ? sel.selectedOptions[0].text : "";
+    }
+
+    function gantiSubTabOutline(tab) {
+        document.getElementById('outline-subtab-garis').classList.toggle('active-tab', tab === 'garis');
+        document.getElementById('outline-subtab-video').classList.toggle('active-tab', tab === 'video');
+        document.getElementById('outline-tab-garis').classList.toggle('hidden', tab !== 'garis');
+        document.getElementById('outline-tab-video').classList.toggle('hidden', tab !== 'video');
+        if (tab === 'video') muatVideoYoutube();
+    }
+
+    function gantiBukuOutline() {
+        currentOutlineBookNum = parseInt(document.getElementById('outline-book').value, 10);
+        currentOutlineBookName = document.getElementById('outline-book').selectedOptions[0].text;
+        document.getElementById('outline-garis-admin-form').classList.add('hidden');
+        document.getElementById('outline-video-admin-form').classList.add('hidden');
+        muatGarisBesarKitab();
+        if (!document.getElementById('outline-tab-video').classList.contains('hidden')) muatVideoYoutube();
+    }
+
+    // Ubah format [[kata yang diklik|Kitab Pasal:Ayat]] jadi <span> yang bisa diklik utk langsung
+    // membuka ayat itu di menu Cari. Teks lain di luar format ini tampil apa adanya (baris baru jadi <br>).
+    function parseGarisBesarKonten(teks) {
+        let aman = escHtml(teks || "");
+        aman = aman.replace(/\[\[([^\|\]]+)\|([^\]]+)\]\]/g, (m, label, ref) => {
+            let refBersih = ref.trim().replace(/"/g, '&quot;');
+            return `<span class="outline-link" onclick="bukaAyatDariOutline('${refBersih}')">${label}</span>`;
+        });
+        return aman.replace(/\r?\n/g, '<br>');
+    }
+
+    async function muatGarisBesarKitab() {
+        const box = document.getElementById('outline-garis-tampil');
+        box.innerHTML = "<i>Memuat garis besar...</i>";
+        document.getElementById('outline-ref-title').innerText = `📚 ${currentOutlineBookName}`;
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getGarisBesar", book_number: currentOutlineBookNum }) });
+            const out = await res.json();
+            if (out.status !== "success") { box.innerHTML = `<span style="color:red;">${out.message || "Gagal memuat."}</span>`; return; }
+            document.getElementById('outline-garis-konten').value = out.konten || "";
+            box.innerHTML = out.konten ? parseGarisBesarKonten(out.konten) : "<i>Belum ada garis besar untuk kitab ini.</i>";
+        } catch (e) {
+            box.innerHTML = "<span style='color:red;'>Koneksi terputus.</span>";
+        }
+    }
+
+    function bukaFormGarisBesar() {
+        document.getElementById('outline-garis-admin-form').classList.remove('hidden');
+    }
+
+    async function simpanGarisBesar() {
+        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengubah garis besar kitab.");
+        const konten = document.getElementById('outline-garis-konten').value;
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveGarisBesar", username: userSession.username, book_number: currentOutlineBookNum, book_name: currentOutlineBookName, konten: konten }) });
+            const out = await res.json();
+            if (out.status === "success") {
+                document.getElementById('outline-garis-admin-form').classList.add('hidden');
+                muatGarisBesarKitab();
+            } else { alert(out.message || "Gagal menyimpan."); }
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
+    // Klik kata/frasa bertaut di garis besar -> langsung cari & tampilkan ayat itu di menu Cari
+    function bukaAyatDariOutline(ref) {
+        bukaPencarian();
+        setTimeout(() => {
+            document.getElementById('search-referensi').value = ref;
+            eksekusiPencarianReferensi();
+        }, 50);
+    }
+
+    let lastVideoList = [];
+    async function muatVideoYoutube() {
+        const box = document.getElementById('outline-video-list');
+        box.innerHTML = "<i>Memuat daftar video...</i>";
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getVideoYoutube", book_number: currentOutlineBookNum }) });
+            const out = await res.json();
+            if (out.status !== "success") { box.innerHTML = `<span style="color:red;">${out.message || "Gagal memuat."}</span>`; return; }
+            lastVideoList = out.list || [];
+            if (lastVideoList.length === 0) { box.innerHTML = "<i>Belum ada video untuk kitab ini.</i>"; return; }
+
+            let isAdmin = (userSession.level === 'administrator');
+            box.innerHTML = lastVideoList.map((v, i) => {
+                let rangeLabel = (v.pasal_mulai === v.pasal_selesai)
+                    ? `${currentOutlineBookName} ${v.pasal_mulai}:${v.ayat_mulai}-${v.ayat_selesai}`
+                    : `${currentOutlineBookName} ${v.pasal_mulai}:${v.ayat_mulai} — ${v.pasal_selesai}:${v.ayat_selesai}`;
+                return `
+                <div class="log-item-card" style="align-items:flex-start; flex-direction:column; cursor:pointer;" onclick="putarVideoOutline(${i})">
+                    <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                        <b>#${v.urutan} — ${escHtml(v.judul)}</b>
+                        <span style="font-size:20px;">▶️</span>
+                    </div>
+                    <div style="font-size:12px; color:gray;">${rangeLabel}</div>
+                    ${isAdmin ? `<div class="icon-bar" style="width:100%; margin-top:8px;" onclick="event.stopPropagation()">
+                        <button class="icon-btn" onclick="editVideoYoutube(${i})">✏️ Ubah</button>
+                        <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hapusVideoYoutube('${v.id}')">🗑️ Hapus</button>
+                    </div>` : ``}
+                </div>`;
+            }).join("");
+        } catch (e) {
+            box.innerHTML = "<span style='color:red;'>Koneksi terputus.</span>";
+        }
+    }
+
+    // Ambil ID video dari berbagai bentuk link YouTube (watch?v=, youtu.be/, embed/)
+    function idVideoYoutube(url) {
+        let m = String(url || "").match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+        return m ? m[1] : null;
+    }
+
+    function putarVideoOutline(idx) {
+        let v = lastVideoList[idx];
+        let vid = idVideoYoutube(v.url);
+        if (!vid) return alert("Link YouTube tidak dikenali.");
+        document.getElementById('outline-video-modal-title').innerText = `#${v.urutan} — ${v.judul}`;
+        document.getElementById('outline-video-modal-iframe').src = `https://www.youtube.com/embed/${vid}?autoplay=1`;
+        document.getElementById('modal-video-outline').classList.remove('hidden');
+    }
+
+    function tutupVideoOutline() {
+        document.getElementById('outline-video-modal-iframe').src = '';
+        document.getElementById('modal-video-outline').classList.add('hidden');
+    }
+
+    function bukaFormVideoBaru() {
+        document.getElementById('outline-video-form-title').innerText = "➕ Tambah Video";
+        document.getElementById('outline-video-id').value = '';
+        document.getElementById('outline-video-urutan').value = (lastVideoList.length ? Math.max(...lastVideoList.map(v => v.urutan)) + 1 : 1);
+        document.getElementById('outline-video-judul').value = '';
+        document.getElementById('outline-video-pasal-mulai').value = '';
+        document.getElementById('outline-video-ayat-mulai').value = '';
+        document.getElementById('outline-video-pasal-selesai').value = '';
+        document.getElementById('outline-video-ayat-selesai').value = '';
+        document.getElementById('outline-video-url').value = '';
+        document.getElementById('outline-video-admin-form').classList.remove('hidden');
+    }
+
+    function editVideoYoutube(idx) {
+        let v = lastVideoList[idx];
+        document.getElementById('outline-video-form-title').innerText = "✏️ Ubah Video";
+        document.getElementById('outline-video-id').value = v.id;
+        document.getElementById('outline-video-urutan').value = v.urutan;
+        document.getElementById('outline-video-judul').value = v.judul;
+        document.getElementById('outline-video-pasal-mulai').value = v.pasal_mulai;
+        document.getElementById('outline-video-ayat-mulai').value = v.ayat_mulai;
+        document.getElementById('outline-video-pasal-selesai').value = v.pasal_selesai;
+        document.getElementById('outline-video-ayat-selesai').value = v.ayat_selesai;
+        document.getElementById('outline-video-url').value = v.url;
+        document.getElementById('outline-video-admin-form').classList.remove('hidden');
+    }
+
+    async function simpanVideoYoutube() {
+        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengatur video.");
+        const payload = {
+            action: "saveVideoYoutube", username: userSession.username,
+            id: document.getElementById('outline-video-id').value || null,
+            book_number: currentOutlineBookNum, book_name: currentOutlineBookName,
+            urutan: document.getElementById('outline-video-urutan').value,
+            judul: document.getElementById('outline-video-judul').value,
+            pasal_mulai: document.getElementById('outline-video-pasal-mulai').value,
+            ayat_mulai: document.getElementById('outline-video-ayat-mulai').value,
+            pasal_selesai: document.getElementById('outline-video-pasal-selesai').value,
+            ayat_selesai: document.getElementById('outline-video-ayat-selesai').value,
+            url: document.getElementById('outline-video-url').value
+        };
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const out = await res.json();
+            if (out.status === "success") {
+                document.getElementById('outline-video-admin-form').classList.add('hidden');
+                muatVideoYoutube();
+            } else { alert(out.message || "Gagal menyimpan."); }
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
+    async function hapusVideoYoutube(id) {
+        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh menghapus video.");
+        if (!confirm("Hapus video ini?")) return;
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteVideoYoutube", username: userSession.username, id: id }) });
+            const out = await res.json();
+            if (out.status === "success") muatVideoYoutube();
+            else alert(out.message || "Gagal menghapus.");
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
     function bukaPencarian() {
         hentikanSuara();
         tutupSemuaNavMenu();
@@ -1162,6 +1506,7 @@
         document.getElementById('read-page').classList.add('hidden');
         document.getElementById('log-page').classList.add('hidden');
         document.getElementById('announce-page').classList.add('hidden');
+        document.getElementById('outline-page').classList.add('hidden');
         document.getElementById('search-page').classList.remove('hidden');
         sinkronisasiBukuPencarian();
         document.getElementById('search-ref-title').innerText = buildRefText('search-info', 'Silakan atur parameter pencarian');
@@ -1177,6 +1522,7 @@
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('log-page').classList.add('hidden');
         document.getElementById('announce-page').classList.add('hidden');
+        document.getElementById('outline-page').classList.add('hidden');
         document.getElementById('read-page').classList.remove('hidden');
         document.getElementById('read-ref-title').innerText = buildRefText('read-info', 'Mempersiapkan bacaan...');
         updateUserLabel('read');
@@ -1247,10 +1593,29 @@
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('read-page').classList.add('hidden');
         document.getElementById('log-page').classList.add('hidden');
+        document.getElementById('outline-page').classList.add('hidden');
         document.getElementById('announce-page').classList.remove('hidden');
         updateUserLabel('announce');
         renderHeaderBanners('announce-header-banner', 'Pengumuman');
         muatDaftarPengumuman();
+    }
+
+    // Menu kelima: Garis Besar Kitab & Video YouTube. Semua level bisa melihat; hanya
+    // administrator yang bisa mengelola (lihat toggleAdminOutlineUI).
+    function bukaGarisBesar() {
+        hentikanSuara();
+        tutupSemuaNavMenu();
+        syncStickyNav();
+        setActiveTab('outline');
+        document.getElementById('search-page').classList.add('hidden');
+        document.getElementById('read-page').classList.add('hidden');
+        document.getElementById('log-page').classList.add('hidden');
+        document.getElementById('announce-page').classList.add('hidden');
+        document.getElementById('outline-page').classList.remove('hidden');
+        updateUserLabel('outline');
+        toggleAdminOutlineUI();
+        sinkronisasiBukuOutline();
+        muatGarisBesarKitab();
     }
 
     // =====================================================================
@@ -1267,6 +1632,7 @@
         document.getElementById('search-page').classList.add('hidden');
         document.getElementById('read-page').classList.add('hidden');
         document.getElementById('announce-page').classList.add('hidden');
+        document.getElementById('outline-page').classList.add('hidden');
         document.getElementById('log-page').classList.remove('hidden');
         updateUserLabel('log');
         muatDaftarLog();
