@@ -210,7 +210,17 @@
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
-        
+        <label style="font-size: 13px; color: gray; margin-top: 8px; display:block;">Bahasa Default:</label>
+        <select id="login-language">
+            <option value="ind">Indonesia (ind)</option>
+            <option value="chs">Chinese (简体)</option>
+            <option value="eng">English (eng)</option>
+            <option value="rvind">Indonesia pemulihan(rvind)</option>
+            <option value="rveng">English rcv(rveng)</option>
+            <option value="chssmp">Chinese Simple</option>
+            <option value="kjv">KJV</option>
+            <option value="jawa">Jawa</option>
+        </select>
         <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px; margin-top: 15px;">Masuk Aplikasi</button>
     </div>
 
