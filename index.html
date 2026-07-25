@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12.04 E-Bible </title>
+    <title>12.33 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -21,7 +21,6 @@
         [data-theme="dark-dracula"] { --bg: #282a36; --text: #f8f8f2; --card: #44475a; --primary: #ff79c6; --border: #6272a4; --btn-bg: #6272a4; }
         [data-theme="dark-forest"] { --bg: #142f1d; --text: #dcf2e3; --card: #1e452a; --primary: #4ade80; --border: #2a613b; --btn-bg: #2a613b; }
         [data-theme="dark-charcoal"] { --bg: #202020; --text: #e0e0e0; --card: #2d2d2d; --primary: #ffb74d; --border: #424242; --btn-bg: #424242; }
-        [data-theme="light-lavender"] { --bg: #f3ecfb; --text: #402a5c; --card: #ffffff; --primary: #7c4dff; --border: #e0d1f5; --btn-bg: #e0d1f5; }
 
 /* Biru Pastel */
         [data-theme="light-blue-pastel"] {--bg: #eef7ff; --text: #23415f; --card: #ffffff; --primary: #5ba8ff; --border: #cfe7ff; --btn-bg: #dcebff;}
@@ -32,7 +31,7 @@
 /* Ice Blue */
 [data-theme="light-ice-blue"] {--bg: #f5fbff;--text: #264d73;--card: #ffffff;--primary: #66b5ff;--border: #dcefff; --btn-bg: #eaf6ff;}
 /* Soft Cyan */
-[data-theme="light-soft-cyan"] {-bg: #eefcff;--text: #1f5560; --card: #ffffff;--primary: #39b8d4;--border: #d4f3f8;--btn-bg: #e4fbff;
+[data-theme="light-soft-cyan"] {--bg: #eefcff;--text: #1f5560; --card: #ffffff;--primary: #39b8d4;--border: #d4f3f8;--btn-bg: #e4fbff;
 }
 
 /* =========================
@@ -293,7 +292,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 12.04</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 12.34</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -315,7 +314,7 @@
     <div id="settings-page" class="modal hidden">
         <div class="modal-content card">
             <h2 style="text-align: center;">⚙️ Pilih Rencana</h2>
-            <select id="set-plan">
+            <select id="set-plan" onchange="updatePreviewRencana()">
                 <option value="Amsal 1 Bulan" data-days="31">Kitab Amsal (1 Bulan)</option>
                 <option value="PB 1 Bulan" data-days="30">Perjanjian Baru (1 Bulan)</option>
                 <option value="PL 1 Bulan" data-days="30">Perjanjian Lama (1 Bulan)</option>
@@ -323,16 +322,22 @@
                 <option value="Alkitab 2 Tahun" data-days="730">Alkitab (2 Tahun)</option>
             </select>
             <label>Tanggal Mulai Pembacaan:</label>
-            <input type="date" id="set-date">
+            <input type="date" id="set-date" onchange="updatePreviewRencana()">
+            <div id="preview-info-rencana" class="hidden" style="background:var(--btn-bg); border-radius:8px; padding:10px 12px; margin:10px 0 4px 0; font-size:13px; line-height:1.9;">
+                <div>📅 Sudah berjalan: <b id="preview-hari-berjalan">-</b> hari</div>
+                <div>⏳ Sisa: <b id="preview-hari-sisa">-</b> hari lagi</div>
+                <div>🏁 Perkiraan selesai: <b id="preview-tanggal-selesai">-</b></div>
+            </div>
             <button onclick="simpanSetting()">Mulai Baca</button>
             <button id="btn-batal-ganti-rencana" class="hidden" style="background:#8e8e93;" onclick="document.getElementById('settings-page').classList.add('hidden')">✖ Batal</button>
         </div>
     </div>
     
-    <!-- MODAL THEME 10 PILIHAN -->
+    <!-- MODAL THEME 21 PILIHAN -->
     <div id="modal-theme" class="modal hidden" onclick="this.classList.add('hidden')">
-        <div class="modal-content card" onclick="event.stopPropagation()">
-            <h3 style="text-align: center; margin-top:0;">🎨 Pilih Tema</h3>
+        <div class="modal-content card" onclick="event.stopPropagation()" style="max-width:480px;">
+            <h3 style="text-align: center; margin-top:0;">🎨 Pilih Tema (21 Tema)</h3>
+            <p style="font-size:11px; color:gray; text-align:center; margin:0 0 10px 0;">⭐ = tema yang direkomendasikan</p>
             <div style="display:flex; gap:10px;">
                 <div style="flex:1;">
                     <b style="color:gray;">☀️ Light Theme</b>
@@ -342,6 +347,11 @@
                     <button class="icon-btn" onclick="gantiTemaGlobal('light-sky')" style="width:100%; margin-bottom:5px;">Biru Langit</button>
                     <button class="icon-btn" onclick="gantiTemaGlobal('light-peach')" style="width:100%; margin-bottom:5px;">Peach Hangat</button>
                     <button class="icon-btn" onclick="gantiTemaGlobal('light-lavender')" style="width:100%; margin-bottom:5px;">Lavender Lembut</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-blue-pastel')" style="width:100%; margin-bottom:5px; border:2px solid var(--primary);">⭐ Biru Pastel</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-sky-blue')" style="width:100%; margin-bottom:5px;">Biru Langit 2</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-baby-blue')" style="width:100%; margin-bottom:5px;">Baby Blue</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-ice-blue')" style="width:100%; margin-bottom:5px; border:2px solid var(--primary);">⭐ Ice Blue</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('light-soft-cyan')" style="width:100%; margin-bottom:5px;">Soft Cyan</button>
                 </div>
                 <div style="flex:1;">
                     <b style="color:gray;">🌙 Dark Theme</b>
@@ -350,6 +360,11 @@
                     <button class="icon-btn" onclick="gantiTemaGlobal('dark-dracula')" style="width:100%; margin-bottom:5px;">Dracula (Ungu)</button>
                     <button class="icon-btn" onclick="gantiTemaGlobal('dark-forest')" style="width:100%; margin-bottom:5px;">Hutan Gelap</button>
                     <button class="icon-btn" onclick="gantiTemaGlobal('dark-charcoal')" style="width:100%; margin-bottom:5px;">Abu-abu Arang</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-navy')" style="width:100%; margin-bottom:5px; border:2px solid var(--primary);">⭐ Navy</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-royal-blue')" style="width:100%; margin-bottom:5px;">Royal Blue</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-deep-ocean')" style="width:100%; margin-bottom:5px;">Deep Ocean</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-midnight-blue')" style="width:100%; margin-bottom:5px; border:2px solid var(--primary);">⭐ Midnight Blue</button>
+                    <button class="icon-btn" onclick="gantiTemaGlobal('dark-indigo')" style="width:100%; margin-bottom:5px;">Indigo Dark</button>
                 </div>
             </div>
             <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:12px;">
@@ -515,7 +530,11 @@
                     <button class="icon-btn" onclick="setFontSize(40)">A 40pt</button>
                     <button class="icon-btn" onclick="setFontSize(20)">A 20pt</button>
                     <button class="icon-btn" onclick="setFontSize(11)">A 11pt</button>
-                    <span class="icon-btn font-size-display" style="background:var(--primary); color:white; text-align:center; cursor:default;">Ukuran huruf: <b class="font-size-display-num">18</b>px</span>
+                </div>
+                <div class="icon-bar">
+                    <span class="icon-btn font-size-display" style="background:var(--primary); color:white; text-align:center; cursor:default; flex:1 1 100%;">Ukuran huruf: <b class="font-size-display-num">18</b>px</span>
+                </div>
+                <div class="icon-bar">
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
@@ -652,7 +671,11 @@
                     <button class="icon-btn" onclick="setFontSize(40)">A 40pt</button>
                     <button class="icon-btn" onclick="setFontSize(20)">A 20pt</button>
                     <button class="icon-btn" onclick="setFontSize(11)">A 11pt</button>
-                    <span class="icon-btn font-size-display" style="background:var(--primary); color:white; text-align:center; cursor:default;">Ukuran huruf: <b class="font-size-display-num">18</b>px</span>
+                </div>
+                <div class="icon-bar">
+                    <span class="icon-btn font-size-display" style="background:var(--primary); color:white; text-align:center; cursor:default; flex:1 1 100%;">Ukuran huruf: <b class="font-size-display-num">18</b>px</span>
+                </div>
+                <div class="icon-bar">
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
@@ -756,7 +779,11 @@
                     <button class="icon-btn" onclick="setFontSize(40)">A 40pt</button>
                     <button class="icon-btn" onclick="setFontSize(20)">A 20pt</button>
                     <button class="icon-btn" onclick="setFontSize(11)">A 11pt</button>
-                    <span class="icon-btn font-size-display" style="background:var(--primary); color:white; text-align:center; cursor:default;">Ukuran huruf: <b class="font-size-display-num">18</b>px</span>
+                </div>
+                <div class="icon-bar">
+                    <span class="icon-btn font-size-display" style="background:var(--primary); color:white; text-align:center; cursor:default; flex:1 1 100%;">Ukuran huruf: <b class="font-size-display-num">18</b>px</span>
+                </div>
+                <div class="icon-bar">
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
@@ -1047,7 +1074,11 @@
             <div id="gdrive-modal-box" style="position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
                 <iframe id="gdrive-modal-iframe" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay" allowfullscreen></iframe>
             </div>
-            <button onclick="tutupGdriveOutline()" style="background:#ff3b30; margin-top:15px;">Tutup</button>
+            <div class="icon-bar" style="margin-top:10px;">
+                <button class="icon-btn" id="gdrive-btn-prev" onclick="navGdriveOutline(-1)" style="flex:1; background:var(--primary); color:white;">◀ Sebelumnya</button>
+                <button class="icon-btn" id="gdrive-btn-next" onclick="navGdriveOutline(1)" style="flex:1; background:var(--primary); color:white;">Selanjutnya ▶</button>
+            </div>
+            <button onclick="tutupGdriveOutline()" style="background:#ff3b30; margin-top:5px;">Tutup</button>
         </div>
     </div>
 
@@ -1284,7 +1315,11 @@
             <button class="icon-btn" onclick="setFontSize(40)">A 40pt</button>
             <button class="icon-btn" onclick="setFontSize(20)">A 20pt</button>
             <button class="icon-btn" onclick="setFontSize(11)">A 11pt</button>
-            <span class="icon-btn font-size-display" style="background:var(--primary); color:white; text-align:center; cursor:default;">Ukuran huruf: <b class="font-size-display-num">18</b>px</span>
+        </div>
+        <div class="icon-bar">
+            <span class="icon-btn font-size-display" style="background:var(--primary); color:white; text-align:center; cursor:default; flex:1 1 100%;">Ukuran huruf: <b class="font-size-display-num">18</b>px</span>
+        </div>
+        <div class="icon-bar">
             <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
             <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
         </div>
@@ -2097,21 +2132,45 @@
     }
 
     // Diputar dalam iframe (preview Google Drive) DI DALAM MODAL web ini -- tidak pernah keluar/pindah tab.
+    let currentGdrivePlayTipe = null, currentGdrivePlayIdx = null;
     function putarGdriveOutline(tipe, idx) {
-        let v = (tipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List)[idx];
+        let list = (tipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List);
+        let v = list[idx];
         let fid = idFileGdrive(v.url);
         if (!fid) return alert('Link Google Drive tidak dikenali. Pastikan link berbentuk https://drive.google.com/file/d/FILE_ID/view dan sudah dibagikan ("Semua yang memiliki link bisa melihat").');
+        currentGdrivePlayTipe = tipe;
+        currentGdrivePlayIdx = idx;
         document.getElementById('gdrive-modal-title').innerText = `${tipe === 'mp3' ? '🎧' : '🎬'} #${v.urutan} — ${v.judul}`;
         document.getElementById('gdrive-modal-iframe').src = `https://drive.google.com/file/d/${fid}/preview`;
         const kotak = document.getElementById('gdrive-modal-box');
         if (tipe === 'mp3') { kotak.style.paddingTop = '0'; kotak.style.height = '110px'; }
         else { kotak.style.paddingTop = '56.25%'; kotak.style.height = '0'; }
         document.getElementById('modal-gdrive-outline').classList.remove('hidden');
+        updateGdriveNavButtons(list);
+    }
+
+    // Tombol ◀ Sebelumnya / Selanjutnya ▶ di dalam modal player -- pindah ke audio/video berikutnya
+    // dalam daftar kitab yang sama TANPA perlu menutup modal terlebih dahulu.
+    function navGdriveOutline(delta) {
+        if (currentGdrivePlayTipe === null || currentGdrivePlayIdx === null) return;
+        let list = (currentGdrivePlayTipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List);
+        let idxBaru = currentGdrivePlayIdx + delta;
+        if (idxBaru < 0 || idxBaru >= list.length) return;
+        putarGdriveOutline(currentGdrivePlayTipe, idxBaru);
+    }
+
+    function updateGdriveNavButtons(list) {
+        document.getElementById('gdrive-btn-prev').disabled = (currentGdrivePlayIdx <= 0);
+        document.getElementById('gdrive-btn-prev').style.opacity = (currentGdrivePlayIdx <= 0) ? '0.4' : '1';
+        document.getElementById('gdrive-btn-next').disabled = (currentGdrivePlayIdx >= list.length - 1);
+        document.getElementById('gdrive-btn-next').style.opacity = (currentGdrivePlayIdx >= list.length - 1) ? '0.4' : '1';
     }
 
     function tutupGdriveOutline() {
         document.getElementById('gdrive-modal-iframe').src = '';
         document.getElementById('modal-gdrive-outline').classList.add('hidden');
+        currentGdrivePlayTipe = null;
+        currentGdrivePlayIdx = null;
     }
 
     function bukaFormGdriveBaru(tipe) {
@@ -3646,7 +3705,9 @@
     // Label nama tema (Indonesia) yang tampil di navigasi 1 baris, di sebelah titik warna tema
     const THEME_LABELS = {
         'light-default': 'Terang Default', 'light-sepia': 'Sepia Klasik', 'light-mint': 'Hijau Mint', 'light-sky': 'Biru Langit', 'light-peach': 'Peach Hangat', 'light-lavender': 'Lavender Lembut',
-        'dark-default': 'Gelap Default', 'dark-ocean': 'Samudera Biru', 'dark-dracula': 'Dracula (Ungu)', 'dark-forest': 'Hutan Gelap', 'dark-charcoal': 'Abu-abu Arang'
+        'light-blue-pastel': '⭐ Biru Pastel', 'light-sky-blue': 'Biru Langit 2', 'light-baby-blue': 'Baby Blue', 'light-ice-blue': '⭐ Ice Blue', 'light-soft-cyan': 'Soft Cyan',
+        'dark-default': 'Gelap Default', 'dark-ocean': 'Samudera Biru', 'dark-dracula': 'Dracula (Ungu)', 'dark-forest': 'Hutan Gelap', 'dark-charcoal': 'Abu-abu Arang',
+        'dark-navy': '⭐ Navy', 'dark-royal-blue': 'Royal Blue', 'dark-deep-ocean': 'Deep Ocean', 'dark-midnight-blue': '⭐ Midnight Blue', 'dark-indigo': 'Indigo Dark'
     };
 
     function gantiTemaGlobal(tema) { 
@@ -3961,14 +4022,62 @@
         if (userSession.start_date) document.getElementById('set-date').value = userSession.start_date;
         document.getElementById('btn-batal-ganti-rencana').classList.remove('hidden');
         document.getElementById('settings-page').classList.remove('hidden');
+        updatePreviewRencana();
+    }
+
+    // Hitung & tampilkan langsung: sudah berjalan berapa hari (dari tanggal mulai s/d hari ini),
+    // sisa berapa hari lagi, dan perkiraan tanggal selesai -- setiap kali rencana/tanggal diubah di modal Setting.
+    function updatePreviewRencana() {
+        const box = document.getElementById('preview-info-rencana');
+        const planSelect = document.getElementById('set-plan');
+        const tgl = document.getElementById('set-date').value;
+        if (!tgl || !planSelect.value) { box.classList.add('hidden'); return; }
+
+        let totalHari = 0;
+        for (let i = 0; i < planSelect.options.length; i++) {
+            if (planSelect.options[i].value === planSelect.value) { totalHari = parseInt(planSelect.options[i].getAttribute('data-days')); break; }
+        }
+
+        const mulai = new Date(tgl + 'T00:00:00');
+        const hariIni = new Date(); hariIni.setHours(0, 0, 0, 0);
+        const berjalan = Math.floor((hariIni - mulai) / 86400000) + 1;
+
+        const selesai = new Date(mulai);
+        selesai.setDate(selesai.getDate() + (totalHari - 1));
+        const tglSelesai = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).format(selesai);
+
+        let teksBerjalan, teksSisa;
+        if (berjalan < 1) {
+            teksBerjalan = `Belum mulai (mulai ${1 - berjalan} hari lagi)`;
+            teksSisa = `${totalHari}`;
+        } else {
+            const sisa = totalHari - berjalan;
+            teksBerjalan = `${berjalan}`;
+            teksSisa = sisa > 0 ? `${sisa}` : "Sudah selesai";
+        }
+
+        document.getElementById('preview-hari-berjalan').innerText = teksBerjalan;
+        document.getElementById('preview-hari-sisa').innerText = teksSisa;
+        document.getElementById('preview-tanggal-selesai').innerText = tglSelesai;
+        box.classList.remove('hidden');
     }
 
     async function simpanSetting() {
         const planSelect = document.getElementById('set-plan');
-        userSession.plan = planSelect.value;
-        userSession.start_date = document.getElementById('set-date').value;
-        
-        if (!userSession.start_date) return alert("Pilih tanggal mulai!");
+        const planBaru = planSelect.value;
+        const tanggalBaru = document.getElementById('set-date').value;
+
+        if (!tanggalBaru) return alert("Pilih tanggal mulai!");
+
+        if (modeGantiRencana) {
+            const namaPlanLama = userSession.plan || "-";
+            if (!confirm(`Yakin ingin mengganti rencana baca dari "${namaPlanLama}" ke "${planBaru}" (mulai ${tanggalBaru})? Hari bacaan akan dihitung ulang berdasarkan rencana dan tanggal mulai yang baru.`)) {
+                return;
+            }
+        }
+
+        userSession.plan = planBaru;
+        userSession.start_date = tanggalBaru;
         
         document.querySelector('#settings-page button').innerText = "Menyimpan...";
         await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveSettings", username: userSession.username, plan: userSession.plan, start_date: userSession.start_date }) });
