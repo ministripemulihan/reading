@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12.33 E-Bible </title>
+    <title>13.20 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; --custom-divider: transparent;}
+        :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; --custom-divider: transparent;
+            --bg-img-url: url('https://lh3.googleusercontent.com/d/1zjuPZtGdnmdXAUiuCFgUyqOTWdfyBMmb');
+            --bg-img-opacity: 0.2; --menu-transparan-pct: 100%; }
         
         [data-theme="light-default"] { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; }
         [data-theme="light-sepia"] { --bg: #f4ecd8; --text: #433422; --card: #fbf0d9; --primary: #d97736; --border: #d7c9a9; --btn-bg: #eedfbe; }
@@ -59,15 +61,16 @@
 
         body::before {
             content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            /* PERBAIKAN: Format link gambar Drive terbaru agar langsung muncul */
-            background-image: url('https://lh3.googleusercontent.com/d/1zjuPZtGdnmdXAUiuCFgUyqOTWdfyBMmb');
+            /* Gambar & tingkat transparan background diatur Administrator (menu Tema > Pengaturan Tampilan),
+               diterapkan lewat CSS variable --bg-img-url / --bg-img-opacity (lihat applyPengaturanTampilan()). */
+            background-image: var(--bg-img-url);
             background-size: cover; background-position: center; background-attachment: fixed;
-            z-index: -1; opacity: 0.15; transition: opacity 0.3s;
+            z-index: -1; opacity: var(--bg-img-opacity); transition: opacity 0.3s;
         }
-        [data-theme^="dark"] body::before { opacity: 0.05; }
 
-        /* ===== MODE TRANSPARAN (60%): supaya kartu/menu bisa tembus pandang melihat background
-           di belakangnya, aktif di atas tema APAPUN yang sedang dipilih (lihat toggleModeTransparan). ===== */
+        /* ===== TRANSPARAN MENU: supaya kartu/menu bisa tembus pandang melihat background di
+           belakangnya, aktif di atas tema APAPUN yang sedang dipilih. Tingkat persennya diatur
+           Administrator (0-100%, lihat --menu-transparan-pct & applyPengaturanTampilan()). ===== */
         body[data-transparan="on"] { background-color: transparent !important; }
         body[data-transparan="on"] .card,
         body[data-transparan="on"] .top-nav-bar,
@@ -79,7 +82,7 @@
         body[data-transparan="on"] .anot-catatan-badge,
         body[data-transparan="on"] .nav-circle-btn,
         body[data-transparan="on"] input, body[data-transparan="on"] select, body[data-transparan="on"] textarea {
-            background-color: color-mix(in srgb, var(--card) 60%, transparent) !important;
+            background-color: color-mix(in srgb, var(--card) var(--menu-transparan-pct, 100%), transparent) !important;
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
         } 
@@ -292,21 +295,34 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 12.34</h4>
-        
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 13.20</h4>
+        <div id="login-version-info" style="text-align:center; font-size:10px; color:gray; opacity:0.75; margin-bottom:18px; line-height:1.6;">Memuat info versi...</div>
+
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
-        <label style="font-size: 13px; color: gray; margin-top: 8px; display:block;">Bahasa Default:</label>
-        <select id="login-language">
-            <option value="ind">Indonesia (ind)</option>
-            <option value="chs">Chinese (简体)</option>
-            <option value="eng">English (eng)</option>
-            <option value="rvind">Indonesia pemulihan(rvind)</option>
-            <option value="rveng">English rcv(rveng)</option>
-            <option value="chssmp">Chinese Simple</option>
-            <option value="kjv">KJV</option>
-            <option value="jawa">Jawa</option>
-        </select>
+
+        <!-- Bahasa Default: model carousel kecil (bukan dropdown panjang), tertutup secara default.
+             Klik chip untuk membuka/menutup pilihan bahasa, mirip gaya navigasi. Nilai terpilih
+             tetap tersimpan di elemen tersembunyi #login-language supaya kode lain tak perlu berubah. -->
+        <div style="margin-top:10px;">
+            <div id="login-lang-chip" onclick="toggleLoginLangCarousel()" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 12px; background:var(--btn-bg); border-radius:999px; cursor:pointer; font-size:13px; font-weight:600;">
+                <span>🌐 Bahasa: <span id="login-lang-current">Indonesia</span></span>
+                <span id="login-lang-chevron" style="font-size:11px; opacity:0.6;">▼</span>
+            </div>
+            <div id="login-lang-carousel" class="hidden" style="display:flex; overflow-x:auto; gap:6px; padding:10px 2px 2px 2px; scroll-snap-type:x mandatory;">
+                <!-- data-label dipakai utk teks yg tampil di chip; belum ada format terjemahan UI per-bahasa (baru menentukan bahasa Alkitab) -->
+                <button type="button" class="icon-btn" style="width:auto; flex:0 0 auto; scroll-snap-align:start;" onclick="pilihLoginLang('ind','Indonesia')">🇮🇩 Indonesia</button>
+                <button type="button" class="icon-btn" style="width:auto; flex:0 0 auto; scroll-snap-align:start;" onclick="pilihLoginLang('eng','English')">🇬🇧 English</button>
+                <button type="button" class="icon-btn" style="width:auto; flex:0 0 auto; scroll-snap-align:start;" onclick="pilihLoginLang('kjv','KJV')">📖 KJV</button>
+                <button type="button" class="icon-btn" style="width:auto; flex:0 0 auto; scroll-snap-align:start;" onclick="pilihLoginLang('chs','Chinese')">🇨🇳 简体</button>
+                <button type="button" class="icon-btn" style="width:auto; flex:0 0 auto; scroll-snap-align:start;" onclick="pilihLoginLang('chssmp','Chinese Simple')">🇨🇳 Simple</button>
+                <button type="button" class="icon-btn" style="width:auto; flex:0 0 auto; scroll-snap-align:start;" onclick="pilihLoginLang('jawa','Jawa')">Jawa</button>
+                <button type="button" class="icon-btn" style="width:auto; flex:0 0 auto; scroll-snap-align:start;" onclick="pilihLoginLang('rvind','Ind. Pemulihan')">Ind. Pemulihan</button>
+                <button type="button" class="icon-btn" style="width:auto; flex:0 0 auto; scroll-snap-align:start;" onclick="pilihLoginLang('rveng','English RcV')">English RcV</button>
+            </div>
+            <input type="hidden" id="login-language" value="ind">
+        </div>
+
         <button onclick="prosesLogin()" id="btn-login" style="padding: 16px; font-size: 18px; margin-top: 15px;">Masuk Aplikasi</button>
     </div>
 
@@ -368,9 +384,37 @@
                 </div>
             </div>
             <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:12px;">
-                <button class="icon-btn" id="btn-mode-transparan" onclick="toggleModeTransparan()" style="width:100%; background:var(--btn-bg);">🪟 Mode Transparan (60%): <b id="label-mode-transparan">OFF</b></button>
-                <p style="font-size:11px; color:gray; margin:6px 2px 0 2px;">Kalau ON, semua kartu/menu jadi tembus pandang 60% supaya bisa melihat tampilan di belakangnya (mis. saat dipakai overlay/proyektor). Berlaku di atas tema warna apa pun yang dipilih di atas.</p>
+                <div style="font-size:12px; font-weight:bold; color:gray;">🪟 Transparan Menu (Kartu/Pengumuman)</div>
+                <p style="font-size:11px; color:gray; margin:4px 2px 8px 2px;">Semakin KECIL %, semakin tembus pandang menu/kartunya (mis. dipakai saat overlay/proyektor). 100% = tidak transparan sama sekali.</p>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="range" id="range-menu-transparan" min="0" max="100" value="100" oninput="previewMenuTransparan(this.value)" style="flex:1; width:auto; margin:0; padding:0;">
+                    <span style="width:auto; flex:0 0 44px; text-align:right; font-weight:bold; font-size:13px;" id="label-menu-transparan">100%</span>
+                </div>
+                <div class="icon-bar" style="margin-top:6px;">
+                    <button class="btn-toggle-lebar" onclick="previewMenuTransparan(30); document.getElementById('range-menu-transparan').value=30;">30%</button>
+                    <button class="btn-toggle-lebar" onclick="previewMenuTransparan(50); document.getElementById('range-menu-transparan').value=50;">50%</button>
+                    <button class="btn-toggle-lebar" onclick="previewMenuTransparan(60); document.getElementById('range-menu-transparan').value=60;">60%</button>
+                    <button class="btn-toggle-lebar" onclick="previewMenuTransparan(100); document.getElementById('range-menu-transparan').value=100;">100% (Off)</button>
+                </div>
             </div>
+
+            <div style="margin-top:16px; border-top:1px solid var(--border); padding-top:12px;">
+                <div style="font-size:12px; font-weight:bold; color:gray;">🖼️ Transparan Gambar Background</div>
+                <p style="font-size:11px; color:gray; margin:4px 2px 8px 2px;">Mengatur seberapa terlihat gambar background di belakang halaman. 0% = tidak terlihat, 100% = gambar penuh terlihat.</p>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="range" id="range-bg-opacity" min="0" max="100" value="20" oninput="previewBgOpacity(this.value)" style="flex:1; width:auto; margin:0; padding:0;">
+                    <span style="width:auto; flex:0 0 44px; text-align:right; font-weight:bold; font-size:13px;" id="label-bg-opacity">20%</span>
+                </div>
+            </div>
+
+            <div id="admin-tampilan-panel" class="hidden" style="margin-top:16px; border-top:1px dashed var(--border); padding-top:12px;">
+                <div style="font-size:12px; font-weight:bold; color:gray;">👑 Ganti Gambar Background (khusus Administrator)</div>
+                <p style="font-size:11px; color:gray; margin:4px 2px 8px 2px;">Tempel link share Google Drive biasa (mis. https://drive.google.com/file/d/FILE_ID/view?usp=sharing) -- sistem otomatis mengubahnya ke format yang bisa langsung tampil sebagai background.</p>
+                <input type="text" id="inp-link-background" placeholder="Link Google Drive gambar background">
+                <button style="background:var(--primary); color:white; margin-top:10px;" onclick="simpanPengaturanTampilanAdmin()">💾 Simpan Pengaturan Tampilan (berlaku untuk semua user)</button>
+                <p id="tampilan-admin-status" style="font-size:12px; text-align:center; min-height:16px;"></p>
+            </div>
+
             <button onclick="document.getElementById('modal-theme').classList.add('hidden')" style="background:#ff3b30; margin-top:15px;">Tutup</button>
         </div>
     </div>
@@ -491,7 +535,7 @@
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="search-ref-title">Pencarian Kosong...</span></span>
                 <button class="nav-circle-btn nav-play-circle" id="btn-suara-search" onclick="event.stopPropagation(); toggleSuaraNav('search-results', 'search')" title="Putar / Hentikan suara">▶️</button>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
-                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-search">▼</span>
             </div>
@@ -626,7 +670,7 @@
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="read-ref-title">Mempersiapkan...</span></span>
                 <button class="nav-circle-btn nav-play-circle" id="btn-suara-read" onclick="event.stopPropagation(); toggleSuaraNav('reading-content', 'read')" title="Putar / Hentikan suara">▶️</button>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
-                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-read">▼</span>
             </div>
@@ -761,7 +805,7 @@
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="log-ref-title">🗓️ Daftar Jadwal</span></span>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
-                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-log">▼</span>
             </div>
@@ -824,7 +868,7 @@
             <div class="nav-summary-row" onclick="toggleNavMenu('announce-menu', 'chevron-announce')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
-                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-announce">▼</span>
             </div>
@@ -917,7 +961,7 @@
             <div class="nav-summary-row" onclick="toggleNavMenu('outline-menu', 'chevron-outline')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="outline-ref-title">📚 Garis Besar &amp; Video</span></span>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
-                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-outline">▼</span>
             </div>
@@ -1098,7 +1142,7 @@
             <div class="nav-summary-row" onclick="toggleNavMenu('searchkata-menu', 'chevron-searchkata')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="searchkata-ref-title">🔎 Cari Kata di Ayat &amp; Catatan</span></span>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
-                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-searchkata">▼</span>
             </div>
@@ -1179,7 +1223,7 @@
             <div class="nav-summary-row" onclick="toggleNavMenu('anotasi-menu', 'chevron-anotasi')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="anotasi-ref-title">🖊️ Anotasi (Catatan Pribadi)</span></span>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
-                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-anotasi">▼</span>
             </div>
@@ -1237,7 +1281,7 @@
             <div class="nav-summary-row" onclick="toggleNavMenu('highlight-menu', 'chevron-highlight')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="highlight-ref-title">🌈 Highlight Ayat</span></span>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
-                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-highlight">▼</span>
             </div>
@@ -1302,8 +1346,8 @@
     <div class="nav-summary-row" onclick="toggleNavMenu('viewer-toolbar', 'chevron-viewer')">
         <span class="nav-ref-title"><b id="viewer-title" style="font-weight:700;">-</b></span>
         <span class="nav-user-title" id="viewer-mode-label"></span>
-        <button class="nav-circle-btn" onclick="event.stopPropagation(); viewerPrev()" title="Sebelumnya (◀ / panah kiri)">◀</button>
-        <button class="nav-circle-btn" onclick="event.stopPropagation(); viewerNext()" title="Berikutnya (▶ / panah kanan)">▶</button>
+        <button class="nav-circle-btn" id="viewer-btn-prev" onclick="event.stopPropagation(); viewerPrev()" title="Sebelumnya (◀ / panah kiri)">◀</button>
+        <button class="nav-circle-btn" id="viewer-btn-next" onclick="event.stopPropagation(); viewerNext()" title="Berikutnya (▶ / panah kanan)">▶</button>
         <button class="btn-icon-top" onclick="event.stopPropagation(); tutupViewer()" title="Tutup">✕</button>
         <span class="nav-chevron" id="chevron-viewer">▼</span>
     </div>
@@ -1331,7 +1375,7 @@
             <select class="icon-btn color-selector" style="flex:1;" onchange="gantiWarnaFontGlobal(this.value)">
                 <option value="">Warna Font Default</option><option value="#ff3b30">Merah</option><option value="#007aff">Biru</option><option value="#ffcc00">Kuning</option><option value="#000000">Hitam</option>
             </select>
-            <button class="icon-btn" style="flex:1;" onclick="document.getElementById('modal-theme').classList.remove('hidden')">🎨 Tema</button>
+            <button class="icon-btn" style="flex:1;" onclick="bukaModalTema()">🎨 Tema</button>
         </div>
 
         <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🧭 Navigasi Kolom (kalau ada bahasa lain)</div>
@@ -1372,7 +1416,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbztBBPjyX2kKJzxFpULQtUFHpgcLTRn9TEXIbjtocIp_JwpOgHi6_gDEMpN9e3gymp7LA/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzDUVMWJBqonS2iDwWcs-UIm7zms3Mm0UNOnMxWX9mLMHFzkSARnevZtVV6PeTznaK/exec';
     
     let userSession = {};
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
@@ -1440,6 +1484,67 @@
         .then(response => response.json())
         .then(data => { userIP = data.ip; })
         .catch(err => { userIP = "Hidden/Gagal"; });
+
+    // =====================================================================
+    // PENGATURAN TAMPILAN GLOBAL (khusus diatur Administrator): gambar
+    // background + tingkat transparan menu & background. Dimuat & diterapkan
+    // otomatis saat halaman dibuka (login-page maupun sesudah login), dan
+    // diterapkan ULANG secara langsung begitu Administrator menekan Simpan --
+    // TANPA perlu logout/login lagi.
+    // =====================================================================
+    let pengaturanTampilanSaatIni = { link_background_asli: "", link_background: "", opacity_background: 20, opacity_menu: 100 };
+
+    function applyPengaturanTampilan(s) {
+        pengaturanTampilanSaatIni = s;
+        document.documentElement.style.setProperty('--bg-img-url', `url('${s.link_background}')`);
+        document.documentElement.style.setProperty('--bg-img-opacity', (Number(s.opacity_background) / 100));
+        document.documentElement.style.setProperty('--menu-transparan-pct', Number(s.opacity_menu) + '%');
+        if (Number(s.opacity_menu) < 100) document.body.setAttribute('data-transparan', 'on');
+        else document.body.removeAttribute('data-transparan');
+        // Sinkronkan tampilan slider di modal Tema kalau modalnya sudah ada di DOM
+        let elBg = document.getElementById('range-bg-opacity'), elMenu = document.getElementById('range-menu-transparan');
+        let elBgLabel = document.getElementById('label-bg-opacity'), elMenuLabel = document.getElementById('label-menu-transparan');
+        let elLink = document.getElementById('inp-link-background');
+        if (elBg) elBg.value = s.opacity_background;
+        if (elMenu) elMenu.value = s.opacity_menu;
+        if (elBgLabel) elBgLabel.innerText = s.opacity_background + '%';
+        if (elMenuLabel) elMenuLabel.innerText = s.opacity_menu + '%';
+        if (elLink && document.activeElement !== elLink) elLink.value = s.link_background_asli || "";
+    }
+
+    async function muatPengaturanTampilan() {
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getPengaturanTampilan" }) });
+            const data = await res.json();
+            if (data.status === "success") applyPengaturanTampilan(data);
+        } catch (e) { /* biarkan default kalau gagal memuat */ }
+    }
+    muatPengaturanTampilan();
+
+    // Info versi (ditampilkan di bawah judul, di layar Login)
+    async function muatInfoVersi() {
+        const box = document.getElementById('login-version-info');
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getAppVersion" }) });
+            const data = await res.json();
+            if (data.status === "success" && box) {
+                box.innerHTML = `Backend: ${data.version.backend}<br>Database: ${data.version.database}`;
+            }
+        } catch (e) { if (box) box.innerText = ""; }
+    }
+    muatInfoVersi();
+
+    // Chip bahasa gaya carousel di layar Login
+    function toggleLoginLangCarousel() {
+        document.getElementById('login-lang-carousel').classList.toggle('hidden');
+        const chev = document.getElementById('login-lang-chevron');
+        chev.innerText = document.getElementById('login-lang-carousel').classList.contains('hidden') ? '▼' : '▲';
+    }
+    function pilihLoginLang(kode, label) {
+        document.getElementById('login-language').value = kode;
+        document.getElementById('login-lang-current').innerText = label;
+        toggleLoginLangCarousel();
+    }
 
     const bookData = {
         ind: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matius","Markus","Lukas","Yohanes","Kisah Rasul-rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus","Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"],
@@ -1737,7 +1842,11 @@
     function bukaFormPengumumanBaru() {
         resetFormPengumuman();
         document.getElementById('pgm-form-title').innerText = "➕ Tambah Pengumuman";
-        document.getElementById('pgm-tanggal').value = new Date().toISOString().slice(0, 10);
+        let hariIni = new Date().toISOString().slice(0, 10);
+        document.getElementById('pgm-tanggal').value = hariIni;
+        // Default tanggal mulai & tanggal akhir = hari ini, supaya admin tinggal ubah kalau perlu
+        document.getElementById('pgm-tanggal-start').value = hariIni;
+        document.getElementById('pgm-tanggal-akhir').value = hariIni;
         document.getElementById('pgm-admin-form').classList.remove('hidden');
     }
 
@@ -3086,6 +3195,11 @@
                 html += `<div class="log-item-card" style="cursor:pointer;" onclick="toggleItemRowClick(event, ${idx})">
                     <input type="checkbox" id="chk-log-${idx}" ${checked} onclick="event.stopPropagation();" onchange="toggleItemSelect(${idx}, this.checked, this)">
                     <span style="flex:1;">${idx + 1}. ${label} ${badge}</span>
+                    <span style="display:flex; flex-direction:column; gap:2px;">
+                        <button style="width:auto; padding:3px 8px; font-size:10px; ${idx === 0 ? 'opacity:0.3; pointer-events:none;' : ''}" onclick="event.stopPropagation(); pindahUrutanLogItem(${idx}, ${idx - 1})" title="Pindah ke atas (urutan tampil lebih awal)">▲</button>
+                        <button style="width:auto; padding:3px 8px; font-size:10px; ${idx === currentLogItems.length - 1 ? 'opacity:0.3; pointer-events:none;' : ''}" onclick="event.stopPropagation(); pindahUrutanLogItem(${idx}, ${idx + 1})" title="Pindah ke bawah (urutan tampil lebih akhir)">▼</button>
+                    </span>
+                    <button style="width:auto; padding:8px 10px; font-size:12px;" onclick="event.stopPropagation(); pindahKeUrutanTertentu(${idx})" title="Pindah langsung ke nomor urutan tertentu">↕️</button>
                     <button style="width:auto; padding:8px 12px; font-size:12px;" onclick="event.stopPropagation(); mulaiViewer(${idx}, 'satu')">👁️ Lihat</button>
                     <button style="width:auto; background:#ff3b30; padding:8px 10px; font-size:12px;" onclick="event.stopPropagation(); hapusItemLog(${idx})">🗑️</button>
                 </div>`;
@@ -3130,6 +3244,30 @@
         renderDaftarItemLog();
     }
 
+    // Ubah urutan tampil ayat/pasal di dalam 1 Jadwal (dipakai tombol ▲▼ & ↕️). from -> to
+    // memakai index berbasis 0 sesuai posisi yang tampil di layar saat ini.
+    async function pindahUrutanLogItem(from, to) {
+        if (to < 0 || to >= currentLogItems.length || from === to) return;
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: "reorderLogItem", username: userSession.username, log_id: currentLogId, from_index: from, to_index: to
+            }) });
+            const data = await res.json();
+            if (data.status === "success") bukaIsiLog(currentLogId);
+            else alert("Gagal mengubah urutan: " + data.message);
+        } catch (e) { alert("Gagal mengubah urutan (koneksi)."); }
+    }
+
+    // Pindah langsung ke nomor urutan tertentu, mis. ayat ke-3 dipindah supaya jadi urutan ke-8.
+    function pindahKeUrutanTertentu(idx) {
+        let total = currentLogItems.length;
+        let input = prompt(`Ayat/pasal ini sekarang di urutan ke-${idx + 1}. Pindahkan ke urutan ke berapa? (1 - ${total})`, idx + 1);
+        if (input === null) return;
+        let target = parseInt(input, 10);
+        if (isNaN(target) || target < 1 || target > total) return alert("Nomor urutan tidak valid.");
+        pindahUrutanLogItem(idx, target - 1);
+    }
+
     async function hapusItemLog(idx) {
         if (!confirm("Hapus ayat ini dari Log?")) return;
         try {
@@ -3153,6 +3291,19 @@
         document.getElementById('viewer-title').innerText = `${it.ref.book_name} ${it.ref.chapter}:${it.ref.verse_start}-${it.ref.verse_end}`;
         document.getElementById('viewer-mode-label').innerText = `Satu-satu • ${viewerIndex + 1}/${currentLogItems.length}`;
         document.getElementById('viewer-content').innerHTML = buildAyatHtml(it.ayat, it.ref.languages && it.ref.languages.length ? it.ref.languages : ['ind']);
+        updateViewerNavButtons();
+    }
+
+    // Sembunyikan tombol ◀/▶ otomatis begitu sampai di ayat/pasal PERTAMA atau TERAKHIR --
+    // supaya saat presentasi (mis. pakai pensil/pen di layar sentuh) tidak perlu operator lagi
+    // menjelaskan "sudah paling akhir/awal", tombolnya langsung hilang sendiri.
+    function updateViewerNavButtons() {
+        const btnPrev = document.getElementById('viewer-btn-prev');
+        const btnNext = document.getElementById('viewer-btn-next');
+        if (!btnPrev || !btnNext) return;
+        if (viewerMode !== 'satu') { btnPrev.classList.remove('hidden'); btnNext.classList.remove('hidden'); return; }
+        btnPrev.classList.toggle('hidden', viewerIndex <= 0);
+        btnNext.classList.toggle('hidden', viewerIndex >= currentLogItems.length - 1);
     }
 
     // Tampilkan 2-3 ayat/pasal terpilih sekaligus dalam satu layar
@@ -3179,15 +3330,16 @@
         });
         document.getElementById('viewer-title').innerText = titles.join("  |  ");
         document.getElementById('viewer-mode-label').innerText = `Bersama • ${idxArray.length} ayat`;
+        updateViewerNavButtons();
     }
 
     function viewerPrev() {
         if (viewerMode !== 'satu') return alert("Navigasi Sebelumnya/Berikutnya hanya berlaku di mode 'Satu-satu'.");
-        if (viewerIndex > 0) { viewerIndex--; renderViewerSatu(); } else alert("Sudah di ayat/pasal pertama.");
+        if (viewerIndex > 0) { viewerIndex--; renderViewerSatu(); }
     }
     function viewerNext() {
         if (viewerMode !== 'satu') return alert("Navigasi Sebelumnya/Berikutnya hanya berlaku di mode 'Satu-satu'.");
-        if (viewerIndex < currentLogItems.length - 1) { viewerIndex++; renderViewerSatu(); } else alert("Sudah di ayat/pasal terakhir.");
+        if (viewerIndex < currentLogItems.length - 1) { viewerIndex++; renderViewerSatu(); }
     }
     function tutupViewer() {
         document.getElementById('log-viewer').classList.add('hidden');
@@ -3717,12 +3869,59 @@
         document.getElementById('modal-theme').classList.add('hidden'); // Tutup modal otomatis setelah memilih
     }
 
-    // Mode Transparan (60%): dipakai lewat atribut data-transparan di <body> (BUKAN class), supaya
-    // tidak ikut terhapus saat gantiGayaFontGlobal() mengganti className body untuk gaya huruf.
-    function toggleModeTransparan() {
-        const aktif = document.body.getAttribute('data-transparan') === 'on';
-        document.body.setAttribute('data-transparan', aktif ? 'off' : 'on');
-        document.getElementById('label-mode-transparan').innerText = aktif ? 'OFF' : 'ON';
+    // Buka modal Tema: tampilkan/sembunyikan panel khusus Administrator, dan sinkronkan slider
+    // dengan pengaturan tampilan yang sedang aktif (lihat applyPengaturanTampilan()).
+    function bukaModalTema() {
+        document.getElementById('modal-theme').classList.remove('hidden');
+        let isAdmin = userSession && userSession.level === 'administrator';
+        document.getElementById('admin-tampilan-panel').classList.toggle('hidden', !isAdmin);
+        applyPengaturanTampilan(pengaturanTampilanSaatIni);
+    }
+
+    // Transparan Menu/Kartu (0-100%) dan Transparan Gambar Background (0-100%): dipakai lewat
+    // atribut data-transparan & CSS variable di <body>/<html> (BUKAN class), supaya tidak ikut
+    // terhapus saat gantiGayaFontGlobal() mengganti className body untuk gaya huruf.
+    // Fungsi "preview" ini hanya mengubah TAMPILAN SAAT INI di layar (langsung terasa efeknya
+    // sambil menggeser slider); nilainya baru berlaku PERMANEN untuk semua user setelah
+    // Administrator menekan tombol "Simpan Pengaturan Tampilan".
+    function previewMenuTransparan(pct) {
+        pct = Number(pct);
+        document.getElementById('label-menu-transparan').innerText = pct + '%';
+        document.documentElement.style.setProperty('--menu-transparan-pct', pct + '%');
+        if (pct < 100) document.body.setAttribute('data-transparan', 'on');
+        else document.body.removeAttribute('data-transparan');
+    }
+    function previewBgOpacity(pct) {
+        pct = Number(pct);
+        document.getElementById('label-bg-opacity').innerText = pct + '%';
+        document.documentElement.style.setProperty('--bg-img-opacity', pct / 100);
+    }
+
+    // Simpan pengaturan tampilan (background + kedua transparansi) ke server, khusus Administrator.
+    // Begitu berhasil, langsung diterapkan ke tampilan SEMUA halaman yang sedang terbuka milik
+    // Administrator sendiri (tanpa reload), dan akan otomatis dipakai user lain saat mereka
+    // membuka/refresh aplikasi -- TANPA perlu logout/login ulang.
+    async function simpanPengaturanTampilanAdmin() {
+        const status = document.getElementById('tampilan-admin-status');
+        status.innerText = "⏳ Menyimpan..."; status.style.color = "gray";
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: "savePengaturanTampilan",
+                username: userSession.username,
+                link_background_asli: document.getElementById('inp-link-background').value.trim(),
+                opacity_background: document.getElementById('range-bg-opacity').value,
+                opacity_menu: document.getElementById('range-menu-transparan').value
+            }) });
+            const data = await res.json();
+            if (data.status === "success") {
+                applyPengaturanTampilan(data);
+                status.innerText = "✅ Tersimpan & langsung diterapkan!"; status.style.color = "#34c759";
+            } else {
+                status.innerText = "❌ " + data.message; status.style.color = "#ff3b30";
+            }
+        } catch (e) {
+            status.innerText = "❌ Gagal menyimpan (koneksi)."; status.style.color = "#ff3b30";
+        }
     }
     
     function gantiGayaFontGlobal(kelas) { 
