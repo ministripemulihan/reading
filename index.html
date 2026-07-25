@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>11.26 E-Bible </title>
+    <title>12.04 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -21,7 +21,35 @@
         [data-theme="dark-dracula"] { --bg: #282a36; --text: #f8f8f2; --card: #44475a; --primary: #ff79c6; --border: #6272a4; --btn-bg: #6272a4; }
         [data-theme="dark-forest"] { --bg: #142f1d; --text: #dcf2e3; --card: #1e452a; --primary: #4ade80; --border: #2a613b; --btn-bg: #2a613b; }
         [data-theme="dark-charcoal"] { --bg: #202020; --text: #e0e0e0; --card: #2d2d2d; --primary: #ffb74d; --border: #424242; --btn-bg: #424242; }
+        [data-theme="light-lavender"] { --bg: #f3ecfb; --text: #402a5c; --card: #ffffff; --primary: #7c4dff; --border: #e0d1f5; --btn-bg: #e0d1f5; }
 
+/* Biru Pastel */
+        [data-theme="light-blue-pastel"] {--bg: #eef7ff; --text: #23415f; --card: #ffffff; --primary: #5ba8ff; --border: #cfe7ff; --btn-bg: #dcebff;}
+/* Biru Langit */
+[data-theme="light-sky-blue"] {--bg: #eaf6ff;--text: #1c3f6b; --card: #ffffff; --primary: #3b82f6;--border: #c8defa; --btn-bg: #d8e9ff;}
+/* Baby Blue */
+[data-theme="light-baby-blue"] {--bg: #f2f9ff;--text: #315276;--card: #ffffff;--primary: #7ab8ff;--border: #d8ebff;--btn-bg: #e4f2ff;}
+/* Ice Blue */
+[data-theme="light-ice-blue"] {--bg: #f5fbff;--text: #264d73;--card: #ffffff;--primary: #66b5ff;--border: #dcefff; --btn-bg: #eaf6ff;}
+/* Soft Cyan */
+[data-theme="light-soft-cyan"] {-bg: #eefcff;--text: #1f5560; --card: #ffffff;--primary: #39b8d4;--border: #d4f3f8;--btn-bg: #e4fbff;
+}
+
+/* =========================
+   DARK THEME
+   ========================= */
+
+/* Navy */
+[data-theme="dark-navy"] {--bg: #0b1b33;--text: #ffffff;--card: #13294b;    --primary: #60a5fa;    --border: #29476d;    --btn-bg: #1d3b63;}
+/* Royal Blue */
+[data-theme="dark-royal-blue"] {    --bg: #10203d;    --text: #ffffff;    --card: #19345f;    --primary: #4da3ff;    --border: #2c4d80;    --btn-bg: #24456f;}
+/* Deep Ocean */
+[data-theme="dark-deep-ocean"] {    --bg: #081726;    --text: #ffffff;    --card: #0f2742;    --primary: #45b6fe;    --border: #24476b;    --btn-bg: #173454;}
+/* Midnight Blue */
+[data-theme="dark-midnight-blue"] {    --bg: #111827;    --text: #ffffff;    --card: #1e293b;    --primary: #60a5fa;    --border: #334155;    --btn-bg: #334155;}
+/* Indigo Dark */
+[data-theme="dark-indigo"] {    --bg: #1a1f36;    --text: #ffffff;    --card: #2a3152;    --primary: #7c9cff;    --border: #47507b;    --btn-bg: #3d4670;}
+        
         body.font-apple { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body.font-comic { font-family: "Comic Sans MS", "Marker Felt", cursive; }
         body.font-roboto { font-family: 'Roboto', Arial, sans-serif; }
@@ -241,6 +269,7 @@
         .anot-swatch.dipilih { border-color: var(--text); transform: scale(1.12); }
         .anot-swatch-none { background: var(--btn-bg) !important; color: var(--text) !important; border: 2px dashed var(--border) !important; }
         .sk-preset-btn { width: auto; font-size: 11px; padding: 6px 10px; }
+        .hl-swatch-btn { flex: 1; min-width: 70px; padding: 10px 6px; border-radius: 10px; border: none; color: white; font-weight: 700; font-size: 13px; cursor: pointer; }
 
         .hidden { display: none !important; }
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
@@ -264,7 +293,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 11.26</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 12.04</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -434,12 +463,13 @@
             <!-- TAB MENU UTAMA: sama persis di ketiga halaman -->
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn active-tab" id="tab-cari" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata" onclick="bukaSearchKata()">🔎 Cari Kata</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn" id="tab-searchkata" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight" onclick="bukaHighlight()">🌈 Highlight</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
@@ -564,12 +594,13 @@
             <!-- TAB MENU UTAMA: sama persis di ketiga halaman -->
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn" id="tab-cari-2" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn active-tab" id="tab-baca-2" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-2" onclick="bukaSearchKata()">🔎 Cari Kata</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal-2" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-2" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-2" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn" id="tab-searchkata-2" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn active-tab" id="tab-baca-2" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-2" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight-2" onclick="bukaHighlight()">🌈 Highlight</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
@@ -695,12 +726,13 @@
             <!-- TAB MENU UTAMA: sama persis di ketiga halaman -->
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn" id="tab-cari-3" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn" id="tab-baca-3" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-3" onclick="bukaSearchKata()">🔎 Cari Kata</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-jadwal-3" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-3" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-3" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn" id="tab-searchkata-3" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-3" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-3" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight-3" onclick="bukaHighlight()">🌈 Highlight</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
@@ -754,12 +786,13 @@
         <div class="top-nav-bar">
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn" id="tab-cari-4" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn" id="tab-baca-4" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-4" onclick="bukaSearchKata()">🔎 Cari Kata</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal-4" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-pengumuman-4" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-4" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn" id="tab-searchkata-4" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-4" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-4" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight-4" onclick="bukaHighlight()">🌈 Highlight</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('announce-menu', 'chevron-announce')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
@@ -846,12 +879,13 @@
         <div class="top-nav-bar">
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn" id="tab-cari-5" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn" id="tab-baca-5" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-5" onclick="bukaSearchKata()">🔎 Cari Kata</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal-5" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-5" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-outline-5" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn" id="tab-searchkata-5" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-5" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-5" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight-5" onclick="bukaHighlight()">🌈 Highlight</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('outline-menu', 'chevron-outline')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="outline-ref-title">📚 Garis Besar &amp; Video</span></span>
@@ -1022,12 +1056,13 @@
         <div class="top-nav-bar">
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn" id="tab-cari-6" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn" id="tab-baca-6" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn active-tab" id="tab-searchkata-6" onclick="bukaSearchKata()">🔎 Cari Kata</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal-6" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-6" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-6" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn active-tab" id="tab-searchkata-6" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-6" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-6" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight-6" onclick="bukaHighlight()">🌈 Highlight</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('searchkata-menu', 'chevron-searchkata')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="searchkata-ref-title">🔎 Cari Kata di Ayat &amp; Catatan</span></span>
@@ -1097,6 +1132,125 @@
         <div id="sk-hasil-list" class="reading-area card" style="background: var(--card);"></div>
     </div>
 
+    <!-- MENU ANOTASI: catatan pribadi per ayat, tersimpan di database, per user, sinkron di semua perangkat -->
+    <div id="anotasi-page" class="hidden">
+        <div class="top-nav-bar">
+            <div class="nav-tabs">
+                <button type="button" class="nav-tab-btn" id="tab-cari-7" onclick="bukaPencarian()">🔍 Cari</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-7" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-jadwal-7" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn" id="tab-pengumuman-7" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-outline-7" onclick="bukaGarisBesar()">📚 Alur</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-7" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn active-tab" id="tab-anotasi-7" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight-7" onclick="bukaHighlight()">🌈 Highlight</button>
+            </div>
+            <div class="nav-summary-row" onclick="toggleNavMenu('anotasi-menu', 'chevron-anotasi')">
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="anotasi-ref-title">🖊️ Anotasi (Catatan Pribadi)</span></span>
+                <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-anotasi">▼</span>
+            </div>
+            <div class="nav-full-menu" id="anotasi-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">🖊️ Tentang Menu Ini</div>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Tambahkan catatan pribadi di ayat mana saja. Catatan disimpan ke database per akun Anda dan otomatis terlihat lagi saat login di perangkat lain.</p>
+            </div>
+        </div>
+
+        <div class="pgm-admin-card" style="margin: 0 8px 10px 8px;">
+            <h3 id="an-form-title" style="margin-top:0;">✏️ Tambah / Ubah Catatan</h3>
+            <label style="font-size:12px; color:gray;">📚 Kitab:</label>
+            <select id="an-book" class="icon-btn" style="margin-bottom:6px;" onchange="anIsiRefTitle()"></select>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Pasal:</label>
+                    <input type="number" id="an-chapter" min="1" step="1" value="1" onchange="anIsiRefTitle()">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Ayat:</label>
+                    <input type="number" id="an-verse" min="1" step="1" value="1" onchange="anIsiRefTitle()">
+                </div>
+            </div>
+            <div id="an-ref-preview" style="font-size:12px; font-weight:700; margin:6px 0; color:var(--primary);"></div>
+            <label style="font-size:12px; color:gray;">📝 Isi Catatan:</label>
+            <textarea id="an-catatan" rows="4" placeholder="Tulis catatan/renungan pribadi untuk ayat ini..."></textarea>
+            <div class="icon-bar" style="margin-top:10px;">
+                <button class="icon-btn" style="background:var(--primary); color:white;" onclick="simpanAnotasiCatatan()">💾 Simpan Catatan</button>
+                <button class="icon-btn" onclick="anResetForm()">✖ Batal / Baru</button>
+            </div>
+        </div>
+
+        <div style="margin: 0 8px 6px 8px; display:flex; justify-content:space-between; align-items:center;">
+            <b style="font-size:13px;">📋 Daftar Catatan Tersimpan</b>
+            <button class="icon-btn" style="width:auto; padding:6px 12px; font-size:12px;" onclick="muatAnotasiCache(true)">🔄 Muat Ulang</button>
+        </div>
+        <div id="an-list" class="reading-area card" style="background: var(--card);"><i>Memuat catatan...</i></div>
+    </div>
+
+    <!-- MENU HIGHLIGHT: tandai ayat dengan warna (merah/biru/hijau/kuning), tersimpan di database per user -->
+    <div id="highlight-page" class="hidden">
+        <div class="top-nav-bar">
+            <div class="nav-tabs">
+                <button type="button" class="nav-tab-btn" id="tab-cari-8" onclick="bukaPencarian()">🔍 Cari</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-8" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-jadwal-8" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn" id="tab-pengumuman-8" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-outline-8" onclick="bukaGarisBesar()">📚 Alur</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-8" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi-8" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn active-tab" id="tab-highlight-8" onclick="bukaHighlight()">🌈 Highlight</button>
+            </div>
+            <div class="nav-summary-row" onclick="toggleNavMenu('highlight-menu', 'chevron-highlight')">
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="highlight-ref-title">🌈 Highlight Ayat</span></span>
+                <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-highlight">▼</span>
+            </div>
+            <div class="nav-full-menu" id="highlight-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">🌈 Tentang Menu Ini</div>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Tandai ayat mana saja dengan warna. Tersimpan ke database per akun Anda dan otomatis terlihat lagi saat login di perangkat lain.</p>
+            </div>
+        </div>
+
+        <div class="pgm-admin-card" style="margin: 0 8px 10px 8px;">
+            <h3 id="hl-form-title" style="margin-top:0;">🎨 Tandai Ayat dengan Warna</h3>
+            <label style="font-size:12px; color:gray;">📚 Kitab:</label>
+            <select id="hl-book" class="icon-btn" style="margin-bottom:6px;" onchange="hlIsiRefTitle()"></select>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Pasal:</label>
+                    <input type="number" id="hl-chapter" min="1" step="1" value="1" onchange="hlIsiRefTitle()">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; color:gray;">Ayat:</label>
+                    <input type="number" id="hl-verse" min="1" step="1" value="1" onchange="hlIsiRefTitle()">
+                </div>
+            </div>
+            <div id="hl-ref-preview" style="font-size:12px; font-weight:700; margin:6px 0; color:var(--primary);"></div>
+            <label style="font-size:12px; color:gray;">🎨 Pilih Warna:</label>
+            <div class="icon-bar" style="flex-wrap:wrap; gap:8px; margin:6px 0 10px 0;">
+                <button type="button" class="hl-swatch-btn" style="background:#ff3b30;" onclick="simpanHighlightWarna('#ff3b30')" title="Merah">Merah</button>
+                <button type="button" class="hl-swatch-btn" style="background:#007aff;" onclick="simpanHighlightWarna('#007aff')" title="Biru">Biru</button>
+                <button type="button" class="hl-swatch-btn" style="background:#34c759; color:#063;" onclick="simpanHighlightWarna('#34c759')" title="Hijau">Hijau</button>
+                <button type="button" class="hl-swatch-btn" style="background:#ffcc00; color:#664400;" onclick="simpanHighlightWarna('#ffcc00')" title="Kuning">Kuning</button>
+                <button type="button" class="icon-btn" style="background:var(--btn-bg); color:var(--text);" onclick="hapusHighlightWarnaSaja()">✖ Hapus Warna</button>
+            </div>
+            <button class="icon-btn" onclick="hlResetForm()">✖ Batal / Baru</button>
+        </div>
+
+        <div style="margin: 0 8px 6px 8px; display:flex; justify-content:space-between; align-items:center;">
+            <b style="font-size:13px;">📋 Daftar Ayat yang Ditandai</b>
+            <button class="icon-btn" style="width:auto; padding:6px 12px; font-size:12px;" onclick="muatAnotasiCache(true)">🔄 Muat Ulang</button>
+        </div>
+        <div id="hl-list" class="reading-area card" style="background: var(--card);"><i>Memuat highlight...</i></div>
+    </div>
+
 </div>
 
 <!-- MODAL PEMUTAR VIDEO YOUTUBE (dipakai dari menu Garis Besar & Video) -->
@@ -1104,6 +1258,7 @@
     <div class="modal-content card" onclick="event.stopPropagation()" style="max-width:640px; padding:10px;">
         <h3 id="outline-video-modal-title" style="text-align:center; margin:6px 0;"></h3>
         <div style="position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
+
             <iframe id="outline-video-modal-iframe" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
         </div>
         <button onclick="tutupVideoOutline()" style="background:#ff3b30; margin-top:15px;">Tutup</button>
@@ -1253,7 +1408,72 @@
 
     const bookData = {
         ind: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matius","Markus","Lukas","Yohanes","Kisah Rasul-rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus","Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"],
-        chs: ["创世记","出埃及","利未记","民数记","申命记","约书亚记","士师记","路得记","撒母耳记上","撒母耳记下","列王纪上","列王纪下","历代志上","历代志下","以斯拉记","尼希米记","以斯帖记","约伯记","诗篇","箴言","传道书","雅歌","以赛亚书","耶利米书","耶利米哀歌","以西结书","但以理书","何西阿书","约珥书","阿摩司书","俄巴底亚书","约拿书","弥迦书","那鸿书","哈巴谷书","西番雅书","哈该书","撒迦利亚书","玛拉基书","马太福音","马可福音","路加福音","约翰福音","使徒行传","罗马书","歌林多前书","歌林多后书","加拉太书","以弗所书","腓立比书","歌罗西书","帖撒罗尼迦前书","帖撒罗尼迦后书","提摩太前书","提摩太后书","提多书","腓利门书","希伯来书","雅各书","彼得前书","彼得后书","约翰一书","约翰二书","约翰三书","犹大书","启示录"],
+        chs: ["创世记 (Chuàngshìjì) - Kej",
+"出埃及 (Chū Āijí) - Kel",
+"利未记 (Lìwèijì) - Im",
+"民数记 (Mínshùjì) - Bil",
+"申命记 (Shēnmìngjì) - Ul",
+"约书亚记 (Yuēshūyàjì) - Yos",
+"士师记 (Shìshījì) - Hak",
+"路得记 (Lùdéjì) - Rut",
+"撒母耳记上 (Sāmǔ'ěrjì Shàng) - 1Sam",
+"撒母耳记下 (Sāmǔ'ěrjì Xià) - 2Sam",
+"列王纪上 (Lièwángjì Shàng) - 1Raj",
+"列王纪下 (Lièwángjì Xià) - 2Raj",
+"历代志上 (Lìdàizhì Shàng) - 1Taw",
+"历代志下 (Lìdàizhì Xià) - 2Taw",
+"以斯拉记 (Yǐsīlājì) - Ezr",
+"尼希米记 (Níxīmǐjì) - Neh",
+"以斯帖记 (Yǐsītiējì) - Est",
+"约伯记 (Yuēbójì) - Ayb",
+"诗篇 (Shīpiān) - Mzm",
+"箴言 (Zhēnyán) - Ams",
+"传道书 (Chuándàoshū) - Pkh",
+"雅歌 (Yǎgē) - Kid",
+"以赛亚书 (Yǐsàiyàshū) - Yes",
+"耶利米书 (Yēlìmǐshū) - Yer",
+"耶利米哀歌 (Yēlìmǐ Āigē) - Rat",
+"以西结书 (Yǐxījiéshū) - Yeh",
+"但以理书 (Dànyǐlǐshū) - Dan",
+"何西阿书 (Héxī'āshū) - Hos",
+"约珥书 (Yuē'ěrshū) - Yl",
+"阿摩司书 (Āmósīshū) - Am",
+"俄巴底亚书 (Ébādǐyàshū) - Ob",
+"约拿书 (Yuēnáshū) - Yun",
+"弥迦书 (Míjiāshū) - Mi",
+"那鸿书 (Nàhóngshū) - Nah",
+"哈巴谷书 (Hābāgǔshū) - Hab",
+"西番雅书 (Xīfānyǎshū) - Zef",
+"哈该书 (Hāgāishū) - Hag",
+"撒迦利亚书 (Sājiālìyàshū) - Zak",
+"玛拉基书 (Mǎlājīshū) - Mal",
+"马太福音 (Mǎtài Fúyīn) - Mat",
+"马可福音 (Mǎkě Fúyīn) - Mrk",
+"路加福音 (Lùjiā Fúyīn) - Luk",
+"约翰福音 (Yuēhàn Fúyīn) - Yoh",
+"使徒行传 (Shǐtú Xíngzhuàn) - Kis",
+"罗马书 (Luómǎshū) - Rom",
+"歌林多前书 (Gēlínduō Qiánshū) - 1Kor",
+"歌林多后书 (Gēlínduō Hòushū) - 2Kor",
+"加拉太书 (Jiālātàishū) - Gal",
+"以弗所书 (Yǐfúsuǒshū) - Ef",
+"腓立比书 (Féilìbǐshū) - Flp",
+"歌罗西书 (Gēluóxīshū) - Kol",
+"帖撒罗尼迦前书 (Tiēsǎluóníjiā Qiánshū) - 1Tes",
+"帖撒罗尼迦后书 (Tiēsǎluóníjiā Hòushū) - 2Tes",
+"提摩太前书 (Tímótài Qiánshū) - 1Tim",
+"提摩太后书 (Tímótài Hòushū) - 2Tim",
+"提多书 (Tíduōshū) - Tit",
+"腓利门书 (Féilìménshū) - Flm",
+"希伯来书 (Xībóláishū) - Ibr",
+"雅各书 (Yǎgèshū) - Yak",
+"彼得前书 (Bǐdé Qiánshū) - 1Ptr",
+"彼得后书 (Bǐdé Hòushū) - 2Ptr",
+"约翰一书 (Yuēhàn Yīshū) - 1Yoh",
+"约翰二书 (Yuēhàn Èrshū) - 2Yoh",
+"约翰三书 (Yuēhàn Sānshū) - 3Yoh",
+"犹大书 (Yóudàshū) - Yud",
+"启示录 (Qǐshìlù) - Why"],
         kjv: ["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi","Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"],
         eng: ["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi","Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"],
         jawa: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obadiah","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matéus","Markus","Lukas","Yohanes","Para Rasul","Rum","1 Korinta","2 Korinta","Galasia","Efése","Filipi","Kolosé","1 Tèsalonika","2 Tèsalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Pétrus","2 Pétrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Pamedaran"],
@@ -1341,10 +1561,11 @@
 
     // Menandai tab aktif (Cari / Baca / Jadwal) di ketiga salinan tab bar sekaligus
     function setActiveTab(tabName) {
-        const map = { cari: ['tab-cari', 'tab-cari-2', 'tab-cari-3', 'tab-cari-4', 'tab-cari-5', 'tab-cari-6'], baca: ['tab-baca', 'tab-baca-2', 'tab-baca-3', 'tab-baca-4', 'tab-baca-5', 'tab-baca-6'], jadwal: ['tab-jadwal', 'tab-jadwal-2', 'tab-jadwal-3', 'tab-jadwal-4', 'tab-jadwal-5', 'tab-jadwal-6'], pengumuman: ['tab-pengumuman', 'tab-pengumuman-2', 'tab-pengumuman-3', 'tab-pengumuman-4', 'tab-pengumuman-5', 'tab-pengumuman-6'], outline: ['tab-outline', 'tab-outline-2', 'tab-outline-3', 'tab-outline-4', 'tab-outline-5', 'tab-outline-6'], searchkata: ['tab-searchkata', 'tab-searchkata-2', 'tab-searchkata-3', 'tab-searchkata-4', 'tab-searchkata-5', 'tab-searchkata-6'] };
-        Object.keys(map).forEach(key => {
-            map[key].forEach(id => {
-                const el = document.getElementById(id);
+        const SUF_TAB = ['', '-2', '-3', '-4', '-5', '-6', '-7', '-8'];
+        const KEY_TAB = ['cari', 'baca', 'jadwal', 'pengumuman', 'outline', 'searchkata', 'anotasi', 'highlight'];
+        KEY_TAB.forEach(key => {
+            SUF_TAB.forEach(suf => {
+                const el = document.getElementById('tab-' + key + suf);
                 if (el) el.classList.toggle('active-tab', key === tabName);
             });
         });
@@ -1361,6 +1582,10 @@
         document.getElementById('chevron-announce').innerText = "▼";
         document.getElementById('searchkata-menu').classList.remove('open');
         document.getElementById('chevron-searchkata').innerText = "▼";
+        document.getElementById('anotasi-menu').classList.remove('open');
+        document.getElementById('chevron-anotasi').innerText = "▼";
+        document.getElementById('highlight-menu').classList.remove('open');
+        document.getElementById('chevron-highlight').innerText = "▼";
     }
 
     // =====================================================================
@@ -1956,16 +2181,19 @@
         } catch (e) { alert("Koneksi terputus."); }
     }
 
+    // Semua id halaman utama -- dipakai hideAllPages() supaya setiap fungsi bukaXxx() tidak perlu
+    // menuliskan satu per satu (dan otomatis ikut menyembunyikan halaman baru Anotasi & Highlight).
+    const ALL_PAGE_IDS = ['search-page', 'read-page', 'log-page', 'announce-page', 'outline-page', 'searchkata-page', 'anotasi-page', 'highlight-page'];
+    function hideAllPages() {
+        ALL_PAGE_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('hidden'); });
+    }
+
     function bukaPencarian() {
         hentikanSuara();
         tutupSemuaNavMenu();
         syncStickyNav();
         setActiveTab('cari');
-        document.getElementById('read-page').classList.add('hidden');
-        document.getElementById('log-page').classList.add('hidden');
-        document.getElementById('announce-page').classList.add('hidden');
-        document.getElementById('outline-page').classList.add('hidden');
-        document.getElementById('searchkata-page').classList.add('hidden');
+        hideAllPages();
         document.getElementById('search-page').classList.remove('hidden');
         sinkronisasiBukuPencarian();
         document.getElementById('search-ref-title').innerText = buildRefText('search-info', 'Silakan atur parameter pencarian');
@@ -1978,11 +2206,7 @@
         tutupSemuaNavMenu();
         syncStickyNav();
         setActiveTab('baca');
-        document.getElementById('search-page').classList.add('hidden');
-        document.getElementById('log-page').classList.add('hidden');
-        document.getElementById('announce-page').classList.add('hidden');
-        document.getElementById('outline-page').classList.add('hidden');
-        document.getElementById('searchkata-page').classList.add('hidden');
+        hideAllPages();
         document.getElementById('read-page').classList.remove('hidden');
         document.getElementById('read-ref-title').innerText = buildRefText('read-info', 'Mempersiapkan bacaan...');
         updateUserLabel('read');
@@ -2050,11 +2274,7 @@
         tutupSemuaNavMenu();
         syncStickyNav();
         setActiveTab('pengumuman');
-        document.getElementById('search-page').classList.add('hidden');
-        document.getElementById('read-page').classList.add('hidden');
-        document.getElementById('log-page').classList.add('hidden');
-        document.getElementById('outline-page').classList.add('hidden');
-        document.getElementById('searchkata-page').classList.add('hidden');
+        hideAllPages();
         document.getElementById('announce-page').classList.remove('hidden');
         updateUserLabel('announce');
         renderHeaderBanners('announce-header-banner', 'Pengumuman');
@@ -2068,12 +2288,8 @@
         tutupSemuaNavMenu();
         syncStickyNav();
         setActiveTab('outline');
-        document.getElementById('search-page').classList.add('hidden');
-        document.getElementById('read-page').classList.add('hidden');
-        document.getElementById('log-page').classList.add('hidden');
-        document.getElementById('announce-page').classList.add('hidden');
+        hideAllPages();
         document.getElementById('outline-page').classList.remove('hidden');
-        document.getElementById('searchkata-page').classList.add('hidden');
         updateUserLabel('outline');
         toggleAdminOutlineUI();
         sinkronisasiBukuOutline();
@@ -2087,19 +2303,244 @@
         tutupSemuaNavMenu();
         syncStickyNav();
         setActiveTab('searchkata');
-        document.getElementById('search-page').classList.add('hidden');
-        document.getElementById('read-page').classList.add('hidden');
-        document.getElementById('log-page').classList.add('hidden');
-        document.getElementById('announce-page').classList.add('hidden');
-        document.getElementById('outline-page').classList.add('hidden');
+        hideAllPages();
         document.getElementById('searchkata-page').classList.remove('hidden');
         isiChecklistKitabSearchKata();
     }
 
-    // Menu ketujuh (Anotasi & Highlight per user) -- SEDANG DIKEMBANGKAN, belum aktif.
-    // Ditaruh sbg stub dulu supaya tombolnya tidak error saat diklik; menyusul di update berikutnya.
+    // =====================================================================
+    // MENU ANOTASI & HIGHLIGHT (per user, tersimpan di database, sinkron di semua perangkat)
+    // Satu baris data di sheet 'anotasi_highlight' menyimpan DUA hal sekaligus per ayat:
+    // "warna" (dipakai halaman Highlight) dan "catatan" (dipakai halaman Anotasi). Supaya menyimpan
+    // salah satu tidak menghapus yang lain, setiap kali simpan kita gabungkan dulu dgn data lama
+    // dari cache (anotasiCache) sebelum dikirim ke server.
+    // =====================================================================
+    let anotasiCache = [];
+    let anotasiCacheLoaded = false;
+    let anBookSelectTerisi = false, hlBookSelectTerisi = false;
+
+    function isiSelectKitabAnotasiHighlight() {
+        if (!anBookSelectTerisi) {
+            document.getElementById('an-book').innerHTML = NAMA_KITAB_66.map((nama, idx) => `<option value="${idx + 1}">${nama}</option>`).join("");
+            anBookSelectTerisi = true;
+        }
+        if (!hlBookSelectTerisi) {
+            document.getElementById('hl-book').innerHTML = NAMA_KITAB_66.map((nama, idx) => `<option value="${idx + 1}">${nama}</option>`).join("");
+            hlBookSelectTerisi = true;
+        }
+    }
+
+    function anIsiRefTitle() {
+        let bn = Number(document.getElementById('an-book').value);
+        let c = Number(document.getElementById('an-chapter').value) || 1;
+        let v = Number(document.getElementById('an-verse').value) || 1;
+        document.getElementById('an-ref-preview').innerText = `📖 ${NAMA_KITAB_66[bn - 1]} ${c}:${v}`;
+    }
+    function hlIsiRefTitle() {
+        let bn = Number(document.getElementById('hl-book').value);
+        let c = Number(document.getElementById('hl-chapter').value) || 1;
+        let v = Number(document.getElementById('hl-verse').value) || 1;
+        document.getElementById('hl-ref-preview').innerText = `📖 ${NAMA_KITAB_66[bn - 1]} ${c}:${v}`;
+    }
+
+    function anResetForm() {
+        document.getElementById('an-form-title').innerText = "✏️ Tambah / Ubah Catatan";
+        document.getElementById('an-chapter').value = 1;
+        document.getElementById('an-verse').value = 1;
+        document.getElementById('an-catatan').value = '';
+        anIsiRefTitle();
+    }
+    function hlResetForm() {
+        document.getElementById('hl-form-title').innerText = "🎨 Tandai Ayat dengan Warna";
+        document.getElementById('hl-chapter').value = 1;
+        document.getElementById('hl-verse').value = 1;
+        hlIsiRefTitle();
+    }
+
+    // Ambil ulang seluruh data anotasi & highlight milik user dari server (dipanggil sekali saat
+    // menu dibuka, atau manual lewat tombol "Muat Ulang"). force=true selalu ambil ulang dari server.
+    async function muatAnotasiCache(force) {
+        if (anotasiCacheLoaded && !force) { renderAnotasiList(); renderHighlightList(); return; }
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getAnotasiList", username: userSession.username }) });
+            const out = await res.json();
+            if (out.status !== "success") { document.getElementById('an-list').innerHTML = `<span style="color:red;">${out.message || "Gagal memuat."}</span>`; document.getElementById('hl-list').innerHTML = `<span style="color:red;">${out.message || "Gagal memuat."}</span>`; return; }
+            anotasiCache = out.list || [];
+            anotasiCacheLoaded = true;
+            renderAnotasiList();
+            renderHighlightList();
+        } catch (e) {
+            document.getElementById('an-list').innerHTML = "<span style='color:red;'>Koneksi terputus.</span>";
+            document.getElementById('hl-list').innerHTML = "<span style='color:red;'>Koneksi terputus.</span>";
+        }
+    }
+
+    function cariDiCacheAnotasi(bn, c, v) {
+        return anotasiCache.find(a => a.book_number === bn && a.chapter === c && a.verse === v) || null;
+    }
+
+    // Simpan catatan (menu Anotasi) -- warna yang mungkin sudah ada di ayat yang sama TIDAK ikut dihapus.
+    async function simpanAnotasiCatatan() {
+        let bn = Number(document.getElementById('an-book').value);
+        let bookName = NAMA_KITAB_66[bn - 1];
+        let c = Number(document.getElementById('an-chapter').value);
+        let v = Number(document.getElementById('an-verse').value);
+        let catatan = document.getElementById('an-catatan').value.trim();
+        if (!catatan) return alert("Isi dulu catatannya.");
+        let existing = cariDiCacheAnotasi(bn, c, v);
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: "saveAnotasi", username: userSession.username, book_number: bn, book_name: bookName,
+                chapter: c, verse: v, language: (existing && existing.language) || 'ind',
+                warna: existing ? existing.warna : '', catatan: catatan
+            }) });
+            const out = await res.json();
+            if (out.status !== "success") return alert(out.message || "Gagal menyimpan catatan.");
+            anResetForm();
+            await muatAnotasiCache(true);
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
+    // Simpan warna (menu Highlight) -- catatan yang mungkin sudah ada di ayat yang sama TIDAK ikut dihapus.
+    async function simpanHighlightWarna(warna) {
+        let bn = Number(document.getElementById('hl-book').value);
+        let bookName = NAMA_KITAB_66[bn - 1];
+        let c = Number(document.getElementById('hl-chapter').value);
+        let v = Number(document.getElementById('hl-verse').value);
+        let existing = cariDiCacheAnotasi(bn, c, v);
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: "saveAnotasi", username: userSession.username, book_number: bn, book_name: bookName,
+                chapter: c, verse: v, language: (existing && existing.language) || 'ind',
+                warna: warna, catatan: existing ? existing.catatan : ''
+            }) });
+            const out = await res.json();
+            if (out.status !== "success") return alert(out.message || "Gagal menyimpan highlight.");
+            await muatAnotasiCache(true);
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
+    // Hapus warna saja (highlight dilepas, catatan di ayat yang sama tetap ada kalau ada isinya).
+    // Kalau ternyata catatannya juga kosong, baris datanya dihapus total sekalian (tak ada gunanya disimpan kosong).
+    async function hapusHighlightWarnaSaja() {
+        let bn = Number(document.getElementById('hl-book').value);
+        let c = Number(document.getElementById('hl-chapter').value);
+        let v = Number(document.getElementById('hl-verse').value);
+        await hapusSalahSatuAnotasi(bn, c, v, 'warna');
+    }
+
+    // Hapus catatan saja (dipakai tombol 🗑️ di daftar Anotasi) -- warna di ayat yang sama tetap ada.
+    async function hapusCatatanSaja(bn, c, v) {
+        if (!confirm("Hapus catatan ini?")) return;
+        await hapusSalahSatuAnotasi(bn, c, v, 'catatan');
+    }
+    // Hapus warna saja lewat tombol 🗑️ di daftar Highlight.
+    async function hapusWarnaDariList(bn, c, v) {
+        if (!confirm("Hapus highlight (warna) ini?")) return;
+        await hapusSalahSatuAnotasi(bn, c, v, 'warna');
+    }
+
+    async function hapusSalahSatuAnotasi(bn, c, v, bagian) {
+        let existing = cariDiCacheAnotasi(bn, c, v);
+        if (!existing) return;
+        let sisaWarna = bagian === 'warna' ? '' : existing.warna;
+        let sisaCatatan = bagian === 'catatan' ? '' : existing.catatan;
+        try {
+            let out;
+            if (!sisaWarna && !sisaCatatan) {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteAnotasi", username: userSession.username, book_number: bn, chapter: c, verse: v }) });
+                out = await res.json();
+            } else {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                    action: "saveAnotasi", username: userSession.username, book_number: bn, book_name: existing.book_name,
+                    chapter: c, verse: v, language: existing.language || 'ind', warna: sisaWarna, catatan: sisaCatatan
+                }) });
+                out = await res.json();
+            }
+            if (out.status !== "success") return alert(out.message || "Gagal menghapus.");
+            await muatAnotasiCache(true);
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
+    function anEdit(bn, c, v) {
+        document.getElementById('an-book').value = bn;
+        document.getElementById('an-chapter').value = c;
+        document.getElementById('an-verse').value = v;
+        let existing = cariDiCacheAnotasi(bn, c, v);
+        document.getElementById('an-catatan').value = existing ? existing.catatan : '';
+        document.getElementById('an-form-title').innerText = "✏️ Ubah Catatan";
+        anIsiRefTitle();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function hlEdit(bn, c, v) {
+        document.getElementById('hl-book').value = bn;
+        document.getElementById('hl-chapter').value = c;
+        document.getElementById('hl-verse').value = v;
+        document.getElementById('hl-form-title').innerText = "🎨 Ubah Warna Ayat Ini";
+        hlIsiRefTitle();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    const WARNA_LABEL_HL = { '#ff3b30': 'Merah', '#007aff': 'Biru', '#34c759': 'Hijau', '#ffcc00': 'Kuning' };
+
+    function renderAnotasiList() {
+        const box = document.getElementById('an-list');
+        let list = anotasiCache.filter(a => a.catatan && a.catatan.trim()).sort((a, b) => (a.book_number - b.book_number) || (a.chapter - b.chapter) || (a.verse - b.verse));
+        if (list.length === 0) { box.innerHTML = "<i>Belum ada catatan tersimpan.</i>"; return; }
+        box.innerHTML = list.map(a => `
+            <div class="log-item-card" style="align-items:flex-start; flex-direction:column;">
+                <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                    <b>${escHtml(a.book_name)} ${a.chapter}:${a.verse}</b>
+                    <span style="font-size:11px; color:gray;">🕒 ${a.tglUbah || a.tglBuat} ${a.waktuUbah || a.waktuBuat}</span>
+                </div>
+                <div style="margin-top:6px; white-space:pre-wrap;">${escHtml(a.catatan)}</div>
+                <div class="icon-bar" style="width:100%; margin-top:8px;">
+                    <button class="icon-btn" onclick="anEdit(${a.book_number}, ${a.chapter}, ${a.verse})">✏️ Ubah</button>
+                    <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hapusCatatanSaja(${a.book_number}, ${a.chapter}, ${a.verse})">🗑️ Hapus</button>
+                </div>
+            </div>`).join("");
+    }
+
+    function renderHighlightList() {
+        const box = document.getElementById('hl-list');
+        let list = anotasiCache.filter(a => a.warna && a.warna.trim()).sort((a, b) => (a.book_number - b.book_number) || (a.chapter - b.chapter) || (a.verse - b.verse));
+        if (list.length === 0) { box.innerHTML = "<i>Belum ada ayat yang ditandai warna.</i>"; return; }
+        box.innerHTML = list.map(a => `
+            <div class="log-item-card" style="align-items:flex-start; flex-direction:column; border-left: 5px solid ${a.warna};">
+                <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                    <b>${escHtml(a.book_name)} ${a.chapter}:${a.verse}</b>
+                    <span style="font-size:11px; color:gray;">🕒 ${a.tglUbah || a.tglBuat} ${a.waktuUbah || a.waktuBuat}</span>
+                </div>
+                <div style="margin-top:4px; font-size:12px;">🎨 ${WARNA_LABEL_HL[a.warna] || a.warna}</div>
+                <div class="icon-bar" style="width:100%; margin-top:8px;">
+                    <button class="icon-btn" onclick="hlEdit(${a.book_number}, ${a.chapter}, ${a.verse})">✏️ Ubah</button>
+                    <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hapusWarnaDariList(${a.book_number}, ${a.chapter}, ${a.verse})">🗑️ Hapus</button>
+                </div>
+            </div>`).join("");
+    }
+
     function bukaAnotasi() {
-        alert("🖊️ Fitur Anotasi & Highlight (per user, tersimpan di database) sedang dikembangkan dan akan segera hadir di update berikutnya.");
+        hentikanSuara();
+        tutupSemuaNavMenu();
+        syncStickyNav();
+        setActiveTab('anotasi');
+        hideAllPages();
+        document.getElementById('anotasi-page').classList.remove('hidden');
+        isiSelectKitabAnotasiHighlight();
+        anIsiRefTitle();
+        muatAnotasiCache(false);
+    }
+
+    function bukaHighlight() {
+        hentikanSuara();
+        tutupSemuaNavMenu();
+        syncStickyNav();
+        setActiveTab('highlight');
+        hideAllPages();
+        document.getElementById('highlight-page').classList.remove('hidden');
+        isiSelectKitabAnotasiHighlight();
+        hlIsiRefTitle();
+        muatAnotasiCache(false);
     }
 
     // Isi daftar checkbox kitab (sekali saja) memakai daftar nama kitab bahasa Indonesia
@@ -2309,11 +2750,7 @@
         tutupSemuaNavMenu();
         syncStickyNav();
         setActiveTab('jadwal');
-        document.getElementById('search-page').classList.add('hidden');
-        document.getElementById('read-page').classList.add('hidden');
-        document.getElementById('announce-page').classList.add('hidden');
-        document.getElementById('outline-page').classList.add('hidden');
-        document.getElementById('searchkata-page').classList.add('hidden');
+        hideAllPages();
         document.getElementById('log-page').classList.remove('hidden');
         updateUserLabel('log');
         muatDaftarLog();
