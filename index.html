@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>23.11 E-Bible </title>
+    <title>06.04 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -295,7 +295,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 23.11</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 06.04</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -997,6 +997,8 @@
 
         <div id="gembala-stats-area" class="hidden reading-area card" style="background: var(--card); margin-bottom:10px;"></div>
 
+        <div id="gembala-laporan-area" class="hidden reading-area card" style="background: var(--card); margin-bottom:10px;"></div>
+
         <div id="gembala-list-area" class="reading-area card" style="background: var(--card);">
             <i>Memuat...</i>
         </div>
@@ -1522,7 +1524,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwg_2yHwhY9aN-I4IkTqMXTBeZezDoLdQYa12YgA8ok8YZ8upLQrmRzvJcjU583YFTylg/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzR9DgkfhoNo2iUW0scBf-8REcNE41rvdAWzdXRBtuJaPeht27uuhwxG4cj8Jb_BlxY/exec';
     
     let userSession = {};
 
@@ -1534,6 +1536,22 @@
     function levelCore(levelStr) {
         let tokens = levelTokens(levelStr);
         return ['penatua', 'gembala distrik', 'gembala', 'inti'].find(c => tokens.includes(c)) || '';
+    }
+
+    // Menu 🧑‍🤝‍🧑 Pengembalaan & 🐑 Domba hanya untuk level Inti/Gembala/Gembala Distrik/Penatua/
+    // Administrator. User yang kolom Level-nya kosong (jemaat biasa, bukan salah satu level itu)
+    // tidak melihat kedua tab ini sama sekali di navigasi manapun (ada 10 salinan nav di app ini).
+    function terapkanVisibilitasMenuGembalaDomba() {
+        let core = levelCore(userSession.level);
+        let isAdmin = levelTokens(userSession.level).includes('administrator');
+        let boleh = !!core || isAdmin;
+        const SUF = ['', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-10'];
+        SUF.forEach(suf => {
+            let btnGembala = document.getElementById('tab-gembala' + suf);
+            let btnDomba = document.getElementById('tab-domba' + suf);
+            if (btnGembala) btnGembala.style.display = boleh ? '' : 'none';
+            if (btnDomba) btnDomba.style.display = boleh ? '' : 'none';
+        });
     }
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
     let dismissedPengumuman = new Set(); // ID yang sudah ditutup (✕) SELAMA sesi ini saja -> muncul lagi tiap login baru
@@ -2868,6 +2886,7 @@
         renderHeaderBanners('gembala-header-banner', 'Pengembalaan');
         muatDaftarPengembalaan();
         muatStatsPengembalaan();
+        muatLaporanBacaGembala();
     }
 
     function bukaDomba() {
@@ -2915,6 +2934,51 @@
             if (out.status !== 'success') { alert(out.message || 'Gagal menyimpan.'); checkboxEl.checked = !checked; }
         } catch (e) { alert('Gagal koneksi ke server.'); checkboxEl.checked = !checked; }
         checkboxEl.disabled = false;
+    }
+
+    // Laporan Statistik Pembacaan Alkitab: tersedia untuk Inti/Gembala/Gembala Distrik/Penatua/
+    // Administrator, mengikuti aturan visibilitas level yang sama dengan daftar Pengembalaan (BUKAN
+    // cuma yang sudah dicentang/digembalakan) -- menampilkan nama, status baca hari ini/kemarin,
+    // sudah sampai hari ke berapa, dan persentase perkembangan pembacaan tiap orang.
+    async function muatLaporanBacaGembala() {
+        const box = document.getElementById('gembala-laporan-area');
+        let core = levelCore(userSession.level);
+        let isAdmin = levelTokens(userSession.level).includes('administrator');
+        if (!core && !isAdmin) { box.classList.add('hidden'); return; }
+        box.classList.remove('hidden');
+        box.innerHTML = '<i>Memuat laporan pembacaan...</i>';
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getLaporanBacaGembala', username: userSession.username }) });
+            const out = await res.json();
+            if (out.status !== 'success') { box.innerHTML = `<span style="color:#ff3b30;">${out.message || 'Gagal memuat laporan.'}</span>`; return; }
+            let list = out.laporan || [];
+            let header = `<b>📊 Laporan Pembacaan Alkitab</b>
+                <p style="font-size:13px; margin:6px 0;">👥 Total: <b>${out.total_orang}</b> orang • ✅ Sudah baca hari ini: <b>${out.persen_baca_hari_ini}%</b></p>`;
+            if (!list.length) { box.innerHTML = header + '<i>Belum ada nama yang bisa ditampilkan untuk level Anda.</i>'; return; }
+
+            let baris = list.map(d => `
+                <tr>
+                    <td style="padding:6px 4px; border-bottom:1px solid var(--border);"><b>${d.username}</b><br><span style="font-size:10px; opacity:0.7;">${labelLevelBadgeKecil(d.level)}</span></td>
+                    <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">${d.baca_hari_ini ? '✅' : '⬜'}</td>
+                    <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">${d.baca_kemarin ? '✅' : '⬜'}</td>
+                    <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">Hari ke-${d.hari_terakhir}</td>
+                    <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;"><b>${d.persentase}</b></td>
+                </tr>`).join('');
+
+            box.innerHTML = header + `
+                <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                    <thead><tr style="opacity:0.7;">
+                        <th style="text-align:left; padding:4px;">Nama</th>
+                        <th style="padding:4px;">Hari Ini</th>
+                        <th style="padding:4px;">Kemarin</th>
+                        <th style="padding:4px;">Sudah Sampai</th>
+                        <th style="padding:4px;">Persentase</th>
+                    </tr></thead>
+                    <tbody>${baris}</tbody>
+                </table>
+                </div>`;
+        } catch (e) { box.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
     }
 
     let dombaKategoriPergumulan = [], dombaKategoriDoa = [];
@@ -4557,6 +4621,7 @@
                 historyHariKe = (userSession.history || "").split(',').map(s => s.trim()).filter(Boolean).map(Number);
                 document.getElementById('login-page').classList.add('hidden');
                 updateUserLabel('search'); updateUserLabel('read'); updateUserLabel('log'); updateUserLabel('announce');
+                terapkanVisibilitasMenuGembalaDomba();
 
                 // Language tersimpan di database (diatur administrator) dipakai sebagai bahasa default final,
                 // menimpa pilihan sementara di layar login.
