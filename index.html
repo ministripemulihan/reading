@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>18.31 E-Bible </title>
+    <title>10.50 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -243,7 +243,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 18.31</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 10.50</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -408,11 +408,11 @@
             <!-- TAB MENU UTAMA: sama persis di ketiga halaman -->
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn active-tab" id="tab-cari" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata" onclick="bukaSearchKata()">🔎 Cari Kata</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn" id="tab-searchkata" onclick="bukaSearchKata()">🔎 Cari Kata</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
