@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>22.23 E-Bible </title>
+    <title>23.04 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -295,7 +295,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 22.23</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 23.04</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -462,11 +462,17 @@
                         <option value="chs">Chinese</option><option value="chssmp">Chinese Simple</option><option value="jawa">Jawa</option>
                         <option value="rvind">Indonesia Pemulihan</option><option value="rveng">English Recovery</option>
                     </select>
-                    <label style="font-size:12px; color:gray;">Level:</label>
-                    <select id="usr-level">
-                        <option value="user">User</option>
-                        <option value="administrator">Administrator</option>
+                    <label style="font-size:12px; color:gray;">Level Rohani (pilih salah satu; kosongkan = jemaat biasa):</label>
+                    <select id="usr-level-core">
+                        <option value="">(Kosong / Jemaat)</option>
+                        <option value="inti">Inti</option>
+                        <option value="gembala">Gembala</option>
+                        <option value="gembala distrik">Gembala Distrik</option>
+                        <option value="penatua">Penatua</option>
                     </select>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px; margin-top:6px;">
+                        <input type="checkbox" id="usr-level-admin" style="width:auto;"> Administrator (bisa digabung dengan level rohani di atas)
+                    </label>
                     <label style="font-size:12px; color:gray;">Status:</label>
                     <select id="usr-status">
                         <option value="aktif">Aktif</option>
@@ -529,6 +535,8 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi" onclick="bukaAnotasi()">🖊️ Anotasi</button>
                 <button type="button" class="nav-tab-btn" id="tab-highlight" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba" onclick="bukaDomba()">🐑 Domba</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
@@ -667,6 +675,8 @@
                 <button type="button" class="nav-tab-btn active-tab" id="tab-baca-2" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-2" onclick="bukaAnotasi()">🖊️ Anotasi</button>
                 <button type="button" class="nav-tab-btn" id="tab-highlight-2" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala-2" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba-2" onclick="bukaDomba()">🐑 Domba</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
@@ -803,6 +813,8 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-3" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-3" onclick="bukaAnotasi()">🖊️ Anotasi</button>
                 <button type="button" class="nav-tab-btn" id="tab-highlight-3" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala-3" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba-3" onclick="bukaDomba()">🐑 Domba</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
@@ -867,6 +879,8 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-4" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-4" onclick="bukaAnotasi()">🖊️ Anotasi</button>
                 <button type="button" class="nav-tab-btn" id="tab-highlight-4" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala-4" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba-4" onclick="bukaDomba()">🐑 Domba</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('announce-menu', 'chevron-announce')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
@@ -948,6 +962,87 @@
         </div>
     </div>
 
+    <!-- PENGEMBALAAN: pilih siapa yang digembalakan. Minimal level Inti (atau Administrator). -->
+    <div id="gembala-page" class="hidden">
+        <div class="top-nav-bar">
+            <div class="nav-tabs">
+                <button type="button" class="nav-tab-btn" id="tab-cari-9" onclick="bukaPencarian()">🔍 Cari</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-9" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-jadwal-9" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn" id="tab-pengumuman-9" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-outline-9" onclick="bukaGarisBesar()">📚 Alur</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-9" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi-9" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight-9" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn active-tab" id="tab-gembala-9" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba-9" onclick="bukaDomba()">🐑 Domba</button>
+            </div>
+            <div class="nav-summary-row" onclick="toggleNavMenu('gembala-menu', 'chevron-gembala')">
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="gembala-ref-title">🧑‍🤝‍🧑 Pengembalaan</span></span>
+                <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-gembala">▼</span>
+            </div>
+            <div class="nav-full-menu" id="gembala-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">🧑‍🤝‍🦽 Tentang Pengembalaan</div>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Centang nama untuk menandai bahwa Anda menggembalakan orang tersebut. Daftar yang tampil dibatasi sesuai level Anda: Inti hanya melihat sesama Inti & jemaat biasa; Gembala menambah bisa lihat Inti+Gembala; Gembala Distrik menambah Gembala Distrik; Penatua bisa melihat semua level.</p>
+                <button class="icon-btn" style="background:var(--primary); color:white; width:100%;" onclick="muatDaftarPengembalaan()">🔄 Muat Ulang Daftar</button>
+            </div>
+        </div>
+
+        <div id="gembala-header-banner"></div>
+
+        <div id="gembala-stats-area" class="hidden reading-area card" style="background: var(--card); margin-bottom:10px;"></div>
+
+        <div id="gembala-list-area" class="reading-area card" style="background: var(--card);">
+            <i>Memuat...</i>
+        </div>
+    </div>
+
+    <!-- DOMBA: daftar orang yang digembalakan (nama Anda ada di kolom Digembalakan mereka),
+         status baca Alkitab hari ini/kemarin, dan catatan pergumulan/pokok doa per domba. -->
+    <div id="domba-page" class="hidden">
+        <div class="top-nav-bar">
+            <div class="nav-tabs">
+                <button type="button" class="nav-tab-btn" id="tab-cari-10" onclick="bukaPencarian()">🔍 Cari</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-10" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-jadwal-10" onclick="bukaLog()">🗓️ Jadwal</button>
+                <button type="button" class="nav-tab-btn" id="tab-pengumuman-10" onclick="bukaPengumuman()">📢 Info</button>
+                <button type="button" class="nav-tab-btn" id="tab-outline-10" onclick="bukaGarisBesar()">📚 Alur</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca-10" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-anotasi-10" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-highlight-10" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala-10" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn active-tab" id="tab-domba-10" onclick="bukaDomba()">🐑 Domba</button>
+            </div>
+            <div class="nav-summary-row" onclick="toggleNavMenu('domba-menu', 'chevron-domba')">
+                <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="domba-ref-title">🐑 Domba</span></span>
+                <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
+                <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
+                <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <span class="nav-chevron" id="chevron-domba">▼</span>
+            </div>
+            <div class="nav-full-menu" id="domba-menu">
+                <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
+                <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
+                <div style="font-size: 12px; font-weight: bold; color: gray;">🐑 Tentang Domba</div>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Daftar ini berisi orang-orang yang Anda gembalakan (dicentang lewat menu Pengembalaan). Klik ✏️ Catat untuk menuliskan pergumulan & pokok doa, atau 📜 Riwayat untuk melihat catatan sebelumnya.</p>
+                <button class="icon-btn" style="background:var(--primary); color:white; width:100%;" onclick="muatDaftarDomba()">🔄 Muat Ulang Daftar</button>
+            </div>
+        </div>
+
+        <div id="domba-header-banner"></div>
+
+        <div id="domba-summary-area" class="hidden reading-area card" style="background: var(--card); margin-bottom:10px;"></div>
+
+        <div id="domba-list-area" class="reading-area card" style="background: var(--card);">
+            <i>Memuat...</i>
+        </div>
+    </div>
+
     <!-- MENU KELIMA: GARIS BESAR KITAB & VIDEO YOUTUBE -->
     <div id="outline-page" class="hidden">
         <div class="top-nav-bar">
@@ -960,6 +1055,8 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-5" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-5" onclick="bukaAnotasi()">🖊️ Anotasi</button>
                 <button type="button" class="nav-tab-btn" id="tab-highlight-5" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala-5" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba-5" onclick="bukaDomba()">🐑 Domba</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('outline-menu', 'chevron-outline')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="outline-ref-title">📚 Garis Besar &amp; Video</span></span>
@@ -1141,6 +1238,8 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-6" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-6" onclick="bukaAnotasi()">🖊️ Anotasi</button>
                 <button type="button" class="nav-tab-btn" id="tab-highlight-6" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala-6" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba-6" onclick="bukaDomba()">🐑 Domba</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('searchkata-menu', 'chevron-searchkata')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="searchkata-ref-title">🔎 Cari Kata di Ayat &amp; Catatan</span></span>
@@ -1222,6 +1321,8 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-7" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-anotasi-7" onclick="bukaAnotasi()">🖊️ Anotasi</button>
                 <button type="button" class="nav-tab-btn" id="tab-highlight-7" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala-7" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba-7" onclick="bukaDomba()">🐑 Domba</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('anotasi-menu', 'chevron-anotasi')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="anotasi-ref-title">🖊️ Anotasi (Catatan Pribadi)</span></span>
@@ -1280,6 +1381,8 @@
                 <button type="button" class="nav-tab-btn" id="tab-baca-8" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-anotasi-8" onclick="bukaAnotasi()">🖊️ Anotasi</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-highlight-8" onclick="bukaHighlight()">🌈 Highlight</button>
+                <button type="button" class="nav-tab-btn" id="tab-gembala-8" onclick="bukaPengembalaan()">🧑‍🤝‍🧑 Pengembalaan</button>
+                <button type="button" class="nav-tab-btn" id="tab-domba-8" onclick="bukaDomba()">🐑 Domba</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('highlight-menu', 'chevron-highlight')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="highlight-ref-title">🌈 Highlight Ayat</span></span>
@@ -1419,9 +1522,19 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwNbj7iV9dSkFQwTdLSOxD4N8_lM4ZTTrDuY94VdbkMig3AlT7ubTB3yu9gl_9oV1Z2A/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWJ2FIGRp__vV5eysfNrdGWuRtQY3XXviqC9QA70oFOIIOfVfX4ldEzws6PjribE4X/exec';
     
     let userSession = {};
+
+    // Level sekarang bisa berisi gabungan token dipisah koma (mis. "administrator, inti").
+    // Helper ini dipakai di semua pengecekan level supaya tidak lagi memakai '===' string persis.
+    function levelTokens(levelStr) {
+        return String(levelStr || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    }
+    function levelCore(levelStr) {
+        let tokens = levelTokens(levelStr);
+        return ['penatua', 'gembala distrik', 'gembala', 'inti'].find(c => tokens.includes(c)) || '';
+    }
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
     let dismissedPengumuman = new Set(); // ID yang sudah ditutup (✕) SELAMA sesi ini saja -> muncul lagi tiap login baru
     let currentHariKe = 1;
@@ -1524,24 +1637,36 @@
     }
     muatPengaturanTampilan();
 
-    // Info versi (ditampilkan di bawah judul, di layar Login)
+    // Info versi (ditampilkan di bawah judul, di layar Login).
+    // Di depan HANYA nomor versi yang tampil; detail backend/database baru muncul
+    // saat chip bahasa diklik/dibuka (lihat toggleLoginLangCarousel di bawah).
+    let infoVersiData = null;
     async function muatInfoVersi() {
         const box = document.getElementById('login-version-info');
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getAppVersion" }) });
             const data = await res.json();
             if (data.status === "success" && box) {
-                box.innerHTML = `Backend: ${data.version.backend}<br>Database: ${data.version.database}`;
+                infoVersiData = data.version;
+                box.innerHTML = `v${data.version.aplikasi}`;
             }
         } catch (e) { if (box) box.innerText = ""; }
     }
     muatInfoVersi();
 
-    // Chip bahasa gaya carousel di layar Login
+    // Chip bahasa gaya carousel di layar Login. Saat dibuka, tampilkan juga detail
+    // versi backend/database; saat ditutup kembali, cuma tampilkan nomor versinya saja.
     function toggleLoginLangCarousel() {
         document.getElementById('login-lang-carousel').classList.toggle('hidden');
+        const terbuka = !document.getElementById('login-lang-carousel').classList.contains('hidden');
         const chev = document.getElementById('login-lang-chevron');
-        chev.innerText = document.getElementById('login-lang-carousel').classList.contains('hidden') ? '▼' : '▲';
+        chev.innerText = terbuka ? '▲' : '▼';
+        const box = document.getElementById('login-version-info');
+        if (box && infoVersiData) {
+            box.innerHTML = terbuka
+                ? `v${infoVersiData.aplikasi}<br>Backend: ${infoVersiData.backend}<br>Database: ${infoVersiData.database}`
+                : `v${infoVersiData.aplikasi}`;
+        }
     }
     function pilihLoginLang(kode, label) {
         document.getElementById('login-language').value = kode;
@@ -1704,8 +1829,8 @@
 
     // Menandai tab aktif (Cari / Baca / Jadwal) di ketiga salinan tab bar sekaligus
     function setActiveTab(tabName) {
-        const SUF_TAB = ['', '-2', '-3', '-4', '-5', '-6', '-7', '-8'];
-        const KEY_TAB = ['cari', 'baca', 'jadwal', 'pengumuman', 'outline', 'searchkata', 'anotasi', 'highlight'];
+        const SUF_TAB = ['', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-10'];
+        const KEY_TAB = ['cari', 'baca', 'jadwal', 'pengumuman', 'outline', 'searchkata', 'anotasi', 'highlight', 'gembala', 'domba'];
         KEY_TAB.forEach(key => {
             SUF_TAB.forEach(suf => {
                 const el = document.getElementById('tab-' + key + suf);
@@ -1729,6 +1854,10 @@
         document.getElementById('chevron-anotasi').innerText = "▼";
         document.getElementById('highlight-menu').classList.remove('open');
         document.getElementById('chevron-highlight').innerText = "▼";
+        document.getElementById('gembala-menu').classList.remove('open');
+        document.getElementById('chevron-gembala').innerText = "▼";
+        document.getElementById('domba-menu').classList.remove('open');
+        document.getElementById('chevron-domba').innerText = "▼";
     }
 
     // =====================================================================
@@ -1750,7 +1879,7 @@
     // admin bisa melihat langsung tampilannya sebelum dipublikasikan -- sebelumnya draft tidak
     // pernah tampil sama sekali walau dilihat oleh administrator.
     function pengumumanAktif(p) {
-        let isAdmin = (userSession.level === 'administrator');
+        let isAdmin = (levelTokens(userSession.level).includes('administrator'));
         if (isAdmin && (p.status === 'draft' || p.status === 'waiting')) return true;
         if (p.status !== 'done') return false;
         let today = new Date().toISOString().slice(0, 10);
@@ -1825,7 +1954,7 @@
 
     // Tampilkan/sembunyikan tombol & form kelola pengumuman berdasarkan Level user (hanya administrator)
     function toggleAdminPengumumanUI() {
-        let isAdmin = (userSession.level === 'administrator');
+        let isAdmin = (levelTokens(userSession.level).includes('administrator'));
         document.getElementById('pgm-btn-tambah').classList.toggle('hidden', !isAdmin);
     }
 
@@ -1872,7 +2001,7 @@
     }
 
     async function simpanPengumuman() {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengatur pengumuman.");
+        if (!levelTokens(userSession.level).includes('administrator')) return alert("Hanya administrator yang boleh mengatur pengumuman.");
         let kategori = Array.from(document.querySelectorAll('#pgm-kategori-checks input:checked')).map(cb => cb.value);
         if (kategori.length === 0) return alert("Pilih minimal satu kategori tampilan.");
         let isi = document.getElementById('pgm-isi').value.trim();
@@ -1902,7 +2031,7 @@
     }
 
     async function hapusPengumuman(id) {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh menghapus pengumuman.");
+        if (!levelTokens(userSession.level).includes('administrator')) return alert("Hanya administrator yang boleh menghapus pengumuman.");
         if (!confirm("Hapus pengumuman ini?")) return;
         const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deletePengumuman", username: userSession.username, id: id }) });
         const out = await res.json();
@@ -1919,7 +2048,7 @@
         box.innerHTML = "<i>Memuat daftar pengumuman...</i>";
         if (allPengumuman.length === 0) await loadPengumuman();
 
-        let isAdmin = (userSession.level === 'administrator');
+        let isAdmin = (levelTokens(userSession.level).includes('administrator'));
         let list = allPengumuman.slice().sort((a, b) => (b.tanggal || "").localeCompare(a.tanggal || ""));
         if (list.length === 0) { box.innerHTML = "<i>Belum ada pengumuman.</i>"; return; }
 
@@ -1952,7 +2081,7 @@
     let currentOutlineBookName = "";
 
     function toggleAdminOutlineUI() {
-        let isAdmin = (userSession.level === 'administrator');
+        let isAdmin = (levelTokens(userSession.level).includes('administrator'));
         document.getElementById('outline-btn-edit-garis').classList.toggle('hidden', !isAdmin);
         document.getElementById('outline-btn-tambah-video').classList.toggle('hidden', !isAdmin);
         document.getElementById('outline-btn-tambah-mp3').classList.toggle('hidden', !isAdmin);
@@ -2035,7 +2164,7 @@
     }
 
     async function simpanGarisBesar() {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengubah garis besar kitab.");
+        if (!levelTokens(userSession.level).includes('administrator')) return alert("Hanya administrator yang boleh mengubah garis besar kitab.");
         const konten = document.getElementById('outline-garis-konten').value;
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "saveGarisBesar", username: userSession.username, book_number: currentOutlineBookNum, book_name: currentOutlineBookName, konten: konten }) });
@@ -2067,7 +2196,7 @@
             lastVideoList = out.list || [];
             if (lastVideoList.length === 0) { box.innerHTML = "<i>Belum ada video untuk kitab ini.</i>"; return; }
 
-            let isAdmin = (userSession.level === 'administrator');
+            let isAdmin = (levelTokens(userSession.level).includes('administrator'));
             box.innerHTML = lastVideoList.map((v, i) => {
                 let rangeLabel = (v.pasal_mulai === v.pasal_selesai)
                     ? `${currentOutlineBookName} ${v.pasal_mulai}:${v.ayat_mulai}-${v.ayat_selesai}`
@@ -2147,7 +2276,7 @@
     }
 
     async function simpanVideoYoutube() {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengatur video.");
+        if (!levelTokens(userSession.level).includes('administrator')) return alert("Hanya administrator yang boleh mengatur video.");
         const payload = {
             action: "saveVideoYoutube", username: userSession.username,
             id: document.getElementById('outline-video-id').value || null,
@@ -2171,7 +2300,7 @@
     }
 
     async function hapusVideoYoutube(id) {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh menghapus video.");
+        if (!levelTokens(userSession.level).includes('administrator')) return alert("Hanya administrator yang boleh menghapus video.");
         if (!confirm("Hapus video ini?")) return;
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteVideoYoutube", username: userSession.username, id: id }) });
@@ -2223,7 +2352,7 @@
 
     function renderDaftarGdriveMedia(list, box, tipe) {
         if (list.length === 0) { box.innerHTML = `<i>Belum ada ${tipe === 'mp3' ? 'audio' : 'video'} untuk kitab ini.</i>`; return; }
-        let isAdmin = (userSession.level === 'administrator');
+        let isAdmin = (levelTokens(userSession.level).includes('administrator'));
         box.innerHTML = list.map((v, i) => {
             let rangeLabel = (v.pasal_mulai === v.pasal_selesai)
                 ? `${currentOutlineBookName} ${v.pasal_mulai}:${v.ayat_mulai}-${v.ayat_selesai}`
@@ -2316,7 +2445,7 @@
     }
 
     async function simpanGdriveMedia() {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengatur ini.");
+        if (!levelTokens(userSession.level).includes('administrator')) return alert("Hanya administrator yang boleh mengatur ini.");
         let tipe = currentGdriveFormTipe;
         const payload = {
             action: tipe === 'mp3' ? "saveAudioMp3" : "saveVideoMp4",
@@ -2342,7 +2471,7 @@
     }
 
     async function hapusGdriveMedia(tipe, id) {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh menghapus ini.");
+        if (!levelTokens(userSession.level).includes('administrator')) return alert("Hanya administrator yang boleh menghapus ini.");
         if (!confirm("Hapus item ini?")) return;
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: tipe === 'mp3' ? "deleteAudioMp3" : "deleteVideoMp4", username: userSession.username, id: id }) });
@@ -2354,7 +2483,7 @@
 
     // Semua id halaman utama -- dipakai hideAllPages() supaya setiap fungsi bukaXxx() tidak perlu
     // menuliskan satu per satu (dan otomatis ikut menyembunyikan halaman baru Anotasi & Highlight).
-    const ALL_PAGE_IDS = ['search-page', 'read-page', 'log-page', 'announce-page', 'outline-page', 'searchkata-page', 'anotasi-page', 'highlight-page'];
+    const ALL_PAGE_IDS = ['search-page', 'read-page', 'log-page', 'announce-page', 'outline-page', 'searchkata-page', 'anotasi-page', 'highlight-page', 'gembala-page', 'domba-page'];
     function hideAllPages() {
         ALL_PAGE_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('hidden'); });
     }
@@ -2713,6 +2842,228 @@
         isiSelectKitabAnotasiHighlight();
         hlIsiRefTitle();
         muatAnotasiCache(false);
+    }
+
+    // =====================================================================
+    // MENU PENGEMBALAAN & DOMBA
+    // =====================================================================
+    function labelLevelBadgeKecil(levelStr) {
+        let tokens = levelTokens(levelStr);
+        let core = levelCore(levelStr);
+        let bagian = [];
+        if (tokens.includes('administrator')) bagian.push('👑 Admin');
+        if (core) bagian.push('🐑 ' + core.replace(/\b\w/g, ch => ch.toUpperCase()));
+        if (!bagian.length) bagian.push('👤 Jemaat');
+        return bagian.join(' • ');
+    }
+
+    function bukaPengembalaan() {
+        hentikanSuara();
+        tutupSemuaNavMenu();
+        syncStickyNav();
+        setActiveTab('gembala');
+        hideAllPages();
+        document.getElementById('gembala-page').classList.remove('hidden');
+        updateUserLabel('gembala');
+        renderHeaderBanners('gembala-header-banner', 'Pengembalaan');
+        muatDaftarPengembalaan();
+        muatStatsPengembalaan();
+    }
+
+    function bukaDomba() {
+        hentikanSuara();
+        tutupSemuaNavMenu();
+        syncStickyNav();
+        setActiveTab('domba');
+        hideAllPages();
+        document.getElementById('domba-page').classList.remove('hidden');
+        updateUserLabel('domba');
+        renderHeaderBanners('domba-header-banner', 'Domba');
+        muatDaftarDomba();
+    }
+
+    async function muatDaftarPengembalaan() {
+        const box = document.getElementById('gembala-list-area');
+        box.innerHTML = '<i>Memuat daftar...</i>';
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getDaftarPengembalaan', username: userSession.username }) });
+            const out = await res.json();
+            if (out.status !== 'success') { box.innerHTML = `<span style="color:#ff3b30;">${out.message || 'Gagal memuat.'}</span>`; return; }
+            let list = out.users || [];
+            if (!list.length) { box.innerHTML = '<i>Tidak ada nama yang bisa ditampilkan untuk level Anda.</i>'; return; }
+            box.innerHTML = list.map(u => `
+                <div class="log-item-card" style="display:flex; align-items:center; gap:10px;">
+                    <label style="flex:1; display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        <input type="checkbox" ${u.sudah_digembalakan ? 'checked' : ''} style="width:20px; height:20px;"
+                            onchange="toggleCentangGembalakan('${u.username.replace(/'/g, "\\'")}', this.checked, this)">
+                        <span>
+                            <b>${u.username}</b><br>
+                            <span style="font-size:11px; opacity:0.7;">${labelLevelBadgeKecil(u.level)}</span>
+                        </span>
+                    </label>
+                </div>`).join('');
+        } catch (e) { box.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
+    }
+
+    async function toggleCentangGembalakan(targetUsername, checked, checkboxEl) {
+        checkboxEl.disabled = true;
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: 'toggleGembalakan', username: userSession.username, target_username: targetUsername, checked: checked
+            }) });
+            const out = await res.json();
+            if (out.status !== 'success') { alert(out.message || 'Gagal menyimpan.'); checkboxEl.checked = !checked; }
+        } catch (e) { alert('Gagal koneksi ke server.'); checkboxEl.checked = !checked; }
+        checkboxEl.disabled = false;
+    }
+
+    let dombaKategoriPergumulan = [], dombaKategoriDoa = [];
+    async function muatDaftarDomba() {
+        const box = document.getElementById('domba-list-area');
+        const summaryBox = document.getElementById('domba-summary-area');
+        box.innerHTML = '<i>Memuat daftar domba...</i>';
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getDaftarDomba', username: userSession.username }) });
+            const out = await res.json();
+            if (out.status !== 'success') { box.innerHTML = `<span style="color:#ff3b30;">${out.message || 'Gagal memuat.'}</span>`; return; }
+            let list = out.domba || [];
+            dombaKategoriPergumulan = out.kategori_pergumulan || [];
+            dombaKategoriDoa = out.kategori_doa || [];
+
+            summaryBox.classList.remove('hidden');
+            summaryBox.innerHTML = `<b>📊 Ringkasan Domba Anda (${list.length} orang)</b><br>
+                <span style="font-size:13px;">✅ Sudah baca hari ini: <b>${out.persen_baca_hari_ini}%</b> • Sudah baca kemarin: <b>${out.persen_baca_kemarin}%</b></span>`;
+
+            if (!list.length) { box.innerHTML = '<i>Belum ada domba yang Anda gembalakan. Centang nama di menu 🧑\u200d🤝\u200d🧑 Pengembalaan terlebih dahulu.</i>'; return; }
+
+            box.innerHTML = list.map((d, idx) => `
+                <div class="log-item-card" style="display:block;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="flex:1;">
+                            <b>${d.username}</b><br>
+                            <span style="font-size:11px; opacity:0.7;">${labelLevelBadgeKecil(d.level)} • Hari ini: ${d.baca_hari_ini ? '✅' : '⬜'} • Kemarin: ${d.baca_kemarin ? '✅' : '⬜'} • Progres: ${d.persentase || '-'}</span>
+                        </span>
+                        <button class="icon-btn" style="width:auto; padding:6px 10px;" onclick="bukaFormCatatanDomba(${idx})">✏️ Catat</button>
+                        <button class="icon-btn" style="width:auto; padding:6px 10px;" onclick="muatRiwayatDomba('${d.username.replace(/'/g, "\\'")}', ${idx})">📜 Riwayat</button>
+                    </div>
+                    <div id="domba-form-${idx}" class="hidden" style="margin-top:10px; border-top:1px dashed var(--border); padding-top:10px;" data-username="${d.username}"></div>
+                    <div id="domba-riwayat-${idx}" class="hidden" style="margin-top:10px; border-top:1px dashed var(--border); padding-top:10px; font-size:13px;"></div>
+                </div>`).join('');
+            window.dombaListTerkini = list;
+        } catch (e) { box.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
+    }
+
+    function checklistKategoriHtml(namaGroup, kategoriList) {
+        return kategoriList.map(k => `<label style="display:inline-flex; align-items:center; gap:4px; margin:2px 8px 2px 0; font-size:12px;">
+            <input type="checkbox" class="${namaGroup}-check" value="${k}" style="width:auto;"> ${k}
+        </label>`).join('');
+    }
+
+    function bukaFormCatatanDomba(idx) {
+        document.getElementById(`domba-riwayat-${idx}`).classList.add('hidden');
+        const el = document.getElementById(`domba-form-${idx}`);
+        const sudahTerbuka = !el.classList.contains('hidden');
+        // tutup semua form lain dulu supaya tidak menumpuk
+        document.querySelectorAll('[id^="domba-form-"]').forEach(e => e.classList.add('hidden'));
+        if (sudahTerbuka) return; // klik kedua = tutup saja
+        el.classList.remove('hidden');
+        el.innerHTML = `
+            <label style="font-size:12px; color:gray;">Pergumulan / Masalah yang dihadapi (boleh lebih dari satu):</label>
+            <div>${checklistKategoriHtml('masalah-' + idx, dombaKategoriPergumulan)}</div>
+            <input type="text" id="masalah-lainnya-${idx}" placeholder="Lainnya (tulis sendiri, pisahkan dengan koma)" style="margin-top:4px;">
+
+            <label style="font-size:12px; color:gray; margin-top:8px; display:block;">Pokok Doa (boleh lebih dari satu):</label>
+            <div>${checklistKategoriHtml('doa-' + idx, dombaKategoriDoa)}</div>
+            <input type="text" id="doa-lainnya-${idx}" placeholder="Lainnya (tulis sendiri, pisahkan dengan koma)" style="margin-top:4px;">
+
+            <div class="icon-bar" style="margin-top:8px;">
+                <button class="icon-btn" style="background:var(--primary); color:white;" onclick="simpanCatatanDomba(${idx})">💾 Simpan (Sudah Dicek)</button>
+                <button class="icon-btn" onclick="document.getElementById('domba-form-${idx}').classList.add('hidden')">✖ Batal</button>
+            </div>
+            <p id="domba-form-status-${idx}" style="font-size:12px; min-height:16px;"></p>`;
+    }
+
+    async function simpanCatatanDomba(idx) {
+        const el = document.getElementById(`domba-form-${idx}`);
+        const domba = el.dataset.username;
+        let masalah = Array.from(document.querySelectorAll(`.masalah-${idx}-check:checked`)).map(c => c.value);
+        let doa = Array.from(document.querySelectorAll(`.doa-${idx}-check:checked`)).map(c => c.value);
+        let masalahLain = document.getElementById(`masalah-lainnya-${idx}`).value.split(',').map(s => s.trim()).filter(Boolean);
+        let doaLain = document.getElementById(`doa-lainnya-${idx}`).value.split(',').map(s => s.trim()).filter(Boolean);
+        masalah = masalah.concat(masalahLain);
+        doa = doa.concat(doaLain);
+        if (!masalah.length && !doa.length) return alert('Isi minimal satu pergumulan atau pokok doa.');
+
+        const statusEl = document.getElementById(`domba-form-status-${idx}`);
+        statusEl.style.color = 'gray'; statusEl.innerText = 'Menyimpan...';
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: 'saveDombaCatatan', username: userSession.username, domba_username: domba, masalah: masalah, doa: doa
+            }) });
+            const out = await res.json();
+            if (out.status === 'success') {
+                statusEl.style.color = '#34c759'; statusEl.innerText = '✅ Tersimpan.';
+                setTimeout(() => el.classList.add('hidden'), 800);
+            } else { statusEl.style.color = '#ff3b30'; statusEl.innerText = out.message || 'Gagal menyimpan.'; }
+        } catch (e) { statusEl.style.color = '#ff3b30'; statusEl.innerText = 'Gagal koneksi ke server.'; }
+    }
+
+    async function muatRiwayatDomba(dombaUsername, idx) {
+        document.getElementById(`domba-form-${idx}`).classList.add('hidden');
+        const el = document.getElementById(`domba-riwayat-${idx}`);
+        const sudahTerbuka = !el.classList.contains('hidden');
+        document.querySelectorAll('[id^="domba-riwayat-"]').forEach(e => e.classList.add('hidden'));
+        if (sudahTerbuka) return;
+        el.classList.remove('hidden');
+        el.innerHTML = '<i>Memuat riwayat...</i>';
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getCatatanDomba', username: userSession.username, domba_username: dombaUsername }) });
+            const out = await res.json();
+            if (out.status !== 'success') { el.innerHTML = `<span style="color:#ff3b30;">${out.message || 'Gagal memuat.'}</span>`; return; }
+            let riwayat = out.riwayat || [];
+            if (!riwayat.length) { el.innerHTML = '<i>Belum ada catatan.</i>'; return; }
+            el.innerHTML = riwayat.map(r => `
+                <div style="padding:6px 0; border-bottom:1px dashed var(--border);">
+                    <b>${r.tanggal}</b> (dicatat oleh ${r.dicatat_oleh})<br>
+                    ${r.masalah ? `😟 Pergumulan: ${r.masalah}<br>` : ''}
+                    ${r.doa ? `🙏 Doa: ${r.doa}` : ''}
+                </div>`).join('');
+        } catch (e) { el.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
+    }
+
+    // Statistik khusus Administrator/Penatua, tampil di atas daftar menu Pengembalaan.
+    async function muatStatsPengembalaan() {
+        const box = document.getElementById('gembala-stats-area');
+        let isAdmin = levelTokens(userSession.level).includes('administrator');
+        let isPenatua = levelCore(userSession.level) === 'penatua';
+        if (!isAdmin && !isPenatua) { box.classList.add('hidden'); return; }
+        box.classList.remove('hidden');
+        box.innerHTML = '<i>Memuat statistik...</i>';
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getStatsPengembalaan', username: userSession.username }) });
+            const out = await res.json();
+            if (out.status !== 'success') { box.innerHTML = `<span style="color:#ff3b30;">${out.message || 'Gagal memuat statistik.'}</span>`; return; }
+
+            function daftarTop10(arr) {
+                if (!arr.length) return '<i>Belum ada data.</i>';
+                return '<ol style="margin:4px 0 0 18px; padding:0; font-size:13px;">' + arr.map(x => `<li>${x.nama} (${x.jumlah}x)</li>`).join('') + '</ol>';
+            }
+            function daftarPersen(arr) {
+                if (!arr.length) return '<i>Belum ada data.</i>';
+                return '<div style="font-size:13px;">' + arr.map(x => `${x.nama}: <b>${x.persen}%</b> (${x.jumlah}x)`).join('<br>') + '</div>';
+            }
+
+            box.innerHTML = `
+                <b>📊 Statistik Penggembalaan (khusus Administrator/Penatua)</b>
+                <p style="font-size:13px; margin:6px 0;">👥 Total Kaum Saleh (aktif): <b>${out.total_kaum_saleh}</b><br>
+                ✅ Sudah dicek bulan ini: <b>${out.jumlah_dicek_bulan_ini}</b> orang (<b>${out.persen_dicek_bulan_ini}%</b>)</p>
+                <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:bold; font-size:13px;">📈 Breakdown Pergumulan Bulan Ini (%)</summary>${daftarPersen(out.breakdown_masalah_bulan_ini)}</details>
+                <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:bold; font-size:13px;">🙏 Breakdown Pokok Doa Bulan Ini (%)</summary>${daftarPersen(out.breakdown_doa_bulan_ini)}</details>
+                <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:bold; font-size:13px;">🏆 Top 10 Pergumulan (Sepanjang Waktu)</summary>${daftarTop10(out.top10_masalah_all_time)}</details>
+                <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:bold; font-size:13px;">🏆 Top 10 Pergumulan (Bulan Ini)</summary>${daftarTop10(out.top10_masalah_bulan_ini)}</details>
+                <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:bold; font-size:13px;">🏆 Top 10 Doa (Sepanjang Waktu)</summary>${daftarTop10(out.top10_doa_all_time)}</details>
+                <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:bold; font-size:13px;">🏆 Top 10 Doa (Bulan Ini)</summary>${daftarTop10(out.top10_doa_bulan_ini)}</details>`;
+        } catch (e) { box.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
     }
 
     // Isi daftar checkbox kitab (sekali saja) memakai daftar nama kitab bahasa Indonesia
@@ -3894,7 +4245,7 @@
     // dengan pengaturan tampilan yang sedang aktif (lihat applyPengaturanTampilan()).
     function bukaModalTema() {
         document.getElementById('modal-theme').classList.remove('hidden');
-        let isAdmin = userSession && userSession.level === 'administrator';
+        let isAdmin = userSession && levelTokens(userSession.level).includes('administrator');
         document.getElementById('admin-tampilan-panel').classList.toggle('hidden', !isAdmin);
         applyPengaturanTampilan(pengaturanTampilanSaatIni);
     }
@@ -4701,7 +5052,7 @@
         document.getElementById('acc-pass2').value = '';
         document.getElementById('acc-setting-status').innerText = '';
         document.getElementById('admin-user-form').classList.add('hidden');
-        let isAdmin = userSession.level === 'administrator';
+        let isAdmin = levelTokens(userSession.level).includes('administrator');
         document.getElementById('admin-user-panel').classList.toggle('hidden', !isAdmin);
         if (isAdmin) muatDaftarUserAdmin();
         document.getElementById('modal-akun-setting').classList.remove('hidden');
@@ -4751,11 +5102,22 @@
                 <div class="log-item-card" style="display:flex; align-items:center; gap:8px;">
                     <span style="flex:1;">
                         <b>${u.username}</b><br>
-                        <span style="font-size:11px; opacity:0.7;">${u.level === 'administrator' ? '👑 Admin' : '👤 User'} • ${u.language.toUpperCase()} • ${u.status === 'nonaktif' ? '⛔ Nonaktif' : '✅ Aktif'}</span>
+                        <span style="font-size:11px; opacity:0.7;">${labelLevelBadge(u.level)} • ${u.language.toUpperCase()} • ${u.status === 'nonaktif' ? '⛔ Nonaktif' : '✅ Aktif'}</span>
                     </span>
                     <button class="icon-btn" style="width:auto; padding:6px 12px;" onclick="bukaFormUserBaru(daftarUserAdmin[${idx}])">✏️ Edit</button>
                 </div>`).join('') || '<i>Belum ada user.</i>';
         } catch (e) { box.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
+    }
+
+    // Ubah string level ("administrator, inti") jadi badge ringkas utk ditampilkan di daftar user.
+    function labelLevelBadge(levelStr) {
+        let tokens = String(levelStr || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        let bagian = [];
+        if (tokens.includes('administrator')) bagian.push('👑 Admin');
+        let core = ['penatua', 'gembala distrik', 'gembala', 'inti'].find(c => tokens.includes(c));
+        if (core) bagian.push('🐑 ' + core.replace(/\b\w/g, ch => ch.toUpperCase()));
+        if (!bagian.length) bagian.push('👤 Jemaat');
+        return bagian.join(' • ');
     }
 
     function bukaFormUserBaru(userData) {
@@ -4764,7 +5126,10 @@
         document.getElementById('usr-username').value = userData ? userData.username : '';
         document.getElementById('usr-password').value = '';
         document.getElementById('usr-language').value = userData ? userData.language : 'ind';
-        document.getElementById('usr-level').value = userData ? userData.level : 'user';
+        let tokens = String(userData ? userData.level : '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        let core = ['penatua', 'gembala distrik', 'gembala', 'inti'].find(c => tokens.includes(c)) || '';
+        document.getElementById('usr-level-core').value = core;
+        document.getElementById('usr-level-admin').checked = tokens.includes('administrator');
         document.getElementById('usr-status').value = userData ? userData.status : 'aktif';
     }
 
@@ -4775,12 +5140,17 @@
         let password = document.getElementById('usr-password').value;
         if (!targetUsername && !password) return alert('Password wajib diisi untuk user baru.');
 
+        let levelParts = [];
+        if (document.getElementById('usr-level-admin').checked) levelParts.push('administrator');
+        let core = document.getElementById('usr-level-core').value;
+        if (core) levelParts.push(core);
+
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
                 action: 'adminSaveUser', admin_username: userSession.username,
                 target_username: targetUsername, new_username: username, new_password: password,
                 language: document.getElementById('usr-language').value,
-                level: document.getElementById('usr-level').value,
+                level: levelParts.join(', '),
                 status: document.getElementById('usr-status').value
             }) });
             const out = await res.json();
