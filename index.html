@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>10.50 E-Bible </title>
+    <title>17.40 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -20,6 +20,19 @@
         [data-theme="dark-dracula"] { --bg: #282a36; --text: #f8f8f2; --card: #44475a; --primary: #ff79c6; --border: #6272a4; --btn-bg: #6272a4; }
         [data-theme="dark-forest"] { --bg: #142f1d; --text: #dcf2e3; --card: #1e452a; --primary: #4ade80; --border: #2a613b; --btn-bg: #2a613b; }
         [data-theme="dark-charcoal"] { --bg: #202020; --text: #e0e0e0; --card: #2d2d2d; --primary: #ffb74d; --border: #424242; --btn-bg: #424242; }
+
+        /* TEMA BARU: KACA TRANSPARAN 60% -- semua kartu/menu (nav, kartu ayat, dst) memakai warna
+           dengan alpha 0.4 (artinya 60% tembus pandang), sehingga gambar latar tetap (body::before,
+           lihat di bawah) terlihat menembus di belakang semua menu. Ditambah efek blur kaca ala Apple
+           (backdrop-filter) supaya teks tetap terbaca jelas walau latar belakang menembus di baliknya. */
+        [data-theme="glass-transparent"] { --bg: #eef1f5; --text: #1c1c1e; --card: rgba(255,255,255,0.4); --primary: #007aff; --border: rgba(120,120,130,0.35); --btn-bg: rgba(229,229,234,0.4); }
+        [data-theme="glass-transparent"] body::before { opacity: 0.55; }
+        [data-theme="glass-transparent"] .top-nav-bar, [data-theme="glass-transparent"] .card,
+        [data-theme="glass-transparent"] .pgm-admin-card, [data-theme="glass-transparent"] .log-item-card,
+        [data-theme="glass-transparent"] .pengumuman-banner, [data-theme="glass-transparent"] .modal-content,
+        [data-theme="glass-transparent"] .nav-summary-row {
+            backdrop-filter: blur(14px) saturate(1.5); -webkit-backdrop-filter: blur(14px) saturate(1.5);
+        }
 
         body.font-apple { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body.font-comic { font-family: "Comic Sans MS", "Marker Felt", cursive; }
@@ -152,6 +165,10 @@
             .form-lebar-maksimal { padding-left: 60px !important; padding-right: 60px !important; }
         }
         .btn-toggle-lebar { width: auto !important; flex: 0 0 auto; font-size: 12px !important; padding: 6px 10px !important; margin: 0 !important; background: var(--btn-bg) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+        /* Tombol bulat "⇔" di navigasi 1 baris: sama seperti tombol ⇔ Perlebar Layar di form, tapi
+           bentuknya bulat kecil senada tombol tema/pin, khusus untuk melebarkan BAR NAVIGASI itu
+           sendiri ke layar penuh (dipakai reuse class .form-lebar-maksimal yang sudah ada). */
+        .btn-lebar-nav.active-lebar { background: var(--primary); color: white; border-color: var(--primary); }
         .form-header-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
         .form-header-row h3 { margin: 0; }
         #outline-garis-konten { min-height: 55vh; }
@@ -206,21 +223,6 @@
         .highlight-tts { background-color: rgba(255, 235, 59, 0.4) !important; box-shadow: 0 0 5px rgba(255, 235, 59, 0.5); padding: 5px; border-radius: 5px; }
         .user-highlight { background-color: rgba(135, 206, 250, 0.4) !important; padding: 5px; border-radius: 5px; } /* Warna Highlight Klik */
 
-        /* ===== ANOTASI & HIGHLIGHT (per user, tersimpan di database) ===== */
-        .verse-group.anot-merah  { background-color: rgba(255, 59, 48, 0.18) !important; padding: 6px; border-radius: 6px; }
-        .verse-group.anot-biru   { background-color: rgba(0, 122, 255, 0.16) !important; padding: 6px; border-radius: 6px; }
-        .verse-group.anot-hijau  { background-color: rgba(52, 199, 89, 0.18) !important; padding: 6px; border-radius: 6px; }
-        .verse-group.anot-kuning { background-color: rgba(255, 204, 0, 0.22) !important; padding: 6px; border-radius: 6px; }
-        .verse-annot-btn { cursor: pointer; font-size: 13px; margin-left: 6px; opacity: 0.75; user-select: none; }
-        .verse-annot-btn.ada-catatan { opacity: 1; }
-        .anot-catatan-badge { background: var(--btn-bg); border-left: 4px solid #ffcc00; padding: 8px 12px; margin: 5px 0 10px 0; font-size: 0.85em; border-radius: 0 8px 8px 0; color: var(--text); }
-        .anot-catatan-badge .anot-tgl { font-size: 11px; color: gray; margin-top: 4px; }
-        .anot-swatch-row { display: flex; gap: 12px; justify-content: center; margin: 14px 0; }
-        .anot-swatch { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; }
-        .anot-swatch.dipilih { border-color: var(--text); transform: scale(1.12); }
-        .anot-swatch-none { background: var(--btn-bg) !important; color: var(--text) !important; border: 2px dashed var(--border) !important; }
-        .sk-preset-btn { width: auto; font-size: 11px; padding: 6px 10px; }
-
         .hidden { display: none !important; }
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; z-index: 1000; overflow-y: auto; padding: 10px; }
         .modal-content { background: var(--bg); width: 100%; max-width: 600px; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; min-height: auto; margin-top: 10vh; margin-bottom: auto;}
@@ -243,7 +245,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 10.50</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 20px;">ver 17.40</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -301,6 +303,8 @@
                     <button class="icon-btn" onclick="gantiTemaGlobal('dark-charcoal')" style="width:100%; margin-bottom:5px;">Abu-abu Arang</button>
                 </div>
             </div>
+            <b style="color:gray; display:block; margin-top:8px;">🪟 Tema Spesial</b>
+            <button class="icon-btn" onclick="gantiTemaGlobal('glass-transparent')" style="width:100%; margin-top:5px; background:rgba(120,120,130,0.25); backdrop-filter:blur(6px);">Kaca Transparan 60% (tembus latar)</button>
             <button onclick="document.getElementById('modal-theme').classList.add('hidden')" style="background:#ff3b30; margin-top:15px;">Tutup</button>
         </div>
     </div>
@@ -408,19 +412,19 @@
             <!-- TAB MENU UTAMA: sama persis di ketiga halaman -->
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn active-tab" id="tab-cari" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn" id="tab-searchkata" onclick="bukaSearchKata()">🔎 Cari Kata</button>
+                <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-jadwal" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman" onclick="bukaPengumuman()">📢 Info</button>
-                <button type="button" class="nav-tab-btn" id="tab-baca" onclick="bukaPembacaan()">📖 Baca</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn" id="tab-anotasi" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata" onclick="bukaSearchKata()">🔎 Cari Kata</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="search-ref-title">Pencarian Kosong...</span></span>
-                <button class="nav-circle-btn nav-play-circle" onclick="event.stopPropagation(); bacakanTeks('search-results', 'search')" title="Putar suara (sama seperti tombol ▶ di bawah)">▶️</button>
+                <button class="nav-circle-btn nav-play-circle" onclick="event.stopPropagation(); toggleNavPlay('search-results', 'search')" title="Putar suara (sama seperti tombol ▶ di bawah)">▶️</button>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <button class="nav-circle-btn btn-lebar-nav" onclick="event.stopPropagation(); toggleLebarNav(this)" title="Lebarkan navigasi ke layar penuh">⇔</button>
                 <span class="nav-chevron" id="chevron-search">▼</span>
             </div>
             
@@ -458,6 +462,12 @@
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
+                </div>
+                <div class="icon-bar">
+                    <span class="font-size-label" style="flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; background:var(--btn-bg); border-radius:8px; padding:0 10px; min-width:44px;">18pt</span>
+                    <button class="icon-btn" onclick="aturFontSize(40)">40pt</button>
+                    <button class="icon-btn" onclick="aturFontSize(20)">20pt</button>
+                    <button class="icon-btn" onclick="aturFontSize(11)">11pt</button>
                 </div>
                 
                 <div class="icon-bar">
@@ -533,19 +543,19 @@
             <!-- TAB MENU UTAMA: sama persis di ketiga halaman -->
             <div class="nav-tabs">
                 <button type="button" class="nav-tab-btn" id="tab-cari-2" onclick="bukaPencarian()">🔍 Cari</button>
-                <button type="button" class="nav-tab-btn" id="tab-searchkata-2" onclick="bukaSearchKata()">🔎 Cari Kata</button>
-                <button type="button" class="nav-tab-btn" id="tab-jadwal-2" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-baca-2" onclick="bukaPembacaan()">📖 Baca</button>
+                <button type="button" class="nav-tab-btn" id="tab-jadwal-2" onclick="bukaLog()">🗓️ Jadwal</button>
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-2" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-2" onclick="bukaGarisBesar()">📚 Alur</button>
-                <button type="button" class="nav-tab-btn" id="tab-anotasi-2" onclick="bukaAnotasi()">🖊️ Anotasi</button>
+                <button type="button" class="nav-tab-btn" id="tab-searchkata-2" onclick="bukaSearchKata()">🔎 Cari Kata</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="read-ref-title">Mempersiapkan...</span></span>
-                <button class="nav-circle-btn nav-play-circle" onclick="event.stopPropagation(); bacakanTeks('reading-content', 'read')" title="Putar suara (sama seperti tombol ▶ di bawah)">▶️</button>
+                <button class="nav-circle-btn nav-play-circle" onclick="event.stopPropagation(); toggleNavPlay('reading-content', 'read')" title="Putar suara (sama seperti tombol ▶ di bawah)">▶️</button>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <button class="nav-circle-btn btn-lebar-nav" onclick="event.stopPropagation(); toggleLebarNav(this)" title="Lebarkan navigasi ke layar penuh">⇔</button>
                 <span class="nav-chevron" id="chevron-read">▼</span>
             </div>
             
@@ -589,6 +599,12 @@
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
+                </div>
+                <div class="icon-bar">
+                    <span class="font-size-label" style="flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; background:var(--btn-bg); border-radius:8px; padding:0 10px; min-width:44px;">18pt</span>
+                    <button class="icon-btn" onclick="aturFontSize(40)">40pt</button>
+                    <button class="icon-btn" onclick="aturFontSize(20)">20pt</button>
+                    <button class="icon-btn" onclick="aturFontSize(11)">11pt</button>
                 </div>
                 
                 <div class="icon-bar">
@@ -664,13 +680,13 @@
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-3" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-3" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn" id="tab-searchkata-3" onclick="bukaSearchKata()">🔎 Cari Kata</button>
-                <button type="button" class="nav-tab-btn" id="tab-anotasi-3" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <!-- BAR NAVIGASI 1 BARIS: persis sama seperti Cari & Baca (kitab/pasal/ayat/bahasa depan, user, tema, pin, panah belakang) -->
             <div class="nav-summary-row" onclick="toggleNavMenu('log-menu', 'chevron-log')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="log-ref-title">🗓️ Daftar Jadwal</span></span>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <button class="nav-circle-btn btn-lebar-nav" onclick="event.stopPropagation(); toggleLebarNav(this)" title="Lebarkan navigasi ke layar penuh">⇔</button>
                 <span class="nav-chevron" id="chevron-log">▼</span>
             </div>
             <div class="nav-full-menu" id="log-menu">
@@ -687,6 +703,12 @@
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-italic')"><i>I</i></button>
                     <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
+                </div>
+                <div class="icon-bar">
+                    <span class="font-size-label" style="flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; background:var(--btn-bg); border-radius:8px; padding:0 10px; min-width:44px;">18pt</span>
+                    <button class="icon-btn" onclick="aturFontSize(40)">40pt</button>
+                    <button class="icon-btn" onclick="aturFontSize(20)">20pt</button>
+                    <button class="icon-btn" onclick="aturFontSize(11)">11pt</button>
                 </div>
                 <div class="icon-bar">
                     <select class="icon-btn font-selector" style="flex:1;" onchange="gantiGayaFontGlobal(this.value)">
@@ -718,12 +740,12 @@
                 <button type="button" class="nav-tab-btn active-tab" id="tab-pengumuman-4" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-4" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn" id="tab-searchkata-4" onclick="bukaSearchKata()">🔎 Cari Kata</button>
-                <button type="button" class="nav-tab-btn" id="tab-anotasi-4" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('announce-menu', 'chevron-announce')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="announce-ref-title">📢 Pengumuman</span></span>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <button class="nav-circle-btn btn-lebar-nav" onclick="event.stopPropagation(); toggleLebarNav(this)" title="Lebarkan navigasi ke layar penuh">⇔</button>
                 <span class="nav-chevron" id="chevron-announce">▼</span>
             </div>
             <div class="nav-full-menu" id="announce-menu">
@@ -809,19 +831,19 @@
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-5" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-outline-5" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn" id="tab-searchkata-5" onclick="bukaSearchKata()">🔎 Cari Kata</button>
-                <button type="button" class="nav-tab-btn" id="tab-anotasi-5" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('outline-menu', 'chevron-outline')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="outline-ref-title">📚 Garis Besar &amp; Video</span></span>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <button class="nav-circle-btn btn-lebar-nav" onclick="event.stopPropagation(); toggleLebarNav(this)" title="Lebarkan navigasi ke layar penuh">⇔</button>
                 <span class="nav-chevron" id="chevron-outline">▼</span>
             </div>
             <div class="nav-full-menu" id="outline-menu">
                 <button class="icon-btn" style="background:var(--btn-bg); color:var(--text); margin-bottom:6px;" onclick="bukaAkunSetting()">⚙️ Setting</button>
                 <button class="btn-signout" onclick="logout()">🚪 Keluar</button>
                 <div style="font-size: 12px; font-weight: bold; color: gray;">📚 Tentang Menu Ini</div>
-                <p style="font-size:13px; margin: 4px 0 10px 0;">Garis besar berisi uraian tiap kitab -- kata/frasa yang digarisbawahi bisa diklik untuk langsung membuka ayatnya di menu Cari. Video YouTube, Audio MP3, dan Video MP4 (2 yang terakhir dari Google Drive) tersusun berurutan dari pasal & ayat pertama sampai terakhir, dan diputar langsung di dalam web ini (tidak keluar halaman). Hanya administrator yang bisa menambah/mengubah/menghapus isinya.</p>
+                <p style="font-size:13px; margin: 4px 0 10px 0;">Garis besar berisi uraian tiap kitab -- kata/frasa yang digarisbawahi bisa diklik untuk langsung membuka ayatnya di menu Cari. Video YouTube tersusun berurutan dari pasal & ayat pertama sampai terakhir. Hanya administrator yang bisa menambah/mengubah/menghapus isinya.</p>
             </div>
         </div>
 
@@ -832,8 +854,6 @@
         <div class="nav-tabs" style="padding: 8px;">
             <button type="button" class="nav-tab-btn active-tab" id="outline-subtab-garis" onclick="gantiSubTabOutline('garis')" style="flex:1;">📖 Garis Besar</button>
             <button type="button" class="nav-tab-btn" id="outline-subtab-video" onclick="gantiSubTabOutline('video')" style="flex:1;">🎥 Video YouTube</button>
-            <button type="button" class="nav-tab-btn" id="outline-subtab-mp3" onclick="gantiSubTabOutline('mp3')" style="flex:1;">🎧 Audio MP3</button>
-            <button type="button" class="nav-tab-btn" id="outline-subtab-mp4" onclick="gantiSubTabOutline('mp4')" style="flex:1;">🎬 Video MP4</button>
         </div>
 
         <!-- SUB-TAB: GARIS BESAR -->
@@ -905,73 +925,6 @@
                 <i>Memuat daftar video...</i>
             </div>
         </div>
-
-        <!-- SUB-TAB: AUDIO MP3 (Google Drive) -->
-        <div id="outline-tab-mp3" class="hidden">
-            <button id="outline-btn-tambah-mp3" class="icon-btn hidden" style="background:#34c759; color:white; margin:0 8px 10px 8px; width:calc(100% - 16px);" onclick="bukaFormGdriveBaru('mp3')">➕ Tambah Audio MP3 Baru</button>
-            <div id="outline-mp3-list" class="reading-area card" style="background: var(--card);">
-                <i>Memuat daftar audio...</i>
-            </div>
-        </div>
-
-        <!-- SUB-TAB: VIDEO MP4 (Google Drive) -->
-        <div id="outline-tab-mp4" class="hidden">
-            <button id="outline-btn-tambah-mp4" class="icon-btn hidden" style="background:#34c759; color:white; margin:0 8px 10px 8px; width:calc(100% - 16px);" onclick="bukaFormGdriveBaru('mp4')">➕ Tambah Video MP4 Baru</button>
-            <div id="outline-mp4-list" class="reading-area card" style="background: var(--card);">
-                <i>Memuat daftar video mp4...</i>
-            </div>
-        </div>
-
-        <!-- FORM ADMIN BERSAMA untuk Audio MP3 & Video MP4 (Google Drive) -->
-        <div id="outline-gdrive-admin-form" class="pgm-admin-card hidden" style="margin: 0 8px 10px 8px;">
-            <h3 id="outline-gdrive-form-title" style="margin-top:0;">➕ Tambah Media</h3>
-            <input type="hidden" id="outline-gdrive-id">
-            <label style="font-size:12px; color:gray;">Urutan Tampil (mis. 1, 2, 3, ...):</label>
-            <input type="number" id="outline-gdrive-urutan" min="1" step="1">
-
-            <label style="font-size:12px; color:gray; margin-top:6px; display:block;">Judul:</label>
-            <input type="text" id="outline-gdrive-judul" placeholder="mis. Silsilah & Kelahiran Yesus">
-
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label style="font-size:12px; color:gray;">Pasal Mulai:</label>
-                    <input type="number" id="outline-gdrive-pasal-mulai" min="1" step="1">
-                </div>
-                <div style="flex:1;">
-                    <label style="font-size:12px; color:gray;">Ayat Mulai:</label>
-                    <input type="number" id="outline-gdrive-ayat-mulai" min="1" step="1">
-                </div>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label style="font-size:12px; color:gray;">Pasal Selesai:</label>
-                    <input type="number" id="outline-gdrive-pasal-selesai" min="1" step="1">
-                </div>
-                <div style="flex:1;">
-                    <label style="font-size:12px; color:gray;">Ayat Selesai:</label>
-                    <input type="number" id="outline-gdrive-ayat-selesai" min="1" step="1">
-                </div>
-            </div>
-
-            <label style="font-size:12px; color:gray;">Link Google Drive (harus dibagikan "Semua yang memiliki link bisa melihat"):</label>
-            <input type="url" id="outline-gdrive-url" placeholder="https://drive.google.com/file/d/XXXXXXXX/view?usp=sharing">
-
-            <div class="icon-bar" style="margin-top:10px;">
-                <button class="icon-btn" style="background:var(--primary); color:white;" onclick="simpanGdriveMedia()">💾 Simpan</button>
-                <button class="icon-btn" onclick="document.getElementById('outline-gdrive-admin-form').classList.add('hidden')">✖ Batal</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL PEMUTAR AUDIO MP3 / VIDEO MP4 DARI GOOGLE DRIVE (tetap di dalam web ini, tidak keluar) -->
-    <div id="modal-gdrive-outline" class="modal hidden" onclick="tutupGdriveOutline()">
-        <div class="modal-content card" onclick="event.stopPropagation()" style="max-width:640px; padding:10px;">
-            <h3 id="gdrive-modal-title" style="text-align:center; margin:6px 0;"></h3>
-            <div id="gdrive-modal-box" style="position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
-                <iframe id="gdrive-modal-iframe" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay" allowfullscreen></iframe>
-            </div>
-            <button onclick="tutupGdriveOutline()" style="background:#ff3b30; margin-top:15px;">Tutup</button>
-        </div>
     </div>
 
     <!-- MENU BARU: CARI KATA (di isi ayat & catatan), filter kitab, mode OR/AND, beberapa bahasa -->
@@ -984,12 +937,12 @@
                 <button type="button" class="nav-tab-btn" id="tab-pengumuman-6" onclick="bukaPengumuman()">📢 Info</button>
                 <button type="button" class="nav-tab-btn" id="tab-outline-6" onclick="bukaGarisBesar()">📚 Alur</button>
                 <button type="button" class="nav-tab-btn active-tab" id="tab-searchkata-6" onclick="bukaSearchKata()">🔎 Cari Kata</button>
-                <button type="button" class="nav-tab-btn" id="tab-anotasi-6" onclick="bukaAnotasi()">🖊️ Anotasi</button>
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('searchkata-menu', 'chevron-searchkata')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="searchkata-ref-title">🔎 Cari Kata di Ayat &amp; Catatan</span></span>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); document.getElementById('modal-theme').classList.remove('hidden')" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
+                <button class="nav-circle-btn btn-lebar-nav" onclick="event.stopPropagation(); toggleLebarNav(this)" title="Lebarkan navigasi ke layar penuh">⇔</button>
                 <span class="nav-chevron" id="chevron-searchkata">▼</span>
             </div>
             <div class="nav-full-menu" id="searchkata-menu">
@@ -1025,13 +978,6 @@
                     <option value="pilih">Pilih Kitab (boleh lebih dari satu)</option>
                 </select>
             </div>
-            <div id="sk-book-preset-row" class="icon-bar hidden" style="flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('semua')">☑️ Centang Semua</button>
-                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('kosong')">◻️ Kosongkan Semua</button>
-                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('injil')">✝️ Kitab Injil</button>
-                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('pb')">📗 Perjanjian Baru</button>
-                <button type="button" class="icon-btn sk-preset-btn" onclick="presetKitabSearchKata('pl')">📘 Perjanjian Lama</button>
-            </div>
             <div id="sk-book-checklist" class="pgm-kategori-checks hidden" style="max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:8px;"></div>
 
             <div style="font-size:12px; color:gray; margin:8px 0 4px 0;">🌐 Bahasa yang Ditampilkan (boleh lebih dari satu):</div>
@@ -1055,12 +1001,18 @@
 
 </div>
 
-<!-- MODAL PEMUTAR VIDEO YOUTUBE (dipakai dari menu Garis Besar & Video) -->
+<!-- MODAL PEMUTAR VIDEO YOUTUBE (dipakai dari menu Garis Besar & Video, juga dari Pengumuman) --
+     Ukuran diperbesar maksimal (96vw / tinggi 90vh) supaya enak dilihat baik di HP maupun laptop. -->
 <div id="modal-video-outline" class="modal hidden" onclick="tutupVideoOutline()">
-    <div class="modal-content card" onclick="event.stopPropagation()" style="max-width:640px; padding:10px;">
-        <h3 id="outline-video-modal-title" style="text-align:center; margin:6px 0;"></h3>
-        <div style="position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
-            <iframe id="outline-video-modal-iframe" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    <div class="modal-content card" onclick="event.stopPropagation()" style="max-width:min(96vw, 1100px); width:96vw; padding:14px; box-sizing:border-box;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <h3 id="outline-video-modal-title" style="margin:6px 0; flex:1; min-width:0;"></h3>
+            <button type="button" id="btn-autoplay-next" class="icon-btn" style="width:auto; flex:0 0 auto; font-size:12px; padding:6px 12px; background:var(--btn-bg); color:var(--text);" onclick="event.stopPropagation(); toggleAutoplayNextVideo()" title="Kalau AKTIF, video otomatis lanjut ke video berikutnya sampai selesai semua">🔁 Putar Otomatis: OFF</button>
+        </div>
+        <div style="position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden;">
+            <div id="outline-video-modal-iframe-wrap" style="position:absolute; top:0; left:0; width:100%; height:100%;">
+                <div id="outline-video-yt-target" style="width:100%; height:100%;"></div>
+            </div>
         </div>
         <button onclick="tutupVideoOutline()" style="background:#ff3b30; margin-top:15px;">Tutup</button>
     </div>
@@ -1074,6 +1026,8 @@
         <span class="nav-user-title" id="viewer-mode-label"></span>
         <button class="nav-circle-btn" onclick="event.stopPropagation(); viewerPrev()" title="Sebelumnya (◀ / panah kiri)">◀</button>
         <button class="nav-circle-btn" onclick="event.stopPropagation(); viewerNext()" title="Berikutnya (▶ / panah kanan)">▶</button>
+        <button class="nav-circle-btn nav-play-circle" onclick="event.stopPropagation(); toggleNavPlay('viewer-content', 'viewer')" title="Putar suara (sama seperti tombol ▶ di bawah)">▶️</button>
+        <button class="nav-circle-btn btn-lebar-nav" onclick="event.stopPropagation(); toggleLebarNav(this)" title="Lebarkan navigasi ke layar penuh">⇔</button>
         <button class="btn-icon-top" onclick="event.stopPropagation(); tutupViewer()" title="Tutup">✕</button>
         <span class="nav-chevron" id="chevron-viewer">▼</span>
     </div>
@@ -1084,6 +1038,12 @@
             <button class="icon-btn" onclick="ubahFont(-2)">A➖</button>
             <button class="icon-btn" onclick="document.body.classList.toggle('force-bold')">B</button>
             <button class="icon-btn" onclick="document.body.classList.toggle('force-underline')"><u>U</u></button>
+        </div>
+        <div class="icon-bar">
+            <span class="font-size-label" style="flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; background:var(--btn-bg); border-radius:8px; padding:0 10px; min-width:44px;">18pt</span>
+            <button class="icon-btn" onclick="aturFontSize(40)">40pt</button>
+            <button class="icon-btn" onclick="aturFontSize(20)">20pt</button>
+            <button class="icon-btn" onclick="aturFontSize(11)">11pt</button>
         </div>
         <div class="icon-bar">
             <select class="icon-btn font-selector" style="flex:1;" onchange="gantiGayaFontGlobal(this.value)">
@@ -1134,7 +1094,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyV68q92ZtU7_3a50yKYRFqA_huWYIS07NCSxCBWTpYjm__fDEtg3nCI52ZLkPNIH2CkA/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4Y8AfT04kss-QpQ0yr0IxWEreWJ6k7hhumgKvS9p3qxanD8wLwlanNLS-edoKggglQw/exec';
     
     let userSession = {};
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
@@ -1218,6 +1178,7 @@
         speechSynthesis.onvoiceschanged = muatDaftarSuara;
         muatDaftarSuara();
         pemanasanAwalTTS();
+        perbaruiLabelFontSize();
     };
 
     // =====================================================================
@@ -1380,7 +1341,7 @@
             let previewBadge = (p.status !== 'done') ? `<span class="pgm-status-badge pgm-status-${p.status}">PRATINJAU: ${p.status}</span>` : '';
             let mediaLinks = '';
             if (p.link_foto) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_foto}" target="_blank" rel="noopener noreferrer">🖼️ Lihat Foto</a></div>`;
-            if (p.link_video) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_video}" target="_blank" rel="noopener noreferrer">🎬 Lihat Video</a></div>`;
+            if (p.link_video) mediaLinks += renderMediaVideoAudio(p.link_video);
             return `
             <div class="pengumuman-banner" data-pgm-id="${p.id}">
                 <button class="pgm-close" onclick="tutupPengumuman('${p.id}')" title="Tutup pengumuman ini">✕</button>
@@ -1506,7 +1467,7 @@
         box.innerHTML = list.map(p => {
             let mediaLinks = '';
             if (p.link_foto) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_foto}" target="_blank" rel="noopener noreferrer">🖼️ Lihat Foto</a></div>`;
-            if (p.link_video) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_video}" target="_blank" rel="noopener noreferrer">🎬 Lihat Video</a></div>`;
+            if (p.link_video) mediaLinks += renderMediaVideoAudio(p.link_video);
             return `
             <div class="log-item-card" style="align-items:flex-start; flex-direction:column;">
                 <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
@@ -1535,8 +1496,6 @@
         let isAdmin = (userSession.level === 'administrator');
         document.getElementById('outline-btn-edit-garis').classList.toggle('hidden', !isAdmin);
         document.getElementById('outline-btn-tambah-video').classList.toggle('hidden', !isAdmin);
-        document.getElementById('outline-btn-tambah-mp3').classList.toggle('hidden', !isAdmin);
-        document.getElementById('outline-btn-tambah-mp4').classList.toggle('hidden', !isAdmin);
     }
 
     function sinkronisasiBukuOutline() {
@@ -1552,16 +1511,9 @@
     function gantiSubTabOutline(tab) {
         document.getElementById('outline-subtab-garis').classList.toggle('active-tab', tab === 'garis');
         document.getElementById('outline-subtab-video').classList.toggle('active-tab', tab === 'video');
-        document.getElementById('outline-subtab-mp3').classList.toggle('active-tab', tab === 'mp3');
-        document.getElementById('outline-subtab-mp4').classList.toggle('active-tab', tab === 'mp4');
         document.getElementById('outline-tab-garis').classList.toggle('hidden', tab !== 'garis');
         document.getElementById('outline-tab-video').classList.toggle('hidden', tab !== 'video');
-        document.getElementById('outline-tab-mp3').classList.toggle('hidden', tab !== 'mp3');
-        document.getElementById('outline-tab-mp4').classList.toggle('hidden', tab !== 'mp4');
-        document.getElementById('outline-gdrive-admin-form').classList.add('hidden');
         if (tab === 'video') muatVideoYoutube();
-        if (tab === 'mp3') muatAudioMp3();
-        if (tab === 'mp4') muatVideoMp4();
     }
 
     function gantiBukuOutline() {
@@ -1569,11 +1521,8 @@
         currentOutlineBookName = document.getElementById('outline-book').selectedOptions[0].text;
         document.getElementById('outline-garis-admin-form').classList.add('hidden');
         document.getElementById('outline-video-admin-form').classList.add('hidden');
-        document.getElementById('outline-gdrive-admin-form').classList.add('hidden');
         muatGarisBesarKitab();
         if (!document.getElementById('outline-tab-video').classList.contains('hidden')) muatVideoYoutube();
-        if (!document.getElementById('outline-tab-mp3').classList.contains('hidden')) muatAudioMp3();
-        if (!document.getElementById('outline-tab-mp4').classList.contains('hidden')) muatVideoMp4();
     }
 
     // Ubah format [[kata yang diklik|Kitab Pasal:Ayat]] jadi <span> yang bisa diklik utk langsung
@@ -1608,6 +1557,15 @@
 
     // Toggle manual "⇔ Perlebar Layar": melebarkan form (pengumuman / garis besar) selebar layar penuh
     // (komputer maupun HP, karena pakai satuan vw yang relatif ke lebar layar), atau kembali ke lebar normal.
+    function toggleLebarNav(btn) {
+        const bar = btn.closest('.top-nav-bar, #log-viewer');
+        const aktif = bar.classList.toggle('form-lebar-maksimal');
+        bar.classList.toggle('active-lebar', aktif); // dipakai kalau nanti mau styling tambahan
+        btn.classList.toggle('active-lebar', aktif);
+        btn.innerHTML = aktif ? '↩️' : '⇔';
+        btn.title = aktif ? 'Kembalikan navigasi ke lebar normal' : 'Lebarkan navigasi ke layar penuh';
+    }
+
     function toggleLebarForm(formId, btn) {
         const el = document.getElementById(formId);
         const aktif = el.classList.toggle('form-lebar-maksimal');
@@ -1685,18 +1643,107 @@
         return m ? m[1] : null;
     }
 
+    // =====================================================================
+    // PEMUTAR VIDEO (YouTube IFrame API): dipakai baik dari daftar video menu Alur (dgn fitur
+    // "Putar Otomatis" lanjut ke video berikutnya dalam daftar) maupun dari Pengumuman (video
+    // tunggal, tanpa daftar). Memakai YT.Player (bukan iframe polos) supaya bisa mendeteksi kapan
+    // video SELESAI (onStateChange ENDED) untuk memicu lanjut otomatis ke video berikutnya.
+    // =====================================================================
+    let ytApiSiap = false;
+    let ytPlayerOutline = null;
+    let outlineAutoplayNext = false; // default OFF sesuai permintaan
+    let outlineVideoIdxSekarang = -1; // index di lastVideoList kalau sedang main dari daftar Alur, -1 kalau video tunggal (mis. dari Pengumuman)
+
+    function muatYoutubeApiJikaBelum(callback) {
+        if (window.YT && window.YT.Player) { ytApiSiap = true; callback(); return; }
+        const sudahAda = !!document.getElementById('yt-iframe-api-script');
+        const callbackLama = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => { ytApiSiap = true; if (callbackLama) try { callbackLama(); } catch (e) {} callback(); };
+        if (!sudahAda) {
+            let tag = document.createElement('script');
+            tag.id = 'yt-iframe-api-script';
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        }
+    }
+
+    function toggleAutoplayNextVideo() {
+        outlineAutoplayNext = !outlineAutoplayNext;
+        const btn = document.getElementById('btn-autoplay-next');
+        btn.innerText = `🔁 Putar Otomatis: ${outlineAutoplayNext ? 'ON' : 'OFF'}`;
+        btn.style.background = outlineAutoplayNext ? '#34c759' : 'var(--btn-bg)';
+        btn.style.color = outlineAutoplayNext ? '#fff' : 'var(--text)';
+    }
+
+    // idx: index di lastVideoList (dipakai fitur Putar Otomatis lanjut ke video berikutnya).
+    // Isi -1 kalau video ini BUKAN bagian dari daftar Alur (mis. video tunggal dari Pengumuman)
+    // -- dalam kasus itu Putar Otomatis otomatis tidak berlaku (tidak ada "video berikutnya").
+    function mainkanVideoDiModal(vid, judul, idx) {
+        outlineVideoIdxSekarang = idx;
+        document.getElementById('outline-video-modal-title').innerText = judul || '';
+        document.getElementById('modal-video-outline').classList.remove('hidden');
+        muatYoutubeApiJikaBelum(() => {
+            if (ytPlayerOutline) { try { ytPlayerOutline.destroy(); } catch (e) {} ytPlayerOutline = null; }
+            document.getElementById('outline-video-modal-iframe-wrap').innerHTML = '<div id="outline-video-yt-target" style="width:100%; height:100%;"></div>';
+            ytPlayerOutline = new YT.Player('outline-video-yt-target', {
+                videoId: vid,
+                playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
+                events: {
+                    onStateChange: (e) => {
+                        if (e.data === YT.PlayerState.ENDED) {
+                            let ada = outlineAutoplayNext && outlineVideoIdxSekarang !== -1 && (outlineVideoIdxSekarang + 1) < lastVideoList.length;
+                            if (ada) { putarVideoOutline(outlineVideoIdxSekarang + 1); }
+                            // Kalau tidak ada video berikutnya (atau Putar Otomatis OFF) -> berhenti begitu saja, modal tetap terbuka.
+                        }
+                    }
+                }
+            });
+        });
+    }
+
     function putarVideoOutline(idx) {
         let v = lastVideoList[idx];
         let vid = idVideoYoutube(v.url);
         if (!vid) return alert("Link YouTube tidak dikenali.");
-        document.getElementById('outline-video-modal-title').innerText = `#${v.urutan} — ${v.judul}`;
-        document.getElementById('outline-video-modal-iframe').src = `https://www.youtube.com/embed/${vid}?autoplay=1`;
-        document.getElementById('modal-video-outline').classList.remove('hidden');
+        mainkanVideoDiModal(vid, `#${v.urutan} — ${v.judul}`, idx);
+    }
+
+    // Dipakai dari Pengumuman (link_video) -- video TUNGGAL, bukan bagian dari daftar Alur.
+    function putarVideoLinkLangsung(url) {
+        let vid = idVideoYoutube(url);
+        if (!vid) { window.open(url, '_blank', 'noopener'); return; }
+        mainkanVideoDiModal(vid, '🎬 Video', -1);
     }
 
     function tutupVideoOutline() {
-        document.getElementById('outline-video-modal-iframe').src = '';
+        if (ytPlayerOutline) { try { ytPlayerOutline.destroy(); } catch (e) {} ytPlayerOutline = null; }
+        document.getElementById('outline-video-modal-iframe-wrap').innerHTML = '<div id="outline-video-yt-target" style="width:100%; height:100%;"></div>';
         document.getElementById('modal-video-outline').classList.add('hidden');
+    }
+
+    // Merender field "Link Video" Pengumuman sbg pemutar LANGSUNG (bukan cuma teks link):
+    // - Link YouTube -> thumbnail besar yg diklik utk buka modal video (bisa Putar Otomatis kalau berurutan)
+    // - Link file .mp4/.webm/.mov -> pemutar <video> langsung, lebar penuh, tinggi maksimal 70% layar
+    // - Link file .mp3/.wav/.ogg/.m4a -> pemutar <audio> langsung, lebar penuh
+    // - Selain itu -> tetap sbg link biasa terbuka di tab baru (perilaku lama)
+    // Ukuran pemutar dibuat maksimal (lebar penuh kartu) supaya enak dilihat baik dari HP maupun laptop.
+    function renderMediaVideoAudio(url) {
+        if (!url) return '';
+        let vid = idVideoYoutube(url);
+        if (vid) {
+            return `<div style="margin-top:8px; cursor:pointer; position:relative; width:100%; border-radius:12px; overflow:hidden; background:#000;" onclick="putarVideoLinkLangsung('${String(url).replace(/'/g, "&#39;")}')">
+                        <img src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" loading="lazy" style="width:100%; display:block; aspect-ratio:16/9; object-fit:cover;" onerror="this.src='https://img.youtube.com/vi/${vid}/hqdefault.jpg'">
+                        <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:40px; text-shadow:0 1px 6px rgba(0,0,0,0.6);">▶️</span>
+                    </div>`;
+        }
+        let lower = String(url).toLowerCase().split('?')[0];
+        if (/\.(mp4|webm|mov)$/.test(lower)) {
+            return `<video controls playsinline style="width:100%; max-height:70vh; border-radius:12px; margin-top:8px; background:#000; display:block;"><source src="${url}">Peramban tidak mendukung pemutaran video ini.</video>`;
+        }
+        if (/\.(mp3|wav|ogg|m4a)$/.test(lower)) {
+            return `<audio controls style="width:100%; margin-top:8px; display:block;"><source src="${url}">Peramban tidak mendukung pemutaran audio ini.</audio>`;
+        }
+        return `<div class="pgm-media-link"><a href="${url}" target="_blank" rel="noopener noreferrer">🎬 Lihat Video</a></div>`;
     }
 
     function bukaFormVideoBaru() {
@@ -1757,153 +1804,6 @@
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteVideoYoutube", username: userSession.username, id: id }) });
             const out = await res.json();
             if (out.status === "success") muatVideoYoutube();
-            else alert(out.message || "Gagal menghapus.");
-        } catch (e) { alert("Koneksi terputus."); }
-    }
-
-    // =====================================================================
-    // AUDIO MP3 & VIDEO MP4 (GOOGLE DRIVE) -- sub-menu tambahan di "Alur", modelnya
-    // persis seperti Video YouTube (urutan + rentang pasal:ayat + judul + link), hanya
-    // linknya dari Google Drive. Diputar di dalam modal <iframe> supaya TIDAK KELUAR
-    // dari web ini (memakai https://drive.google.com/file/d/FILE_ID/preview).
-    // =====================================================================
-    let lastAudioMp3List = [], lastVideoMp4List = [];
-    let currentGdriveFormTipe = 'mp3';
-
-    async function muatAudioMp3() {
-        const box = document.getElementById('outline-mp3-list');
-        box.innerHTML = "<i>Memuat daftar audio...</i>";
-        try {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getAudioMp3", book_number: currentOutlineBookNum }) });
-            const out = await res.json();
-            if (out.status !== "success") { box.innerHTML = `<span style="color:red;">${out.message || "Gagal memuat."}</span>`; return; }
-            lastAudioMp3List = out.list || [];
-            renderDaftarGdriveMedia(lastAudioMp3List, box, 'mp3');
-        } catch (e) { box.innerHTML = "<span style='color:red;'>Koneksi terputus.</span>"; }
-    }
-
-    async function muatVideoMp4() {
-        const box = document.getElementById('outline-mp4-list');
-        box.innerHTML = "<i>Memuat daftar video mp4...</i>";
-        try {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "getVideoMp4", book_number: currentOutlineBookNum }) });
-            const out = await res.json();
-            if (out.status !== "success") { box.innerHTML = `<span style="color:red;">${out.message || "Gagal memuat."}</span>`; return; }
-            lastVideoMp4List = out.list || [];
-            renderDaftarGdriveMedia(lastVideoMp4List, box, 'mp4');
-        } catch (e) { box.innerHTML = "<span style='color:red;'>Koneksi terputus.</span>"; }
-    }
-
-    // Ambil FILE_ID dari berbagai bentuk link Google Drive (file/d/ID/..., ?id=ID, uc?id=ID)
-    function idFileGdrive(url) {
-        let s = String(url || "");
-        let m = s.match(/\/file\/d\/([-\w]{10,})/) || s.match(/[?&]id=([-\w]{10,})/);
-        return m ? m[1] : null;
-    }
-
-    function renderDaftarGdriveMedia(list, box, tipe) {
-        if (list.length === 0) { box.innerHTML = `<i>Belum ada ${tipe === 'mp3' ? 'audio' : 'video'} untuk kitab ini.</i>`; return; }
-        let isAdmin = (userSession.level === 'administrator');
-        box.innerHTML = list.map((v, i) => {
-            let rangeLabel = (v.pasal_mulai === v.pasal_selesai)
-                ? `${currentOutlineBookName} ${v.pasal_mulai}:${v.ayat_mulai}-${v.ayat_selesai}`
-                : `${currentOutlineBookName} ${v.pasal_mulai}:${v.ayat_mulai} — ${v.pasal_selesai}:${v.ayat_selesai}`;
-            return `
-            <div class="log-item-card" style="align-items:flex-start; flex-direction:column; cursor:pointer;" onclick="putarGdriveOutline('${tipe}', ${i})">
-                <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
-                    <b>${tipe === 'mp3' ? '🎧' : '🎬'} #${v.urutan} — ${escHtml(v.judul)}</b>
-                    <span style="font-size:20px;">▶️</span>
-                </div>
-                <div style="font-size:12px; color:gray;">${rangeLabel}</div>
-                ${isAdmin ? `<div class="icon-bar" style="width:100%; margin-top:8px;" onclick="event.stopPropagation()">
-                    <button class="icon-btn" onclick="editGdriveMedia('${tipe}', ${i})">✏️ Ubah</button>
-                    <button class="icon-btn" style="background:#ff3b30; color:white;" onclick="hapusGdriveMedia('${tipe}', '${v.id}')">🗑️ Hapus</button>
-                </div>` : ``}
-            </div>`;
-        }).join("");
-    }
-
-    // Diputar dalam iframe (preview Google Drive) DI DALAM MODAL web ini -- tidak pernah keluar/pindah tab.
-    function putarGdriveOutline(tipe, idx) {
-        let v = (tipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List)[idx];
-        let fid = idFileGdrive(v.url);
-        if (!fid) return alert('Link Google Drive tidak dikenali. Pastikan link berbentuk https://drive.google.com/file/d/FILE_ID/view dan sudah dibagikan ("Semua yang memiliki link bisa melihat").');
-        document.getElementById('gdrive-modal-title').innerText = `${tipe === 'mp3' ? '🎧' : '🎬'} #${v.urutan} — ${v.judul}`;
-        document.getElementById('gdrive-modal-iframe').src = `https://drive.google.com/file/d/${fid}/preview`;
-        const kotak = document.getElementById('gdrive-modal-box');
-        if (tipe === 'mp3') { kotak.style.paddingTop = '0'; kotak.style.height = '110px'; }
-        else { kotak.style.paddingTop = '56.25%'; kotak.style.height = '0'; }
-        document.getElementById('modal-gdrive-outline').classList.remove('hidden');
-    }
-
-    function tutupGdriveOutline() {
-        document.getElementById('gdrive-modal-iframe').src = '';
-        document.getElementById('modal-gdrive-outline').classList.add('hidden');
-    }
-
-    function bukaFormGdriveBaru(tipe) {
-        currentGdriveFormTipe = tipe;
-        let list = (tipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List);
-        document.getElementById('outline-gdrive-form-title').innerText = tipe === 'mp3' ? "➕ Tambah Audio MP3" : "➕ Tambah Video MP4";
-        document.getElementById('outline-gdrive-id').value = '';
-        document.getElementById('outline-gdrive-urutan').value = (list.length ? Math.max(...list.map(v => v.urutan)) + 1 : 1);
-        document.getElementById('outline-gdrive-judul').value = '';
-        document.getElementById('outline-gdrive-pasal-mulai').value = '';
-        document.getElementById('outline-gdrive-ayat-mulai').value = '';
-        document.getElementById('outline-gdrive-pasal-selesai').value = '';
-        document.getElementById('outline-gdrive-ayat-selesai').value = '';
-        document.getElementById('outline-gdrive-url').value = '';
-        document.getElementById('outline-gdrive-admin-form').classList.remove('hidden');
-    }
-
-    function editGdriveMedia(tipe, idx) {
-        currentGdriveFormTipe = tipe;
-        let v = (tipe === 'mp3' ? lastAudioMp3List : lastVideoMp4List)[idx];
-        document.getElementById('outline-gdrive-form-title').innerText = tipe === 'mp3' ? "✏️ Ubah Audio MP3" : "✏️ Ubah Video MP4";
-        document.getElementById('outline-gdrive-id').value = v.id;
-        document.getElementById('outline-gdrive-urutan').value = v.urutan;
-        document.getElementById('outline-gdrive-judul').value = v.judul;
-        document.getElementById('outline-gdrive-pasal-mulai').value = v.pasal_mulai;
-        document.getElementById('outline-gdrive-ayat-mulai').value = v.ayat_mulai;
-        document.getElementById('outline-gdrive-pasal-selesai').value = v.pasal_selesai;
-        document.getElementById('outline-gdrive-ayat-selesai').value = v.ayat_selesai;
-        document.getElementById('outline-gdrive-url').value = v.url;
-        document.getElementById('outline-gdrive-admin-form').classList.remove('hidden');
-    }
-
-    async function simpanGdriveMedia() {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh mengatur ini.");
-        let tipe = currentGdriveFormTipe;
-        const payload = {
-            action: tipe === 'mp3' ? "saveAudioMp3" : "saveVideoMp4",
-            username: userSession.username,
-            id: document.getElementById('outline-gdrive-id').value || null,
-            book_number: currentOutlineBookNum, book_name: currentOutlineBookName,
-            urutan: document.getElementById('outline-gdrive-urutan').value,
-            judul: document.getElementById('outline-gdrive-judul').value,
-            pasal_mulai: document.getElementById('outline-gdrive-pasal-mulai').value,
-            ayat_mulai: document.getElementById('outline-gdrive-ayat-mulai').value,
-            pasal_selesai: document.getElementById('outline-gdrive-pasal-selesai').value,
-            ayat_selesai: document.getElementById('outline-gdrive-ayat-selesai').value,
-            url: document.getElementById('outline-gdrive-url').value
-        };
-        try {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const out = await res.json();
-            if (out.status === "success") {
-                document.getElementById('outline-gdrive-admin-form').classList.add('hidden');
-                if (tipe === 'mp3') muatAudioMp3(); else muatVideoMp4();
-            } else { alert(out.message || "Gagal menyimpan."); }
-        } catch (e) { alert("Koneksi terputus."); }
-    }
-
-    async function hapusGdriveMedia(tipe, id) {
-        if (userSession.level !== 'administrator') return alert("Hanya administrator yang boleh menghapus ini.");
-        if (!confirm("Hapus item ini?")) return;
-        try {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: tipe === 'mp3' ? "deleteAudioMp3" : "deleteVideoMp4", username: userSession.username, id: id }) });
-            const out = await res.json();
-            if (out.status === "success") { if (tipe === 'mp3') muatAudioMp3(); else muatVideoMp4(); }
             else alert(out.message || "Gagal menghapus.");
         } catch (e) { alert("Koneksi terputus."); }
     }
@@ -2048,12 +1948,6 @@
         isiChecklistKitabSearchKata();
     }
 
-    // Menu ketujuh (Anotasi & Highlight per user) -- SEDANG DIKEMBANGKAN, belum aktif.
-    // Ditaruh sbg stub dulu supaya tombolnya tidak error saat diklik; menyusul di update berikutnya.
-    function bukaAnotasi() {
-        alert("🖊️ Fitur Anotasi & Highlight (per user, tersimpan di database) sedang dikembangkan dan akan segera hadir di update berikutnya.");
-    }
-
     // Isi daftar checkbox kitab (sekali saja) memakai daftar nama kitab bahasa Indonesia
     function isiChecklistKitabSearchKata() {
         if (skBookChecklistTerisi) return;
@@ -2066,17 +1960,6 @@
     function gantiModeKitabSearchKata() {
         const mode = document.getElementById('sk-book-mode').value;
         document.getElementById('sk-book-checklist').classList.toggle('hidden', mode !== 'pilih');
-        document.getElementById('sk-book-preset-row').classList.toggle('hidden', mode !== 'pilih');
-    }
-
-    // Rentang nomor kitab (memakai nomor urut Alkitab 1-66): Perjanjian Lama = 1-39,
-    // Injil (Matius-Yohanes) = 40-43, Perjanjian Baru = 40-66.
-    const SK_RENTANG_KITAB = { semua: [1, 66], injil: [40, 43], pb: [40, 66], pl: [1, 39] };
-    function presetKitabSearchKata(jenis) {
-        const checks = document.querySelectorAll('#sk-book-checklist input[type=checkbox]');
-        if (jenis === 'kosong') { checks.forEach(c => c.checked = false); return; }
-        const [dari, sampai] = SK_RENTANG_KITAB[jenis] || [1, 66];
-        checks.forEach(c => { let n = Number(c.value); c.checked = (n >= dari && n <= sampai); });
     }
 
     // =====================================================================
@@ -2171,6 +2054,10 @@
         salinTeks(teks, btnEl);
     }
 
+    // Menyimpan parameter pencarian terakhir (dipakai ulang oleh tombol "🔽 Cari Lagi") supaya user
+    // tidak perlu isi ulang form -- cukup lanjut mengambil batch berikutnya dari titik terakhir.
+    let skParamTerakhir = null;
+
     async function eksekusiSearchKata() {
         const rawKeywords = document.getElementById('sk-keywords').value;
         const keywords = rawKeywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
@@ -2194,9 +2081,30 @@
         let languages = Array.from(document.querySelectorAll('#sk-lang-checklist input:checked')).map(el => el.value);
         if (languages.length === 0) languages = ['ind'];
 
+        // Simpan parameter pencarian BARU ini (offset direset ke 0 -- pencarian baru selalu mulai dari awal lagi)
+        skParamTerakhir = { keywords, cariAyat, cariNote, modeAnd, bookNumbers, languages };
+        skHasilTerakhir = [];
+
         ringkasan.innerHTML = "";
         box.innerHTML = "<i>⏳ Sedang mencari...</i>";
+        await jalankanPencarianKata(0, false);
+    }
 
+    // Dipanggil tombol "🔽 Cari Lagi (Hasil Berikutnya)": pakai parameter pencarian TERAKHIR,
+    // lanjut dari offset_berikutnya yang dikirim server (bukan mengulang dari awal), lalu hasil
+    // barunya DITAMBAHKAN (bukan menimpa) ke daftar hasil yang sudah tampil.
+    async function muatHasilBerikutnyaSearchKata(btnEl) {
+        if (!skParamTerakhir) return;
+        if (btnEl) { btnEl.disabled = true; btnEl.innerHTML = "⏳ Memuat..."; }
+        await jalankanPencarianKata(skOffsetBerikutnya || 0, true);
+    }
+
+    let skOffsetBerikutnya = 0;
+
+    async function jalankanPencarianKata(offset, tambahan) {
+        const { keywords, cariAyat, cariNote, modeAnd, bookNumbers, languages } = skParamTerakhir;
+        const ringkasan = document.getElementById('sk-hasil-ringkasan');
+        const box = document.getElementById('sk-hasil-list');
         const batasDipakai = SK_LIMIT_TIERS[skLimitIdx];
 
         try {
@@ -2211,29 +2119,35 @@
                     book_numbers: bookNumbers,
                     languages: languages,
                     limit: batasDipakai,
+                    offset: offset,
                     username: userSession.username, device: userDevice, ip: userIP
                 })
             });
             const out = await res.json();
             if (out.status !== "success") { box.innerHTML = `<span style="color:red;">${out.message || "Gagal mencari."}</span>`; return; }
 
-            const hasil = out.hasil || [];
-            skHasilTerakhir = hasil;
+            const hasilBaru = out.hasil || [];
+            skOffsetBerikutnya = out.offset_berikutnya != null ? out.offset_berikutnya : (offset + hasilBaru.length);
 
-            let infoTeknis = `⏱️ Waktu proses: <b>${out.waktu_proses_ms != null ? out.waktu_proses_ms : '-'} ms</b> • 💾 Perkiraan memori hasil: <b>${out.perkiraan_memori_kb != null ? out.perkiraan_memori_kb : '-'} KB</b> • 🧮 Batas dipakai: <b>${out.batas_dipakai != null ? out.batas_dipakai : batasDipakai}</b>`;
+            let indexAwal = skHasilTerakhir.length;
+            skHasilTerakhir = skHasilTerakhir.concat(hasilBaru);
+
+            if (skHasilTerakhir.length === 0) { ringkasan.innerHTML = ""; box.innerHTML = "<i>Tidak ada ayat yang cocok. Coba kata lain atau ganti mode OR/AND.</i>"; return; }
+
+            let infoTeknis = `⏱️ Waktu proses batch ini: <b>${out.waktu_proses_ms != null ? out.waktu_proses_ms : '-'} ms</b> • 💾 Perkiraan memori batch ini: <b>${out.perkiraan_memori_kb != null ? out.perkiraan_memori_kb : '-'} KB</b> • 🧮 Batas per batch: <b>${out.batas_dipakai != null ? out.batas_dipakai : batasDipakai}</b>`;
             ringkasan.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <span>📊 Ditemukan <b>${hasil.length}</b> ayat${out.dibatasi ? ` (dibatasi ${out.batas_dipakai != null ? out.batas_dipakai : batasDipakai} hasil pertama -- persempit kata/kitab, atau naikkan Batas Hasil, untuk hasil lebih lengkap)` : ''}</span>
-                    ${hasil.length > 0 ? `<button type="button" class="icon-btn" style="width:auto; padding:6px 12px; font-size:12px;" onclick="salinSemuaHasilSearchKata(this)">📋 Salin Semua Hasil</button>` : ``}
+                    <span>📊 Total ditemukan sejauh ini: <b>${skHasilTerakhir.length}</b> ayat${out.dibatasi ? ` (batch ini dibatasi ${out.batas_dipakai != null ? out.batas_dipakai : batasDipakai} hasil -- kemungkinan MASIH ADA hasil lain, tekan "Cari Lagi" di bawah)` : ' (semua hasil yang cocok sudah didapat)'}</span>
+                    <button type="button" class="icon-btn" style="width:auto; padding:6px 12px; font-size:12px;" onclick="salinSemuaHasilSearchKata(this)">📋 Salin Semua Hasil</button>
                 </div>
                 <div style="font-weight:400; font-size:12px; opacity:0.7; margin-top:4px;">${infoTeknis}</div>`;
-
-            if (hasil.length === 0) { box.innerHTML = "<i>Tidak ada ayat yang cocok. Coba kata lain atau ganti mode OR/AND.</i>"; return; }
 
             // TAMPILAN: memakai sanitizeTampilanHtml() -- fungsi yang sama dipakai menu Cari/Baca --
             // supaya <br><p><i><b><u> dst dari data ayat/catatan benar-benar terbentuk formatnya
             // (bukan tampil sbg teks "<br>" dst), baru kata yang dicari ditandai <mark> di atasnya.
-            box.innerHTML = hasil.map((a, idx) => `
+            let htmlBaru = hasilBaru.map((a, i) => {
+                let idx = indexAwal + i;
+                return `
                 <div class="log-item-card" style="align-items:flex-start; flex-direction:column;">
                     <div style="width:100%; display:flex; justify-content:space-between; align-items:center; gap:8px;">
                         <b>${a.b} ${a.c}:${a.v}</b>
@@ -2244,7 +2158,21 @@
                     </div>
                     ${cariAyat ? `<div style="margin-top:4px;">${tandaiKataDicari(sanitizeTampilanHtml(a.t), keywords)}</div>` : ``}
                     ${cariNote && a.n ? `<div class="verse-note open" style="margin-top:6px;">📝 ${tandaiKataDicari(sanitizeTampilanHtml(a.n), keywords)}</div>` : ``}
-                </div>`).join("");
+                </div>`;
+            }).join("");
+
+            // Tombol "Cari Lagi" lama (kalau ada dari render sebelumnya) dibuang dulu, lalu ditambah
+            // lagi di paling bawah kalau memang masih mungkin ada hasil lain (out.dibatasi true).
+            let tombolLamaLagi = document.getElementById('sk-btn-cari-lagi');
+            if (tombolLamaLagi) tombolLamaLagi.remove();
+
+            if (!tambahan) box.innerHTML = "";
+            box.insertAdjacentHTML('beforeend', htmlBaru);
+
+            if (out.dibatasi) {
+                box.insertAdjacentHTML('beforeend', `
+                    <button type="button" id="sk-btn-cari-lagi" class="icon-btn" style="background:var(--primary); color:white; width:100%; margin-top:10px;" onclick="muatHasilBerikutnyaSearchKata(this)">🔽 Cari Lagi (Hasil Berikutnya)</button>`);
+            }
         } catch (e) {
             box.innerHTML = "<span style='color:red;'>Koneksi terputus.</span>";
         }
@@ -2816,6 +2744,28 @@
         }, 120);
     }
 
+    // =====================================================================
+    // TOMBOL PLAY/STOP BULAT DI NAVIGASI: satu tombol, dua fungsi -- kalau sedang tidak membaca,
+    // menekannya SAMA PERSIS dengan menekan tombol ▶ di bawah (bacakanTeks/bacakanTeksViewer);
+    // kalau sedang membaca, menekannya SAMA PERSIS dengan menekan tombol ⏹ Stop di bawah
+    // (hentikanSuara). Tampilan ikonnya (▶️/⏹️) disinkronkan otomatis lewat perbaruiTombolNavPlay(),
+    // dipanggil dari hentikanSuara() & bacakanTeks()/bacakanTeksViewer() supaya tombol ini juga
+    // ikut berubah walau yang menekan play/stop aslinya tombol di BAWAH, bukan tombol nav ini.
+    // =====================================================================
+    function toggleNavPlay(containerId, page) {
+        if (isReading) { hentikanSuara(); return; }
+        if (page === 'viewer') { bacakanTeksViewer(); } else { bacakanTeks(containerId, page); }
+    }
+
+    function perbaruiTombolNavPlay() {
+        document.querySelectorAll('.nav-play-circle').forEach(btn => {
+            btn.innerHTML = isReading ? '⏹️' : '▶️';
+            btn.style.background = isReading ? '#ff3b30' : '#34c759';
+            btn.style.borderColor = isReading ? '#ff3b30' : '#34c759';
+            btn.title = isReading ? 'Hentikan suara' : 'Putar suara (sama seperti tombol ▶ di bawah)';
+        });
+    }
+
     function bacakanTeks(containerId, page) {
         // Kalau pemanasan TTS (lihat pemanasanAwalTTS) belum selesai -- biasanya karena user menekan
         // ▶ SANGAT cepat setelah halaman terbuka -- tunda sebentar dan coba lagi, supaya percobaan
@@ -2850,7 +2800,7 @@
         sesiSuaraId++;
         isReading = true; currentVerseIndex = startIdx;
         lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
-        mintaWakeLock(); mulaiHeartbeatTTS();
+        mintaWakeLock(); mulaiHeartbeatTTS(); perbaruiTombolNavPlay();
         bacaAyatSelanjutnya(page, sesiSuaraId);
     }
 
@@ -2886,7 +2836,7 @@
         sesiSuaraId++;
         isReading = true; currentVerseIndex = startIdx;
         lastAyatNumberDibaca = null; lastBookDibaca = null; lastChapterDibaca = null;
-        mintaWakeLock(); mulaiHeartbeatTTS();
+        mintaWakeLock(); mulaiHeartbeatTTS(); perbaruiTombolNavPlay();
         bacaAyatSelanjutnya('viewer', sesiSuaraId);
     }
 
@@ -2971,6 +2921,7 @@
         hapusHighlight();
         hentikanHeartbeatTTS();
         lepasWakeLock();
+        perbaruiTombolNavPlay();
     }
 
     // TOMBOL "🔄 Reset Suara": dipakai kalau sesi TTS sebelumnya "macet"/error (mis. speechSynthesis
@@ -3126,12 +3077,29 @@
     function ubahFont(val) { 
         currentFontSize += val; 
         document.body.style.setProperty('--font-size', currentFontSize + 'px'); 
+        perbaruiLabelFontSize();
+    }
+
+    // Tombol PINTAS langsung ke ukuran tertentu (40pt/20pt/11pt) -- dipakai supaya tidak perlu
+    // pencet A+/A- berkali-kali, dan supaya ukurannya PASTI (bukan menebak-nebak) -- berguna
+    // terutama saat tampilan dipancarkan ke layar proyektor yang sulit dibaca dari jarak jauh.
+    function aturFontSize(px) {
+        currentFontSize = px;
+        document.body.style.setProperty('--font-size', currentFontSize + 'px');
+        perbaruiLabelFontSize();
+    }
+
+    // Menampilkan angka ukuran font AKTIF saat ini di layar (dekat tombol A+/A-/pintas), supaya
+    // langsung kelihatan berapa ukurannya sekarang -- tidak perlu menebak-nebak lagi.
+    function perbaruiLabelFontSize() {
+        document.querySelectorAll('.font-size-label').forEach(el => { el.innerText = currentFontSize + 'pt'; });
     }
     
     // Label nama tema (Indonesia) yang tampil di navigasi 1 baris, di sebelah titik warna tema
     const THEME_LABELS = {
         'light-default': 'Terang Default', 'light-sepia': 'Sepia Klasik', 'light-mint': 'Hijau Mint', 'light-sky': 'Biru Langit', 'light-peach': 'Peach Hangat',
-        'dark-default': 'Gelap Default', 'dark-ocean': 'Samudera Biru', 'dark-dracula': 'Dracula (Ungu)', 'dark-forest': 'Hutan Gelap', 'dark-charcoal': 'Abu-abu Arang'
+        'dark-default': 'Gelap Default', 'dark-ocean': 'Samudera Biru', 'dark-dracula': 'Dracula (Ungu)', 'dark-forest': 'Hutan Gelap', 'dark-charcoal': 'Abu-abu Arang',
+        'glass-transparent': 'Kaca Transparan 60%'
     };
 
     function gantiTemaGlobal(tema) { 
@@ -3690,8 +3658,29 @@
         { ref: "Amsal 3:5-6", teks: "Percayalah kepada TUHAN dengan segenap hatimu, dan janganlah bersandar kepada pengertianmu sendiri." }
     ];
 
-    // Membuat HTML pesan "sedang mencari" dengan satu ayat penantian yang dipilih secara acak
+    // Membuat HTML pesan "sedang mencari". UTAMAKAN isi dari PENGUMUMAN berkategori "Search Cari"
+    // (form isi & kategorinya SAMA PERSIS dengan pengumuman biasa -- termasuk tanggal penulisan/
+    // tanggal_start-akhir -- lihat #pgm-admin-form), dipilih ACAK dari yang aktif kalau ada lebih
+    // dari satu. Kalau BELUM ada pengumuman aktif utk kategori ini sama sekali, baru pakai ayat
+    // penantian bawaan (AYAT_PENANTIAN) sbg cadangan, supaya kotak "sedang mencari" tidak kosong.
     function pesanTungguAcak() {
+        let daftarPengumumanCari = (typeof allPengumuman !== 'undefined' ? allPengumuman : [])
+            .filter(p => pengumumanAktif(p) && pengumumanCocokSlot(p, 'Search Cari'));
+
+        if (daftarPengumumanCari.length > 0) {
+            const p = daftarPengumumanCari[Math.floor(Math.random() * daftarPengumumanCari.length)];
+            let mediaLinks = '';
+            if (p.link_foto) mediaLinks += `<div class="pgm-media-link"><a href="${p.link_foto}" target="_blank" rel="noopener noreferrer">🖼️ Lihat Foto</a></div>`;
+            if (p.link_video) mediaLinks += renderMediaVideoAudio(p.link_video);
+            return `<h3>⏳ Sedang mencari, mohon tunggu sebentar...</h3>
+                    <div class="log-item-card" style="display:block;">
+                        <span class="pgm-kategori-tag">📢 Pengumuman</span>
+                        ${linkifyTeks(p.isi)}
+                        ${mediaLinks}
+                        <div class="pgm-tanggal">${p.tanggal ? 'Ditulis: ' + formatTanggalIndo(p.tanggal) : ''}</div>
+                    </div>`;
+        }
+
         const a = AYAT_PENANTIAN[Math.floor(Math.random() * AYAT_PENANTIAN.length)];
         return `<h3>⏳ Sedang mencari, mohon tunggu sebentar...</h3>
                 <div class="log-item-card" style="display:block; font-style:italic;">
