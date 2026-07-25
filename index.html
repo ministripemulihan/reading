@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>06.04 E-Bible </title>
+    <title>07.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
         :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; --custom-divider: transparent;
@@ -295,7 +296,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 06.04</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 07.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -2940,6 +2941,93 @@
     // Administrator, mengikuti aturan visibilitas level yang sama dengan daftar Pengembalaan (BUKAN
     // cuma yang sudah dicentang/digembalakan) -- menampilkan nama, status baca hari ini/kemarin,
     // sudah sampai hari ke berapa, dan persentase perkembangan pembacaan tiap orang.
+    // ---------------------------------------------------------------------
+    // Helper bersama: render Ringkasan + Detail (dikelompokkan Sudah/Belum
+    // Baca Hari Ini -- yang BELUM ditaruh paling atas supaya gampang tahu
+    // siapa yang perlu dikontak) untuk daftar {username, level, hari_terakhir,
+    // persentase, baca_hari_ini, baca_kemarin}. Dipakai oleh Laporan
+    // Pengembalaan (lintas-level) & Ringkasan Domba (per gembala).
+    // ---------------------------------------------------------------------
+    function renderRingkasanDanDetilBaca(list, exportKey, judulLaporan) {
+        if (!list.length) return '<i>Belum ada nama yang bisa ditampilkan.</i>';
+
+        let total = list.length;
+        let sudah = list.filter(d => d.baca_hari_ini);
+        let belum = list.filter(d => !d.baca_hari_ini);
+        let persenSudah = Math.round((sudah.length / total) * 100);
+
+        function baris(d) {
+            return `<tr>
+                <td style="padding:6px 4px; border-bottom:1px solid var(--border);"><b>${d.username}</b><br><span style="font-size:10px; opacity:0.7;">${labelLevelBadgeKecil(d.level)}</span></td>
+                <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">${d.baca_hari_ini ? '✅' : '❌'}</td>
+                <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">${d.baca_kemarin ? '✅' : '⬜'}</td>
+                <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">Hari ke-${d.hari_terakhir}</td>
+                <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;"><b>${d.persentase}</b></td>
+            </tr>`;
+        }
+        function tabel(rows) {
+            return `<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                <thead><tr style="opacity:0.7;">
+                    <th style="text-align:left; padding:4px;">Nama</th><th style="padding:4px;">Hari Ini</th>
+                    <th style="padding:4px;">Kemarin</th><th style="padding:4px;">Sudah Sampai</th><th style="padding:4px;">Persentase</th>
+                </tr></thead><tbody>${rows.map(baris).join('')}</tbody></table></div>`;
+        }
+
+        window[exportKey] = { list: list, judul: judulLaporan };
+
+        return `
+            <b>📊 Ringkasan</b>
+            <p style="font-size:13px; margin:6px 0 12px 0;">
+                👥 Total: <b>${total}</b> orang &nbsp;|&nbsp;
+                ✅ Sudah baca hari ini: <b>${sudah.length}</b> (${persenSudah}%) &nbsp;|&nbsp;
+                ❌ Belum baca hari ini: <b style="color:#ff3b30;">${belum.length}</b> (${100 - persenSudah}%)
+            </p>
+            <button class="icon-btn" style="background:#217346; color:white; width:auto; padding:8px 14px; margin-bottom:12px;" onclick="exportLaporanBacaKeExcel('${exportKey}')">📥 Export ke Excel</button>
+
+            <b style="color:#ff3b30;">❌ Belum Baca Hari Ini — Perlu Dikontak (${belum.length})</b>
+            ${belum.length ? tabel(belum) : '<p style="font-size:13px;"><i>Semua sudah baca hari ini 🎉</i></p>'}
+
+            <b style="display:block; margin-top:14px;">✅ Sudah Baca Hari Ini (${sudah.length})</b>
+            ${sudah.length ? tabel(sudah) : '<p style="font-size:13px;"><i>Belum ada yang baca hari ini.</i></p>'}
+        `;
+    }
+
+    // Export Summary + Detail ke file .xlsx (2 sheet: Ringkasan & Detail), memakai data yang
+    // sudah dimuat di layar (window[exportKey]) -- tidak perlu request ulang ke server.
+    function exportLaporanBacaKeExcel(exportKey) {
+        let data = window[exportKey];
+        if (!data || !data.list || !data.list.length) return alert('Tidak ada data untuk diexport.');
+        let list = data.list;
+        let total = list.length;
+        let sudah = list.filter(d => d.baca_hari_ini).length;
+        let belum = total - sudah;
+        let tglHariIni = new Date().toLocaleDateString('id-ID');
+
+        let sheetRingkasan = XLSX.utils.json_to_sheet([
+            { Keterangan: 'Judul Laporan', Nilai: data.judul },
+            { Keterangan: 'Tanggal', Nilai: tglHariIni },
+            { Keterangan: 'Total Orang', Nilai: total },
+            { Keterangan: 'Sudah Baca Hari Ini', Nilai: sudah },
+            { Keterangan: 'Belum Baca Hari Ini', Nilai: belum },
+            { Keterangan: 'Persentase Sudah Baca', Nilai: (total ? Math.round((sudah / total) * 100) : 0) + '%' }
+        ], { skipHeader: true });
+
+        let sheetDetail = XLSX.utils.json_to_sheet(list.slice().sort((a, b) => (a.baca_hari_ini === b.baca_hari_ini) ? 0 : (a.baca_hari_ini ? 1 : -1)).map(d => ({
+            Nama: d.username,
+            Level: d.level || '(kosong)',
+            'Baca Hari Ini': d.baca_hari_ini ? 'Sudah' : 'Belum',
+            'Baca Kemarin': d.baca_kemarin ? 'Sudah' : 'Belum',
+            'Sudah Sampai Hari Ke': d.hari_terakhir,
+            'Persentase Perkembangan': d.persentase
+        })));
+
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, sheetRingkasan, 'Ringkasan');
+        XLSX.utils.book_append_sheet(wb, sheetDetail, 'Detail');
+        let namaFile = `Laporan Pembacaan - ${data.judul} - ${tglHariIni.replace(/\//g, '-')}.xlsx`;
+        XLSX.writeFile(wb, namaFile);
+    }
+
     async function muatLaporanBacaGembala() {
         const box = document.getElementById('gembala-laporan-area');
         let core = levelCore(userSession.level);
@@ -2952,32 +3040,8 @@
             const out = await res.json();
             if (out.status !== 'success') { box.innerHTML = `<span style="color:#ff3b30;">${out.message || 'Gagal memuat laporan.'}</span>`; return; }
             let list = out.laporan || [];
-            let header = `<b>📊 Laporan Pembacaan Alkitab</b>
-                <p style="font-size:13px; margin:6px 0;">👥 Total: <b>${out.total_orang}</b> orang • ✅ Sudah baca hari ini: <b>${out.persen_baca_hari_ini}%</b></p>`;
-            if (!list.length) { box.innerHTML = header + '<i>Belum ada nama yang bisa ditampilkan untuk level Anda.</i>'; return; }
-
-            let baris = list.map(d => `
-                <tr>
-                    <td style="padding:6px 4px; border-bottom:1px solid var(--border);"><b>${d.username}</b><br><span style="font-size:10px; opacity:0.7;">${labelLevelBadgeKecil(d.level)}</span></td>
-                    <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">${d.baca_hari_ini ? '✅' : '⬜'}</td>
-                    <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">${d.baca_kemarin ? '✅' : '⬜'}</td>
-                    <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">Hari ke-${d.hari_terakhir}</td>
-                    <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;"><b>${d.persentase}</b></td>
-                </tr>`).join('');
-
-            box.innerHTML = header + `
-                <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
-                    <thead><tr style="opacity:0.7;">
-                        <th style="text-align:left; padding:4px;">Nama</th>
-                        <th style="padding:4px;">Hari Ini</th>
-                        <th style="padding:4px;">Kemarin</th>
-                        <th style="padding:4px;">Sudah Sampai</th>
-                        <th style="padding:4px;">Persentase</th>
-                    </tr></thead>
-                    <tbody>${baris}</tbody>
-                </table>
-                </div>`;
+            box.innerHTML = `<b style="display:block; margin-bottom:6px;">📊 Laporan Pembacaan Alkitab (sesuai level Anda)</b>`
+                + renderRingkasanDanDetilBaca(list, 'laporanBacaGembalaData', `Level ${userSession.username}`);
         } catch (e) { box.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
     }
 
@@ -2993,19 +3057,21 @@
             let list = out.domba || [];
             dombaKategoriPergumulan = out.kategori_pergumulan || [];
             dombaKategoriDoa = out.kategori_doa || [];
+            window.dombaListTerkini = list;
 
             summaryBox.classList.remove('hidden');
-            summaryBox.innerHTML = `<b>📊 Ringkasan Domba Anda (${list.length} orang)</b><br>
-                <span style="font-size:13px;">✅ Sudah baca hari ini: <b>${out.persen_baca_hari_ini}%</b> • Sudah baca kemarin: <b>${out.persen_baca_kemarin}%</b></span>`;
+            summaryBox.innerHTML = list.length
+                ? renderRingkasanDanDetilBaca(list, 'ringkasanDombaData', `Domba ${userSession.username}`)
+                : '<i>Belum ada domba yang Anda gembalakan. Centang nama di menu 🧑\u200d🤝\u200d🧑 Pengembalaan terlebih dahulu.</i>';
 
-            if (!list.length) { box.innerHTML = '<i>Belum ada domba yang Anda gembalakan. Centang nama di menu 🧑\u200d🤝\u200d🧑 Pengembalaan terlebih dahulu.</i>'; return; }
+            if (!list.length) { box.innerHTML = '<i>Belum ada domba yang Anda gembalakan.</i>'; return; }
 
-            box.innerHTML = list.map((d, idx) => `
+            box.innerHTML = '<b style="display:block; margin-bottom:8px;">✏️ Catat Pergumulan & Pokok Doa per Domba</b>' + list.map((d, idx) => `
                 <div class="log-item-card" style="display:block;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span style="flex:1;">
                             <b>${d.username}</b><br>
-                            <span style="font-size:11px; opacity:0.7;">${labelLevelBadgeKecil(d.level)} • Hari ini: ${d.baca_hari_ini ? '✅' : '⬜'} • Kemarin: ${d.baca_kemarin ? '✅' : '⬜'} • Progres: ${d.persentase || '-'}</span>
+                            <span style="font-size:11px; opacity:0.7;">${labelLevelBadgeKecil(d.level)} • Hari ini: ${d.baca_hari_ini ? '✅' : '❌'} • Kemarin: ${d.baca_kemarin ? '✅' : '⬜'} • Progres: ${d.persentase || '-'}</span>
                         </span>
                         <button class="icon-btn" style="width:auto; padding:6px 10px;" onclick="bukaFormCatatanDomba(${idx})">✏️ Catat</button>
                         <button class="icon-btn" style="width:auto; padding:6px 10px;" onclick="muatRiwayatDomba('${d.username.replace(/'/g, "\\'")}', ${idx})">📜 Riwayat</button>
@@ -3013,7 +3079,6 @@
                     <div id="domba-form-${idx}" class="hidden" style="margin-top:10px; border-top:1px dashed var(--border); padding-top:10px;" data-username="${d.username}"></div>
                     <div id="domba-riwayat-${idx}" class="hidden" style="margin-top:10px; border-top:1px dashed var(--border); padding-top:10px; font-size:13px;"></div>
                 </div>`).join('');
-            window.dombaListTerkini = list;
         } catch (e) { box.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
     }
 
