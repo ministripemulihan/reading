@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>13.58 E-Bible </title>
+    <title>14.22 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -295,7 +295,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 13.58</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 14.22</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -551,12 +551,13 @@
                 </div>
 
                 <div style="font-size: 12px; font-weight: bold; color: gray; margin-top:5px;">🔍 Navigasi Pencarian</div>
+                <div id="search-preview-label" style="font-size:15px; font-weight:700; background:var(--btn-bg); border-radius:8px; padding:9px 12px; margin:4px 0 8px 0; text-align:center;">📖 -</div>
                 <div style="display:flex; gap:10px;">
-                    <select id="search-book" style="flex:2;"></select>
-                    <input type="number" id="search-chapter" placeholder="Pasal" value="1" style="flex:1;">
+                    <select id="search-book" style="flex:2;" onchange="updateSearchPreviewLabel()"></select>
+                    <input type="number" id="search-chapter" placeholder="Pasal" value="1" style="flex:1;" oninput="updateSearchPreviewLabel()">
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <input type="number" id="search-verse-start" placeholder="Ayat Awal" value="1" style="flex:2;">
+                    <input type="number" id="search-verse-start" placeholder="Ayat Awal" value="1" style="flex:2;" oninput="updateSearchPreviewLabel()">
                     <button type="button" class="icon-btn" id="btn-toggle-verse-mode" style="flex:1; background:var(--primary); color:white;" onclick="toggleVerseMode()" title="1 Ayat saja, atau seluruh sisa ayat di pasal ini">1️⃣ Satu Ayat</button>
                 </div>
                 <p style="font-size:11px; color:gray; margin:2px 0 8px 0;">Isi hanya "Ayat Awal". Tombol di samping: <b>1️⃣ Satu Ayat</b> = hanya 1 ayat itu saja (mis. Filipi 4:4), tekan untuk ganti ke <b>🔢 Semua Ayat</b> = dari ayat itu sampai akhir pasal.</p>
@@ -1416,7 +1417,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzDUVMWJBqonS2iDwWcs-UIm7zms3Mm0UNOnMxWX9mLMHFzkSARnevZtVV6PeTznaK/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwNbj7iV9dSkFQwTdLSOxD4N8_lM4ZTTrDuY94VdbkMig3AlT7ubTB3yu9gl_9oV1Z2A/exec';
     
     let userSession = {};
     let allPengumuman = []; // daftar pengumuman hasil getPengumuman, dimuat sekali setelah login
@@ -2364,6 +2365,7 @@
         hideAllPages();
         document.getElementById('search-page').classList.remove('hidden');
         sinkronisasiBukuPencarian();
+        updateSearchPreviewLabel();
         document.getElementById('search-ref-title').innerText = buildRefText('search-info', 'Silakan atur parameter pencarian');
         updateUserLabel('search');
         renderHeaderBanners('search-header-banner', 'Cari');
@@ -3370,6 +3372,23 @@
         books.forEach((bookName, index) => {
             bookSelect.appendChild(new Option(bookName, index + 1));
         });
+        updateSearchPreviewLabel();
+    }
+
+    // Tulisan preview "Nama Kitab Pasal:Ayat" yang tampil langsung di bagian atas kotak Navigasi
+    // Pencarian (sebelum tombol "Eksekusi Pencarian" ditekan), supaya user langsung lihat ayat
+    // mana yang akan dicari -- baik saat mode "1️⃣ Satu Ayat" maupun "🔢 Semua Ayat".
+    function updateSearchPreviewLabel() {
+        const el = document.getElementById('search-preview-label');
+        if (!el) return;
+        const bookSelect = document.getElementById('search-book');
+        const bookName = (bookSelect && bookSelect.selectedIndex >= 0 && bookSelect.options[bookSelect.selectedIndex])
+            ? bookSelect.options[bookSelect.selectedIndex].text : '-';
+        const chapter = document.getElementById('search-chapter').value || '-';
+        const verseStart = document.getElementById('search-verse-start').value || '-';
+        const mode = (typeof searchVerseMode !== 'undefined' && searchVerseMode === 'all')
+            ? `${verseStart}-akhir pasal` : `${verseStart}`;
+        el.innerText = `📖 ${bookName} ${chapter}:${mode}`;
     }
 
     function muatDaftarSuara() {
@@ -4600,6 +4619,7 @@
             btn.innerText = "🔢 Semua Ayat";
             btn.style.background = "#ff9500";
         }
+        updateSearchPreviewLabel();
     }
 
     function salinTeks(elId) { navigator.clipboard.writeText(document.getElementById(elId).innerText).then(() => alert("✅ Teks berhasil dicopy!")); }
