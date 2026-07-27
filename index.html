@@ -5116,7 +5116,7 @@
     // lain, cukup centang kategori "Search Cari"). Kalau belum ada satupun pengumuman aktif berkategori
     // itu, tetap jatuh balik ke daftar AYAT_PENANTIAN lama supaya menu Cari tidak pernah kosong.
     function pesanTungguAcak() {
-        let kandidat = allPengumuman.filter(p => pengumumanAktif(p) && pengumumanCocokSlot(p, 'Kandidat'));
+        let kandidat = allPengumuman.filter(p => pengumumanAktif(p) && pengumumanCocokSlot(p, 'search cari'));
         if (kandidat.length > 0) {
             const p = kandidat[Math.floor(Math.random() * kandidat.length)];
             let mediaLinks = '';
