@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>16.47 E-Bible </title>
+    <title>16.54 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -296,7 +296,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 16.47</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 16.54</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -1525,7 +1525,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2knMExJJUZHHamnFExvny6eI28-JuBMUGUDpmzfJJlgwuTbYXId6xma3GEBmMU1na2w/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyonI3mOzvEEXrbbu2j6CyysY7J9i8y4Q-3meAPSsaaU0KsaHoyIZ0gfKG4hKE5QXLRAQ/exec';
     
     let userSession = {};
     let waktuMulaiBaca = null; // timestamp (ms) saat halaman Baca dibuka, dipakai hitung durasi baca (detik)
@@ -5151,11 +5151,13 @@
 
         let targetLangs = getSelectedLangs('search');
         try {
-            // Satu request per kelompok kitab, dijalankan bersamaan supaya tetap cepat walau banyak kitab
+            // Satu request per kelompok kitab, dijalankan bersamaan supaya tetap cepat walau banyak kitab.
+            // skip_log: true -- supaya backend TIDAK mencatat log terpisah per-kitab di sini; log gabungan
+            // (berisi SEMUA ayat yang diketik dalam 1 baris) dikirim SATU KALI setelah semua kitab selesai.
             const hasilPerKitab = await Promise.all(groups.map(async (g) => {
                 const res = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: "searchReference", book_number: g.book_number, segments: g.segments, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP })
+                    body: JSON.stringify({ action: "searchReference", book_number: g.book_number, segments: g.segments, languages: targetLangs, username: userSession.username, device: userDevice, ip: userIP, skip_log: true })
                 });
                 const data = await res.json();
                 if (data.status === "error") throw new Error(data.message);
@@ -5173,6 +5175,21 @@
             let judul = groups.map(g => `${g.book_name} ${g.verse_spec}`).join('; ');
             let selectedLangsArray = getSelectedLangs('search');
             document.getElementById('search-ref-title').innerText = buildRefText('search-info', judul, selectedLangsArray);
+
+            // Catat SATU log gabungan berisi teks PERSIS yang diketik user (mis. "2 Timotius 2:22;
+            // Kejadian 3:15; Matius 4:4; Wahyu 2:7-8;") + jumlah ayat yang ditemukan. Dikirim tanpa
+            // di-await (fire-and-forget) supaya tidak memperlambat tampilan hasil pencarian ke user.
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "logCariReferensiGabungan",
+                    teks_asli: teks,
+                    ayat_ringkas: semuaAyat.map(a => ({ b: a.b, c: a.c, v: a.v })),
+                    jumlah_ayat: semuaAyat.length,
+                    languages: targetLangs,
+                    username: userSession.username, device: userDevice, ip: userIP
+                })
+            }).catch(() => {});
         } catch (err) {
             box.innerHTML = `<h3 style='color:red;'>Pencarian Gagal: ${err.message || "Masalah koneksi internet/CORS."}</h3>`;
         }
