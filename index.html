@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>07.00 E-Bible </title>
+    <title>15.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -296,7 +296,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 07.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 15.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -1525,9 +1525,10 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzR9DgkfhoNo2iUW0scBf-8REcNE41rvdAWzdXRBtuJaPeht27uuhwxG4cj8Jb_BlxY/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzKbwu9yumJx-54kyr1ecW1iLICbegCVZ-Ym-ILaitJLN58daozgqZvSvDsEkm1IR8fHw/exec';
     
     let userSession = {};
+    let waktuMulaiBaca = null; // timestamp (ms) saat halaman Baca dibuka, dipakai hitung durasi baca (detik)
 
     // Level sekarang bisa berisi gabungan token dipisah koma (mis. "administrator, inti").
     // Helper ini dipakai di semua pengecekan level supaya tidak lagi memakai '===' string persis.
@@ -2531,6 +2532,7 @@
         document.getElementById('read-ref-title').innerText = buildRefText('read-info', 'Mempersiapkan bacaan...');
         updateUserLabel('read');
         toggleLegacyPlanUI();
+        waktuMulaiBaca = Date.now(); // dipakai untuk menghitung durasi baca (detik) saat "Tandai Selesai"
         if (setupBacaAktif && setupBacaAktif.ada) {
             muatBacaanSetup();
         } else {
@@ -2956,11 +2958,19 @@
         let belum = list.filter(d => !d.baca_hari_ini);
         let persenSudah = Math.round((sudah.length / total) * 100);
 
+        function stripHari(d) {
+            let arr = d.baca_8_hari || [];
+            const labelSingkat = ['H', 'H-1', 'H-2', 'H-3', 'H-4', 'H-5', 'H-6', 'H-7'];
+            return `<div style="display:flex; gap:2px; justify-content:center;" title="H = hari ini, H-1 = kemarin, dst.">
+                ${arr.map((v, idx) => `<span title="${labelSingkat[idx]}: ${v ? 'Sudah baca' : 'Belum baca'}" style="font-size:11px;">${v ? '✅' : '❌'}</span>`).join('')}
+            </div>`;
+        }
+
         function baris(d) {
-            return `<tr>
-                <td style="padding:6px 4px; border-bottom:1px solid var(--border);"><b>${d.username}</b><br><span style="font-size:10px; opacity:0.7;">${labelLevelBadgeKecil(d.level)}</span></td>
+            return `<tr class="baris-domba-klik" style="cursor:pointer;" onclick="bukaRiwayatBacaOrang('${String(d.username).replace(/'/g, "\\'")}', '${exportKey}')">
+                <td style="padding:6px 4px; border-bottom:1px solid var(--border);"><b>${d.username}</b> 🔍<br><span style="font-size:10px; opacity:0.7;">${labelLevelBadgeKecil(d.level)}</span></td>
                 <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">${d.baca_hari_ini ? '✅' : '❌'}</td>
-                <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">${d.baca_kemarin ? '✅' : '⬜'}</td>
+                <td style="padding:6px 4px; border-bottom:1px solid var(--border);">${stripHari(d)}</td>
                 <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;">Hari ke-${d.hari_terakhir}</td>
                 <td style="padding:6px 4px; border-bottom:1px solid var(--border); text-align:center;"><b>${d.persentase}</b></td>
             </tr>`;
@@ -2969,7 +2979,7 @@
             return `<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; font-size:12.5px;">
                 <thead><tr style="opacity:0.7;">
                     <th style="text-align:left; padding:4px;">Nama</th><th style="padding:4px;">Hari Ini</th>
-                    <th style="padding:4px;">Kemarin</th><th style="padding:4px;">Sudah Sampai</th><th style="padding:4px;">Persentase</th>
+                    <th style="padding:4px;">H s/d H-7</th><th style="padding:4px;">Sudah Sampai</th><th style="padding:4px;">Persentase</th>
                 </tr></thead><tbody>${rows.map(baris).join('')}</tbody></table></div>`;
         }
 
@@ -2983,13 +2993,55 @@
                 ❌ Belum baca hari ini: <b style="color:#ff3b30;">${belum.length}</b> (${100 - persenSudah}%)
             </p>
             <button class="icon-btn" style="background:#217346; color:white; width:auto; padding:8px 14px; margin-bottom:12px;" onclick="exportLaporanBacaKeExcel('${exportKey}')">📥 Export ke Excel</button>
+            <p style="font-size:11px; opacity:0.7; margin:-6px 0 10px 0;">💡 Klik nama untuk lihat detail pembacaan 7 hari ke belakang (apa yang dibaca & durasinya).</p>
 
             <b style="color:#ff3b30;">❌ Belum Baca Hari Ini — Perlu Dikontak (${belum.length})</b>
             ${belum.length ? tabel(belum) : '<p style="font-size:13px;"><i>Semua sudah baca hari ini 🎉</i></p>'}
 
             <b style="display:block; margin-top:14px;">✅ Sudah Baca Hari Ini (${sudah.length})</b>
             ${sudah.length ? tabel(sudah) : '<p style="font-size:13px;"><i>Belum ada yang baca hari ini.</i></p>'}
+
+            <div id="riwayat-detail-${exportKey}" class="hidden" style="margin-top:14px; border-top:2px solid var(--border); padding-top:12px;"></div>
         `;
+    }
+
+    // Ubah detik jadi format "x menit y detik" (atau "y detik" saja kalau di bawah 1 menit).
+    function formatDurasiBaca(detik) {
+        detik = Number(detik) || 0;
+        if (detik < 60) return detik + ' detik';
+        let menit = Math.floor(detik / 60), sisaDetik = detik % 60;
+        return `${menit} menit ${sisaDetik} detik`;
+    }
+
+    // Buka panel detail 8 hari (H s/d H-7) untuk satu orang: hari per hari apakah baca atau tidak,
+    // dan kalau baca, tampilkan hari ke berapa, rencana baca, mode baca, & durasi (detik). Kalau
+    // rencana bacanya berubah dibanding sebelumnya, tampilkan juga rencana LAMA -> BARU.
+    async function bukaRiwayatBacaOrang(username, exportKey) {
+        const panel = document.getElementById('riwayat-detail-' + exportKey);
+        const sudahTerbuka = panel.dataset.username === username && !panel.classList.contains('hidden');
+        panel.classList.remove('hidden');
+        if (sudahTerbuka) { panel.classList.add('hidden'); return; }
+        panel.dataset.username = username;
+        panel.innerHTML = `<i>Memuat riwayat 7 hari untuk ${username}...</i>`;
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getRiwayatBacaDomba', username: userSession.username, domba_username: username }) });
+            const out = await res.json();
+            if (out.status !== 'success') { panel.innerHTML = `<span style="color:#ff3b30;">${out.message || 'Gagal memuat riwayat.'}</span>`; return; }
+            let hari = out.riwayat_8_hari || [];
+            panel.innerHTML = `<b>📅 Riwayat 7 Hari Terakhir — ${username}</b>` + hari.map(h => {
+                if (!h.sudah_baca) {
+                    return `<div style="padding:8px 4px; border-bottom:1px dashed var(--border);"><b>${h.label}</b> (${h.tanggal}) — <span style="color:#ff3b30;">❌ Belum baca</span></div>`;
+                }
+                let baris = h.detail.map(d => `
+                    <div style="margin-top:4px; font-size:12.5px;">
+                        📖 Hari ke-${d.hari_ke} • Mode: ${d.mode_baca || '-'} • ⏱️ ${formatDurasiBaca(d.durasi_detik)} • 🕐 ${d.waktu || '-'}
+                        ${d.plan ? `<br>📋 Rencana baca: <b>${d.plan}</b>` : ''}
+                        ${d.plan_berubah ? `<br><span style="color:#ff9500;">🔄 Ganti rencana baca: <b>${d.plan_lama}</b> → <b>${d.plan}</b></span>` : ''}
+                    </div>`).join('');
+                return `<div style="padding:8px 4px; border-bottom:1px dashed var(--border);"><b>${h.label}</b> (${h.tanggal}) — <span style="color:#34c759;">✅ Sudah baca</span>${baris}</div>`;
+            }).join('');
+        } catch (e) { panel.innerHTML = '<span style="color:#ff3b30;">Gagal koneksi.</span>'; }
     }
 
     // Export Summary + Detail ke file .xlsx (2 sheet: Ringkasan & Detail), memakai data yang
@@ -3012,14 +3064,18 @@
             { Keterangan: 'Persentase Sudah Baca', Nilai: (total ? Math.round((sudah / total) * 100) : 0) + '%' }
         ], { skipHeader: true });
 
-        let sheetDetail = XLSX.utils.json_to_sheet(list.slice().sort((a, b) => (a.baca_hari_ini === b.baca_hari_ini) ? 0 : (a.baca_hari_ini ? 1 : -1)).map(d => ({
-            Nama: d.username,
-            Level: d.level || '(kosong)',
-            'Baca Hari Ini': d.baca_hari_ini ? 'Sudah' : 'Belum',
-            'Baca Kemarin': d.baca_kemarin ? 'Sudah' : 'Belum',
-            'Sudah Sampai Hari Ke': d.hari_terakhir,
-            'Persentase Perkembangan': d.persentase
-        })));
+        const labelH = ['H (Hari Ini)', 'H-1', 'H-2', 'H-3', 'H-4', 'H-5', 'H-6', 'H-7'];
+        let sheetDetail = XLSX.utils.json_to_sheet(list.slice().sort((a, b) => (a.baca_hari_ini === b.baca_hari_ini) ? 0 : (a.baca_hari_ini ? 1 : -1)).map(d => {
+            let row = {
+                Nama: d.username,
+                Level: d.level || '(kosong)',
+                'Baca Hari Ini': d.baca_hari_ini ? 'Sudah' : 'Belum',
+                'Sudah Sampai Hari Ke': d.hari_terakhir,
+                'Persentase Perkembangan': d.persentase
+            };
+            (d.baca_8_hari || []).forEach((v, idx) => { row[labelH[idx]] = v ? 'Sudah' : 'Belum'; });
+            return row;
+        }));
 
         let wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, sheetRingkasan, 'Ringkasan');
@@ -5119,7 +5175,8 @@
         banner.style.background = "#28a745"; 
         btnTandai.style.display = 'none'; 
         
-        // Kirim semua variabel ke Apps Script (termasuk Device & IP Address)
+        // Kirim semua variabel ke Apps Script (termasuk Device, IP Address, durasi baca, & rencana baca)
+        let durasiDetik = waktuMulaiBaca ? Math.round((Date.now() - waktuMulaiBaca) / 1000) : 0;
         try {
             const res = await fetch(SCRIPT_URL, { 
                 method: 'POST', 
@@ -5130,7 +5187,9 @@
                     persentase: Math.round((currentHariKe / totalHariPlan) * 100),
                     mode_baca: isModePararel ? "Pararel" : "Satu Baris",
                     device: userDevice,
-                    ip: userIP
+                    ip: userIP,
+                    durasi_detik: durasiDetik,
+                    plan: userSession.plan || ''
                 }) 
             });
             const data = await res.json();
