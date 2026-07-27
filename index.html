@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>16.40 E-Bible </title>
+    <title>16.47 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -296,7 +296,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 16.40</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 16.47</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -5116,7 +5116,7 @@
     // lain, cukup centang kategori "Search Cari"). Kalau belum ada satupun pengumuman aktif berkategori
     // itu, tetap jatuh balik ke daftar AYAT_PENANTIAN lama supaya menu Cari tidak pernah kosong.
     function pesanTungguAcak() {
-        let kandidat = allPengumuman.filter(p => pengumumanAktif(p) && pengumumanCocokSlot(p, 'search cari'));
+        let kandidat = allPengumuman.filter(p => pengumumanAktif(p) && pengumumanCocokSlot(p, 'Search Cari'));
         if (kandidat.length > 0) {
             const p = kandidat[Math.floor(Math.random() * kandidat.length)];
             let mediaLinks = '';
