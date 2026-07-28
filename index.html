@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>18.00 E-Bible </title>
+    <title>17.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -296,7 +296,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 18.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 17.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -349,6 +349,53 @@
             <button id="btn-batal-ganti-rencana" class="hidden" style="background:#8e8e93;" onclick="document.getElementById('settings-page').classList.add('hidden')">✖ Batal</button>
         </div>
     </div>
+    <!-- =====================================================================================
+TAMBAHAN UI: "Rencana Baca Tahunan" (PB 1 Tahun & PL 2 Tahun, bisa dipilih 1 atau 2-duanya)
+Tempel <div id="modal-rencana-tahunan">...</div> ini di index.html, di dekat
+<div id="settings-page"> yang sudah ada (cari teks "SETTINGS PLAN" di file Anda).
+Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di index.html.
+===================================================================================== -->
+ 
+<div id="modal-rencana-tahunan" class="modal hidden">
+  <div class="modal-content card">
+    <h2 style="text-align:center;">📅 Rencana Baca Tahunan</h2>
+    <p style="font-size:12px; color:gray;">Boleh aktifkan salah satu atau keduanya. Bacaan otomatis mengikuti tanggal hari ini dihitung dari Tanggal Mulai masing-masing.</p>
+ 
+    <div style="border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px;">
+      <label><input type="checkbox" id="rt-pb-aktif" onchange="toggleRencanaTahunanBlok('pb')"> <b>PB 1 Tahun</b> (Perjanjian Baru)</label>
+      <div id="rt-pb-blok" class="hidden" style="margin-top:8px;">
+        <label>Tanggal Mulai:</label>
+        <input type="date" id="rt-pb-tanggal">
+        <label>Bahasa/Versi:</label>
+        <select id="rt-pb-bahasa">
+          <option value="ind">Indonesia</option>
+          <option value="rvind">Indonesia Pemulihan</option>
+          <option value="eng">English</option>
+          <option value="kjv">English (KJV)</option>
+          <option value="rveng">English Recovery</option>
+          <option value="chs">Mandarin (简体)</option>
+          <option value="chssmp">Mandarin (Simple)</option>
+        </select>
+      </div>
+    </div>
+ 
+    <div style="border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px;">
+      <label><input type="checkbox" id="rt-pl-aktif" onchange="toggleRencanaTahunanBlok('pl')"> <b>PL 2 Tahun</b> (Perjanjian Lama)</label>
+      <div id="rt-pl-blok" class="hidden" style="margin-top:8px;">
+        <label>Tanggal Mulai:</label>
+        <input type="date" id="rt-pl-tanggal">
+        <label>Bahasa/Versi:</label>
+        <select id="rt-pl-bahasa">
+          <option value="ind">Indonesia</option>
+          <option value="rvind">Indonesia Pemulihan</option>
+        </select>
+      </div>
+    </div>
+ 
+    <button onclick="simpanRencanaTahunan()">Simpan</button>
+    <button style="background:#8e8e93;" onclick="document.getElementById('modal-rencana-tahunan').classList.add('hidden')">✖ Tutup</button>
+  </div>
+</div>
     
     <!-- MODAL THEME 21 PILIHAN -->
     <div id="modal-theme" class="modal hidden" onclick="this.classList.add('hidden')">
@@ -1525,7 +1572,7 @@
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwjoRRIAHNHZ3oY4luiwLYPNvXPDjqp0uCHhFnqoQWrrUaYZahquY-6V-oLjasE9ty_SA/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXVQMA_WZK9d4y9bQz8783nbESf3PnJ2Ww30MtTEcMDBusHv0MJi867y9SdiQQS22rxw/exec';
     
     let userSession = {};
     let waktuMulaiBaca = null; // timestamp (ms) saat halaman Baca dibuka, dipakai hitung durasi baca (detik)
@@ -5400,6 +5447,102 @@
             } else { alert(out.message || 'Gagal menyimpan user.'); }
         } catch (e) { alert('Gagal koneksi ke server.'); }
     }
+  // ===================================================================================
+// Disimpan di localStorage (per perangkat). Kalau nanti mau disinkron lintas HP,
+// tinggal kirim juga ke server pakai action baru mirip "simpanRencanaBaca" yang
+// sudah ada untuk plan lama -- tidak wajib untuk versi awal ini.
+// ===================================================================================
+const RT_KEY = 'rencana_tahunan_v1';
+ 
+function toggleRencanaTahunanBlok(kode) {
+  document.getElementById('rt-' + kode + '-blok').classList.toggle('hidden', !document.getElementById('rt-' + kode + '-aktif').checked);
+}
+ 
+function bukaModalRencanaTahunan() {
+  let data = JSON.parse(localStorage.getItem(RT_KEY) || '{}');
+  document.getElementById('rt-pb-aktif').checked = !!data.pb;
+  document.getElementById('rt-pl-aktif').checked = !!data.pl;
+  if (data.pb) { document.getElementById('rt-pb-tanggal').value = data.pb.tanggal; document.getElementById('rt-pb-bahasa').value = data.pb.bahasa; }
+  if (data.pl) { document.getElementById('rt-pl-tanggal').value = data.pl.tanggal; document.getElementById('rt-pl-bahasa').value = data.pl.bahasa; }
+  toggleRencanaTahunanBlok('pb');
+  toggleRencanaTahunanBlok('pl');
+  document.getElementById('modal-rencana-tahunan').classList.remove('hidden');
+}
+ 
+function simpanRencanaTahunan() {
+  let data = {};
+  if (document.getElementById('rt-pb-aktif').checked) {
+    let tgl = document.getElementById('rt-pb-tanggal').value || new Date().toISOString().slice(0, 10);
+    data.pb = { tanggal: tgl, bahasa: document.getElementById('rt-pb-bahasa').value };
+  }
+  if (document.getElementById('rt-pl-aktif').checked) {
+    let tgl = document.getElementById('rt-pl-tanggal').value || new Date().toISOString().slice(0, 10);
+    data.pl = { tanggal: tgl, bahasa: document.getElementById('rt-pl-bahasa').value };
+  }
+  localStorage.setItem(RT_KEY, JSON.stringify(data));
+  document.getElementById('modal-rencana-tahunan').classList.add('hidden');
+  tampilkanBacaanTahunanHariIni();
+}
+ 
+// Hari-ke dihitung dari selisih hari (tanggal hari ini - tanggal mulai) + 1.
+// Kalau sudah lewat hari terakhir (366 / 730), berhenti di hari terakhir itu
+// (tidak mengulang otomatis) -- silakan sesuaikan kalau maunya berulang (modulo).
+function hitungHariKe(tanggalMulai, maksHari) {
+  let mulai = new Date(tanggalMulai + 'T00:00:00');
+  let hariIni = new Date(); hariIni.setHours(0, 0, 0, 0);
+  let selisih = Math.floor((hariIni - mulai) / 86400000) + 1;
+  if (selisih < 1) selisih = 1;
+  if (selisih > maksHari) selisih = maksHari;
+  return selisih;
+}
+ 
+// Panggil fungsi ini saat menu "Baca" dibuka (cari fungsi tempat menu Baca dirender
+// di index.html Anda, mis. fungsi yang dipanggil onclick menu 'Baca', lalu panggil ini juga).
+function tampilkanBacaanTahunanHariIni() {
+  let data = JSON.parse(localStorage.getItem(RT_KEY) || '{}');
+  let container = document.getElementById('bacaan-tahunan-container');
+  if (!container) return; // sesuaikan id wadah tampilan di index.html Anda
+  container.innerHTML = '';
+ 
+  if (data.pb) {
+    let hariKe = hitungHariKe(data.pb.tanggal, 366);
+    ambilDanTampilkanBacaan('PB 1 Tahun', hariKe, data.pb.bahasa, container);
+  }
+  if (data.pl) {
+    let hariKe = hitungHariKe(data.pl.tanggal, 730);
+    ambilDanTampilkanBacaan('PL 2 Tahun', hariKe, data.pl.bahasa, container);
+  }
+  if (!data.pb && !data.pl) {
+    container.innerHTML = '<p style="text-align:center; color:gray;">Belum ada Rencana Baca Tahunan aktif. <button onclick="bukaModalRencanaTahunan()">⚙️ Atur Rencana</button></p>';
+  }
+}
+ 
+// Memakai action "getReading" yang SUDAH ADA di code.gs (isPlanBased),
+// jadi tidak perlu action baru untuk mengambil teks ayatnya.
+function ambilDanTampilkanBacaan(namaPlan, hariKe, bahasa, container) {
+  let box = document.createElement('div');
+  box.className = 'card';
+  box.innerHTML = '<b>' + namaPlan + ' — Hari ke-' + hariKe + '</b><div class="isi-bacaan">Memuat...</div><div class="tombol-audio"></div>';
+  container.appendChild(box);
+ 
+  google.script.run.withSuccessHandler(function (res) {
+    let isiDiv = box.querySelector('.isi-bacaan');
+    if (res.status === 'success' && res.ayat && res.ayat.length) {
+      isiDiv.innerHTML = res.ayat.map(a => '<p><b>' + a.b + ' ' + a.c + ':' + a.v + '</b> ' + a.t + '</p>').join('');
+    } else {
+      isiDiv.innerHTML = '<i>Bacaan tidak ditemukan untuk hari ini.</i>';
+    }
+  }).withFailureHandler(function (err) {
+    box.querySelector('.isi-bacaan').innerHTML = '<i>Gagal memuat: ' + err + '</i>';
+  }).doGetReadingProxy({ action: 'getReading', plan: namaPlan, hari_ke: hariKe, languages: [bahasa] });
+ 
+  // Ambil link audio/video (khusus PB, PL akan kosong)
+  google.script.run.withSuccessHandler(function (res) {
+    if (res.status === 'success' && res.link) {
+      box.querySelector('.tombol-audio').innerHTML = '<a href="' + res.link + '" target="_blank">🔊 Dengarkan / Lihat</a>';
+    }
+  }).doGetReadingProxy({ action: 'getLinkBacaanTahunan', plan: namaPlan, hari_ke: hariKe, bahasa: bahasa });
+}  
 </script>
 </body>
 </html>
