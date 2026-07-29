@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>15.00 E-Bible </title>
+    <title>16.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -215,6 +215,9 @@
         .nav-full-menu.open { display: flex; flex-direction: column; gap: 10px; }
         
         .icon-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .icon-btn-round { width: 44px; height: 44px; min-width: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 19px; line-height: 1; padding: 0; margin: 0; flex: 0 0 auto; background: var(--btn-bg); border: 1px solid var(--border); color: var(--text); cursor: pointer; }
+        .icon-btn-round:hover { opacity: 0.8; }
+        .icon-btn-round.aktif-jelajah { background: #ff9500; color: #fff; border-color: #ff9500; }
         .icon-btn { flex: 1; min-width: 35px; background: var(--btn-bg); color: var(--text); font-size: 14px; padding: 10px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-weight: bold; }
         
         /* padding-bottom besar (50vh) supaya baris teks terakhir bisa terus discroll sampai ke separuh atas layar */
@@ -313,7 +316,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 15.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 16.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -432,7 +435,6 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     <p id="ptt-status" style="text-align:center; font-size:12px; color:#ff3b30; min-height:14px;"></p>
 
     <button onclick="konfirmasiPilihTanggalTahunan()">Pergi ke Sini</button>
-    <button style="background:#ff9500;" onclick="pttKeHariIni()">📅 Kembali ke Hari Ini</button>
     <button style="background:#8e8e93;" onclick="document.getElementById('modal-pilih-tanggal-tahunan').classList.add('hidden')">✖ Tutup</button>
   </div>
 </div>
@@ -1669,8 +1671,8 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 </div>
 
 <script>
-    // GANTI APPSCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEEN6axxRzX6kBFXupo0Nk5Y3i5PYpJpVoMV4kq3GwXKZWNgUcmmYEPAOVP6-SDyASWg/exec';
+    // UBAH APPSCRIPT ANDA YANG TERBARU
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxAUDhvQ07jM04fKng5zPTt6i4VhkCYRogxJ_MFXNjRopuCVJ-94hn6KuOSazsyqGh3xg/exec';
     
     let userSession = {};
     let waktuMulaiBaca = null; // timestamp (ms) saat halaman Baca dibuka, dipakai hitung durasi baca (detik)
@@ -5110,7 +5112,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         document.getElementById('lang1-read').value = defaultLang;
         sinkronisasiBukuPencarian(); 
 
-        document.getElementById('btn-login').innerText = "Memeriksa Kredensial...";
+        document.getElementById('btn-login').innerText = "Memeriksa Username & Password...";
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "login", username: u, password: p }) });
             const out = await res.json();
@@ -5880,13 +5882,14 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
       // Pengumuman berkategori "Menu Baca" (kalau ada & sedang aktif) langsung tampil di sini,
       // begitu tab PB 1 Tahun / PL 2 Tahun dibuka -- tidak perlu buka tab 📢 Info dulu.
       html += `<div id="menu-baca-pengumuman-banner"></div>`;
-      html += `<div class="icon-bar" style="margin:0 0 6px 0;">
-        <button type="button" class="icon-btn" style="flex:1;" onclick="gantiHariTahunan(-1)">◀ Prev</button>
-        <button type="button" class="icon-btn" title="Pilih Tanggal / Hari" style="flex:0 0 auto; padding:8px 16px; font-size:18px; ${sedangMenjelajah ? 'background:#ff9500; color:white;' : ''}" onclick="bukaModalPilihTanggalTahunan('${sheetBacaAktif}')">🗓️</button>
-        <button type="button" class="icon-btn" style="flex:1;" onclick="gantiHariTahunan(1)">Next ▶</button>
+      html += `<div class="icon-bar" style="margin:0 0 6px 0; justify-content:center; gap:16px;">
+        <button type="button" class="icon-btn-round" title="Hari Sebelumnya" onclick="gantiHariTahunan(-1)">◀</button>
+        <button type="button" class="icon-btn-round" title="Pilih Tanggal / Hari" onclick="bukaModalPilihTanggalTahunan('${sheetBacaAktif}')">🗓️</button>
+        <button type="button" class="icon-btn-round${sedangMenjelajah ? ' aktif-jelajah' : ''}" title="Kembali ke Hari Ini" onclick="kembaliHariIniTahunan()">📅</button>
+        <button type="button" class="icon-btn-round" title="Hari Berikutnya" onclick="gantiHariTahunan(1)">▶</button>
       </div>`;
       if (sedangMenjelajah) {
-        html += `<div style="font-size:12px; color:#ff9500; text-align:center; margin:-2px 0 6px 0;">🔍 Sedang melihat Hari ke-${dataHari.hari_ke} (bukan hari ini) — ketuk 🗓️ untuk pilih tanggal lain atau kembali ke hari ini</div>`;
+        html += `<div style="font-size:12px; color:#ff9500; text-align:center; margin:-2px 0 6px 0;">🔍 Sedang melihat Hari ke-${dataHari.hari_ke} (bukan hari ini) — ketuk 📅 untuk kembali ke hari ini</div>`;
       }
     }
 
@@ -5917,13 +5920,6 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     if (jenis !== 'pb' && jenis !== 'pl') return;
     hentikanSuara();
     muatRencanaTahunanHariIni();
-  }
-
-  // Tombol "📅 Kembali ke Hari Ini" di dalam modal Pilih Tanggal -- menutup modal lalu langsung
-  // menampilkan hari ini yang sesungguhnya (sesuai tanggal kalender), membatalkan penjelajahan.
-  function pttKeHariIni() {
-    document.getElementById('modal-pilih-tanggal-tahunan').classList.add('hidden');
-    kembaliHariIniTahunan();
   }
 
   // Ambil & tampilkan bacaan PB/PL untuk HARI TERTENTU (bukan hari ini) -- dipakai oleh Prev/Next.
