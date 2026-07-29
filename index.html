@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12.00 E-Bible </title>
+    <title>15.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -313,7 +313,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 12.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 15.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -432,6 +432,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     <p id="ptt-status" style="text-align:center; font-size:12px; color:#ff3b30; min-height:14px;"></p>
 
     <button onclick="konfirmasiPilihTanggalTahunan()">Pergi ke Sini</button>
+    <button style="background:#ff9500;" onclick="pttKeHariIni()">📅 Kembali ke Hari Ini</button>
     <button style="background:#8e8e93;" onclick="document.getElementById('modal-pilih-tanggal-tahunan').classList.add('hidden')">✖ Tutup</button>
   </div>
 </div>
@@ -1058,6 +1059,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
             <div class="pgm-kategori-checks" id="pgm-kategori-checks">
                 <label><input type="checkbox" value="Cari"> Cari</label>
                 <label><input type="checkbox" value="Baca"> Baca</label>
+                <label><input type="checkbox" value="Menu Baca"> Menu Baca (PB/PL)</label>
                 <label><input type="checkbox" value="Jadwal"> Jadwal</label>
                 <label><input type="checkbox" value="Search Cari"> Search Cari</label>
                 <label><input type="checkbox" value="Search Baca"> Search Baca</label>
@@ -1668,7 +1670,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 
 <script>
     // GANTI APPSCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFAD-WKzpmgwXk3GRDXlbP_Jv5BvS8Yn3tQqRdGfl6voTC_b71jiOreYo_Iy2v-z88XQ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEEN6axxRzX6kBFXupo0Nk5Y3i5PYpJpVoMV4kq3GwXKZWNgUcmmYEPAOVP6-SDyASWg/exec';
     
     let userSession = {};
     let waktuMulaiBaca = null; // timestamp (ms) saat halaman Baca dibuka, dipakai hitung durasi baca (detik)
@@ -5875,20 +5877,23 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     } else if (sheetBacaAktif === 'pb' || sheetBacaAktif === 'pl') {
       let dataHari = rencanaTahunanAktif[sheetBacaAktif];
       let sedangMenjelajah = !!(dataHari && !dataHari.error && dataHari.hari_ke !== dataHari.hari_ke_asli);
+      // Pengumuman berkategori "Menu Baca" (kalau ada & sedang aktif) langsung tampil di sini,
+      // begitu tab PB 1 Tahun / PL 2 Tahun dibuka -- tidak perlu buka tab 📢 Info dulu.
+      html += `<div id="menu-baca-pengumuman-banner"></div>`;
       html += `<div class="icon-bar" style="margin:0 0 6px 0;">
-        <button type="button" class="icon-btn" onclick="gantiHariTahunan(-1)">◀ Prev</button>
-        <button type="button" class="icon-btn" style="${sedangMenjelajah ? 'background:#ff9500; color:white;' : ''}" onclick="kembaliHariIniTahunan()">📅 Hari Ini</button>
-        <button type="button" class="icon-btn" onclick="gantiHariTahunan(1)">Next ▶</button>
-      </div>
-      <div class="icon-bar" style="margin:0 0 6px 0;">
-        <button type="button" class="icon-btn" onclick="bukaModalPilihTanggalTahunan('${sheetBacaAktif}')">🗓️ Pilih Tanggal / Hari</button>
+        <button type="button" class="icon-btn" style="flex:1;" onclick="gantiHariTahunan(-1)">◀ Prev</button>
+        <button type="button" class="icon-btn" title="Pilih Tanggal / Hari" style="flex:0 0 auto; padding:8px 16px; font-size:18px; ${sedangMenjelajah ? 'background:#ff9500; color:white;' : ''}" onclick="bukaModalPilihTanggalTahunan('${sheetBacaAktif}')">🗓️</button>
+        <button type="button" class="icon-btn" style="flex:1;" onclick="gantiHariTahunan(1)">Next ▶</button>
       </div>`;
       if (sedangMenjelajah) {
-        html += `<div style="font-size:12px; color:#ff9500; text-align:center; margin:-2px 0 6px 0;">🔍 Sedang melihat Hari ke-${dataHari.hari_ke} (bukan hari ini)</div>`;
+        html += `<div style="font-size:12px; color:#ff9500; text-align:center; margin:-2px 0 6px 0;">🔍 Sedang melihat Hari ke-${dataHari.hari_ke} (bukan hari ini) — ketuk 🗓️ untuk pilih tanggal lain atau kembali ke hari ini</div>`;
       }
     }
 
     box.innerHTML = html;
+    if (sheetBacaAktif === 'pb' || sheetBacaAktif === 'pl') {
+      renderBannerUntukSlot('menu-baca-pengumuman-banner', 'Menu Baca');
+    }
   }
 
   // Pindah ke hari sebelumnya/berikutnya khusus sheet PB/PL yang sedang aktif. Batasnya 1..durasi_hari
@@ -5914,6 +5919,13 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     muatRencanaTahunanHariIni();
   }
 
+  // Tombol "📅 Kembali ke Hari Ini" di dalam modal Pilih Tanggal -- menutup modal lalu langsung
+  // menampilkan hari ini yang sesungguhnya (sesuai tanggal kalender), membatalkan penjelajahan.
+  function pttKeHariIni() {
+    document.getElementById('modal-pilih-tanggal-tahunan').classList.add('hidden');
+    kembaliHariIniTahunan();
+  }
+
   // Ambil & tampilkan bacaan PB/PL untuk HARI TERTENTU (bukan hari ini) -- dipakai oleh Prev/Next.
   async function muatRencanaTahunanUntukHari(jenis, hariKe) {
     hentikanSuara();
@@ -5923,7 +5935,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     try {
       const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getRencanaTahunanHariIni', username: userSession.username, override_jenis: jenis, override_hari_ke: hariKe }) });
       const data = await res.json();
-      if (data.status === 'success') rencanaTahunanAktif = data;
+      if (data.status === 'success') rencanaTahunanAktif[jenis] = data[jenis];
     } catch (e) {
       box.innerHTML = "<h3 style='text-align:center; color:red;'>Gagal memuat bacaan. Periksa koneksi internet.</h3>";
       return;
@@ -6134,6 +6146,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     // di sheet Bacaan Harian.
     document.getElementById('btn-tandai').classList.remove('hidden');
     document.getElementById('btn-tandai').style.display = 'block';
+    document.getElementById('btn-tandai').disabled = false;
     document.getElementById('btn-tandai').innerText = dataHari.sudah_tandai_hari_ini ? 'Sudah Ditandai Selesai Hari Ini' : 'Saya Sudah Membaca Ini';
   }
 
@@ -6333,19 +6346,41 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
   }
 
   async function tandaiRencanaTahunanSelesai(jenis, hariKe) {
+    const btn = document.getElementById('btn-tandai');
+    const teksSebelum = btn ? btn.innerText : '';
+    // FEEDBACK INSTAN: nonaktifkan tombol & ganti tulisannya begitu diklik, supaya user langsung
+    // merasa tombolnya "berfungsi" walau proses simpan ke server masih berjalan di belakang layar
+    // (sebelumnya tombol terlihat diam saja selama menunggu, seolah tidak merespons sama sekali).
+    if (btn) { btn.disabled = true; btn.innerText = '⏳ Menyimpan...'; }
     try {
       const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'markReadTahunan', username: userSession.username, jenis: jenis, hari_ke: hariKe, device: userDevice, ip: userIP }) });
       const out = await res.json();
       if (out.status === 'success') {
-        // Kalau baru saja menandai hari yang SEDANG DIJELAJAH lewat Prev/Next (bukan hari ini yang
-        // sesungguhnya), tetap tampilkan hari itu (hanya status tandanya yang disegarkan) -- supaya
-        // pengguna tidak tiba-tiba "dilempar" balik ke hari ini setelah menandai hari lama selesai.
+        // Update status LANGSUNG di data lokal (optimistic), tidak menunggu round-trip refresh
+        // penuh selesai dulu baru tombolnya berubah.
         let dataHari = rencanaTahunanAktif[jenis];
+        if (dataHari) {
+          dataHari.sudah_tandai_hari_ini = (dataHari.hari_ke === hariKe) ? true : dataHari.sudah_tandai_hari_ini;
+          if (Array.isArray(dataHari.history) && dataHari.history.indexOf(hariKe) === -1) dataHari.history.push(hariKe);
+        }
+        if (btn && dataHari && dataHari.hari_ke === hariKe) { btn.innerText = 'Sudah Ditandai Selesai Hari Ini'; btn.disabled = false; }
+
+        // Kalau baru saja menandai hari yang SEDANG DIJELAJAH lewat Prev/Next/Pilih Tanggal (bukan
+        // hari ini yang sesungguhnya), tetap tampilkan hari itu (hanya status tandanya yang
+        // disegarkan) -- supaya pengguna tidak tiba-tiba "dilempar" balik ke hari ini. Refresh dari
+        // server ini tetap dijalankan di belakang layar untuk menyegarkan persentase/banner, TANPA
+        // membuat tombol menunggu (sudah terasa langsung berfungsi dari update optimistic di atas).
         let sedangMenjelajah = !!(dataHari && dataHari.hari_ke !== dataHari.hari_ke_asli && dataHari.hari_ke === hariKe);
         if (sedangMenjelajah) muatRencanaTahunanUntukHari(jenis, hariKe);
         else muatRencanaTahunanHariIni();
-      } else alert(out.message || 'Gagal menandai selesai.');
-    } catch (e) { alert('Gagal koneksi ke server.'); }
+      } else {
+        if (btn) { btn.disabled = false; btn.innerText = teksSebelum; }
+        alert(out.message || 'Gagal menandai selesai. Coba lagi.');
+      }
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.innerText = teksSebelum; }
+      alert('Gagal koneksi ke server. Periksa koneksi internet lalu coba lagi.');
+    }
   }
 </script>
 </body>
