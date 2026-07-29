@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>13.00 E-Bible </title>
+    <title>14.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -313,7 +313,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 13.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 14.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -763,12 +763,10 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
                      sistem baru, hari dihitung otomatis dari tanggal kalender, jadi kotak ini disembunyikan
                      (lihat toggleLegacyPlanUI()) -- ganti rencana dilakukan lewat menu ⚙️ Setting. -->
                 <div id="box-nav-hari-lama">
-                    <div style="font-size: 12px; font-weight: bold; color: gray;">⚙️ Navigasi Hari</div>
-                    <div class="icon-bar">
-                        <button class="icon-btn" onclick="gantiHari(-1)">◀ Prev</button>
-                        <button class="icon-btn" onclick="kembaliHariIni()">📅 Hari Ini</button>
-                        <button class="icon-btn" onclick="gantiHari(1)">Next ▶</button>
-                    </div>
+                    <!-- CATATAN: tombol ◀ Prev / 📅 Hari Ini / Next ▶ TIDAK lagi ditaruh di sini (di dalam
+                         menu ▼ yang harus dibuka dulu) -- sekarang selalu tampil langsung di bawah tab
+                         Bacaan Harian/PB/PL (lihat renderTabSheetBaca()), sama posisinya utk ketiga sheet,
+                         supaya gampang & cepat dipakai tanpa perlu buka menu ini dulu. -->
                     <div class="icon-bar">
                         <button class="icon-btn" style="background:#5856d6; color:white; width:100%;" onclick="bukaRiwayatPembacaan()">📋 Riwayat Pembacaan (Terakhir Dibaca, Tanggal Mulai, & Daftar Sudah/Belum)</button>
                     </div>
@@ -1616,8 +1614,8 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 </div>
 
 <script>
-    // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZUKTKcNjazjEo_cHAVGSre3feJ3A7IyLuZC_chRamDWLfxBOK1b5fFS75iFAw3P8LnA/exec';
+    // GANTI APPSCRIPT ANDA YANG TERBARU
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFAD-WKzpmgwXk3GRDXlbP_Jv5BvS8Yn3tQqRdGfl6voTC_b71jiOreYo_Iy2v-z88XQ/exec';
     
     let userSession = {};
     let waktuMulaiBaca = null; // timestamp (ms) saat halaman Baca dibuka, dipakai hitung durasi baca (detik)
@@ -1800,72 +1798,14 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 
     const bookData = {
         ind: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obaja","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matius","Markus","Lukas","Yohanes","Kisah Rasul-rasul","Roma","1 Korintus","2 Korintus","Galatia","Efesus","Filipi","Kolose","1 Tesalonika","2 Tesalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Petrus","2 Petrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Wahyu"],
-        chs: ["创世记 (Chuàngshìjì) - Kej",
-"出埃及 (Chū Āijí) - Kel",
-"利未记 (Lìwèijì) - Im",
-"民数记 (Mínshùjì) - Bil",
-"申命记 (Shēnmìngjì) - Ul",
-"约书亚记 (Yuēshūyàjì) - Yos",
-"士师记 (Shìshījì) - Hak",
-"路得记 (Lùdéjì) - Rut",
-"撒母耳记上 (Sāmǔ'ěrjì Shàng) - 1Sam",
-"撒母耳记下 (Sāmǔ'ěrjì Xià) - 2Sam",
-"列王纪上 (Lièwángjì Shàng) - 1Raj",
-"列王纪下 (Lièwángjì Xià) - 2Raj",
-"历代志上 (Lìdàizhì Shàng) - 1Taw",
-"历代志下 (Lìdàizhì Xià) - 2Taw",
-"以斯拉记 (Yǐsīlājì) - Ezr",
-"尼希米记 (Níxīmǐjì) - Neh",
-"以斯帖记 (Yǐsītiējì) - Est",
-"约伯记 (Yuēbójì) - Ayb",
-"诗篇 (Shīpiān) - Mzm",
-"箴言 (Zhēnyán) - Ams",
-"传道书 (Chuándàoshū) - Pkh",
-"雅歌 (Yǎgē) - Kid",
-"以赛亚书 (Yǐsàiyàshū) - Yes",
-"耶利米书 (Yēlìmǐshū) - Yer",
-"耶利米哀歌 (Yēlìmǐ Āigē) - Rat",
-"以西结书 (Yǐxījiéshū) - Yeh",
-"但以理书 (Dànyǐlǐshū) - Dan",
-"何西阿书 (Héxī'āshū) - Hos",
-"约珥书 (Yuē'ěrshū) - Yl",
-"阿摩司书 (Āmósīshū) - Am",
-"俄巴底亚书 (Ébādǐyàshū) - Ob",
-"约拿书 (Yuēnáshū) - Yun",
-"弥迦书 (Míjiāshū) - Mi",
-"那鸿书 (Nàhóngshū) - Nah",
-"哈巴谷书 (Hābāgǔshū) - Hab",
-"西番雅书 (Xīfānyǎshū) - Zef",
-"哈该书 (Hāgāishū) - Hag",
-"撒迦利亚书 (Sājiālìyàshū) - Zak",
-"玛拉基书 (Mǎlājīshū) - Mal",
-"马太福音 (Mǎtài Fúyīn) - Mat",
-"马可福音 (Mǎkě Fúyīn) - Mrk",
-"路加福音 (Lùjiā Fúyīn) - Luk",
-"约翰福音 (Yuēhàn Fúyīn) - Yoh",
-"使徒行传 (Shǐtú Xíngzhuàn) - Kis",
-"罗马书 (Luómǎshū) - Rom",
-"歌林多前书 (Gēlínduō Qiánshū) - 1Kor",
-"歌林多后书 (Gēlínduō Hòushū) - 2Kor",
-"加拉太书 (Jiālātàishū) - Gal",
-"以弗所书 (Yǐfúsuǒshū) - Ef",
-"腓立比书 (Féilìbǐshū) - Flp",
-"歌罗西书 (Gēluóxīshū) - Kol",
-"帖撒罗尼迦前书 (Tiēsǎluóníjiā Qiánshū) - 1Tes",
-"帖撒罗尼迦后书 (Tiēsǎluóníjiā Hòushū) - 2Tes",
-"提摩太前书 (Tímótài Qiánshū) - 1Tim",
-"提摩太后书 (Tímótài Hòushū) - 2Tim",
-"提多书 (Tíduōshū) - Tit",
-"腓利门书 (Féilìménshū) - Flm",
-"希伯来书 (Xībóláishū) - Ibr",
-"雅各书 (Yǎgèshū) - Yak",
-"彼得前书 (Bǐdé Qiánshū) - 1Ptr",
-"彼得后书 (Bǐdé Hòushū) - 2Ptr",
-"约翰一书 (Yuēhàn Yīshū) - 1Yoh",
-"约翰二书 (Yuēhàn Èrshū) - 2Yoh",
-"约翰三书 (Yuēhàn Sānshū) - 3Yoh",
-"犹大书 (Yóudàshū) - Yud",
-"启示录 (Qǐshìlù) - Why"],
+        chs: ["创世记 (Chuàngshìjì) - Kej","出埃及 (Chū Āijí) - Kel","利未记 (Lìwèijì) - Im","民数记 (Mínshùjì) - Bil","申命记 (Shēnmìngjì) - Ul","约书亚记 (Yuēshūyàjì) - Yos","士师记 (Shìshījì) - Hak","路得记 (Lùdéjì) - Rut","撒母耳记上 (Sāmǔ'ěrjì Shàng) - 1Sam",
+"撒母耳记下 (Sāmǔ'ěrjì Xià) - 2Sam","列王纪上 (Lièwángjì Shàng) - 1Raj","列王纪下 (Lièwángjì Xià) - 2Raj","历代志上 (Lìdàizhì Shàng) - 1Taw","历代志下 (Lìdàizhì Xià) - 2Taw","以斯拉记 (Yǐsīlājì) - Ezr","尼希米记 (Níxīmǐjì) - Neh","以斯帖记 (Yǐsītiējì) - Est","约伯记 (Yuēbójì) - Ayb","诗篇 (Shīpiān) - Mzm",
+"箴言 (Zhēnyán) - Ams","传道书 (Chuándàoshū) - Pkh","雅歌 (Yǎgē) - Kid","以赛亚书 (Yǐsàiyàshū) - Yes","耶利米书 (Yēlìmǐshū) - Yer","耶利米哀歌 (Yēlìmǐ Āigē) - Rat","以西结书 (Yǐxījiéshū) - Yeh","但以理书 (Dànyǐlǐshū) - Dan",
+"何西阿书 (Héxī'āshū) - Hos","约珥书 (Yuē'ěrshū) - Yl","阿摩司书 (Āmósīshū) - Am","俄巴底亚书 (Ébādǐyàshū) - Ob","约拿书 (Yuēnáshū) - Yun","弥迦书 (Míjiāshū) - Mi","那鸿书 (Nàhóngshū) - Nah","哈巴谷书 (Hābāgǔshū) - Hab","西番雅书 (Xīfānyǎshū) - Zef","哈该书 (Hāgāishū) - Hag","撒迦利亚书 (Sājiālìyàshū) - Zak","玛拉基书 (Mǎlājīshū) - Mal","马太福音 (Mǎtài Fúyīn) - Mat","马可福音 (Mǎkě Fúyīn) - Mrk",
+"路加福音 (Lùjiā Fúyīn) - Luk","约翰福音 (Yuēhàn Fúyīn) - Yoh","使徒行传 (Shǐtú Xíngzhuàn) - Kis","罗马书 (Luómǎshū) - Rom","歌林多前书 (Gēlínduō Qiánshū) - 1Kor","歌林多后书 (Gēlínduō Hòushū) - 2Kor","加拉太书 (Jiālātàishū) - Gal","以弗所书 (Yǐfúsuǒshū) - Ef",
+"腓立比书 (Féilìbǐshū) - Flp","歌罗西书 (Gēluóxīshū) - Kol","帖撒罗尼迦前书 (Tiēsǎluóníjiā Qiánshū) - 1Tes","帖撒罗尼迦后书 (Tiēsǎluóníjiā Hòushū) - 2Tes","提摩太前书 (Tímótài Qiánshū) - 1Tim","提摩太后书 (Tímótài Hòushū) - 2Tim","提多书 (Tíduōshū) - Tit","腓利门书 (Féilìménshū) - Flm",
+"希伯来书 (Xībóláishū) - Ibr","雅各书 (Yǎgèshū) - Yak","彼得前书 (Bǐdé Qiánshū) - 1Ptr","彼得后书 (Bǐdé Hòushū) - 2Ptr","约翰一书 (Yuēhàn Yīshū) - 1Yoh","约翰二书 (Yuēhàn Èrshū) - 2Yoh","约翰三书 (Yuēhàn Sānshū) - 3Yoh",
+"犹大书 (Yóudàshū) - Yud","启示录 (Qǐshìlù) - Why"],
         kjv: ["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi","Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"],
         eng: ["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi","Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"],
         jawa: ["Kejadian","Keluaran","Imamat","Bilangan","Ulangan","Yosua","Hakim-hakim","Rut","1 Samuel","2 Samuel","1 Raja-raja","2 Raja-raja","1 Tawarikh","2 Tawarikh","Ezra","Nehemia","Ester","Ayub","Mazmur","Amsal","Pengkhotbah","Kidung Agung","Yesaya","Yeremia","Ratapan","Yehezkiel","Daniel","Hosea","Yoel","Amos","Obadiah","Yunus","Mikha","Nahum","Habakuk","Zefanya","Hagai","Zakharia","Maleakhi","Matéus","Markus","Lukas","Yohanes","Para Rasul","Rum","1 Korinta","2 Korinta","Galasia","Efése","Filipi","Kolosé","1 Tèsalonika","2 Tèsalonika","1 Timotius","2 Timotius","Titus","Filemon","Ibrani","Yakobus","1 Pétrus","2 Pétrus","1 Yohanes","2 Yohanes","3 Yohanes","Yudas","Pamedaran"],
@@ -5089,6 +5029,9 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         banner.innerText = `Sedang Membaca: Hari ke-${currentHariKe} dari ${totalHariPlan} (${percentage}%) - ${userSession.plan}`;
         banner.style.background = "#007aff";
         banner.classList.remove('hidden');
+        // Segarkan juga bar ◀ Prev / 📅 Hari Ini / Next ▶ (supaya tombol "Hari Ini" berubah warna saat
+        // sedang menjelajah hari lain, sama seperti perilaku PB/PL).
+        if (typeof renderTabSheetBaca === 'function') renderTabSheetBaca();
     }
     
     function gantiHari(arah) { if (setupBacaAktif && setupBacaAktif.ada) return; hentikanSuara(); if(currentHariKe + arah < 1) return; currentHariKe += arah; updateProgressUI(); muatAyatServer(); }
@@ -5657,7 +5600,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     renderTabSheetBaca();
     if (sheetBacaAktif === 'pb' || sheetBacaAktif === 'pl') {
       renderRencanaTahunanKeLayar(rencanaTahunanAktif[sheetBacaAktif]);
-      renderMediaBarUntukSheet(rencanaTahunanAktif[sheetBacaAktif] ? rencanaTahunanAktif[sheetBacaAktif].links : null);
+      renderMediaBarUntukSheet(rencanaTahunanAktif[sheetBacaAktif] || null);
     }
   }
 
@@ -5672,16 +5615,37 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     const box = document.getElementById('bacaan-tahunan-container');
     if (!box) return;
     let hasPb = punyaSheetTahunan('pb'), hasPl = punyaSheetTahunan('pl');
-    if (!hasPb && !hasPl) { box.innerHTML = ''; return; }
-    let html = '<div class="nav-tabs" style="padding:2px 0 6px 0; overflow-x:visible; scroll-snap-type:none;">';
-    html += `<button type="button" class="nav-tab-btn${sheetBacaAktif === 'harian' ? ' active-tab' : ''}" style="flex:1 1 0; opacity:${sheetBacaAktif === 'harian' ? 1 : 0.62};" onclick="pilihSheetBaca('harian')">Bacaan Harian</button>`;
-    if (hasPb) html += `<button type="button" class="nav-tab-btn${sheetBacaAktif === 'pb' ? ' active-tab' : ''}" style="flex:1 1 0; opacity:${sheetBacaAktif === 'pb' ? 1 : 0.62};" onclick="pilihSheetBaca('pb')">PB 1 Tahun</button>`;
-    if (hasPl) html += `<button type="button" class="nav-tab-btn${sheetBacaAktif === 'pl' ? ' active-tab' : ''}" style="flex:1 1 0; opacity:${sheetBacaAktif === 'pl' ? 1 : 0.62};" onclick="pilihSheetBaca('pl')">PL 2 Tahun</button>`;
-    html += '</div>';
 
-    // Navigasi Prev/Next khusus PB/PL -- setara dengan "Navigasi Hari" milik Bacaan Harian, tapi
-    // sengaja ditaruh di sini (bukan di menu ▼ atas) supaya langsung terlihat & gampang dipakai.
-    if (sheetBacaAktif === 'pb' || sheetBacaAktif === 'pl') {
+    let html = '';
+    // Tab pemilih sheet (Bacaan Harian / PB 1 Tahun / PL 2 Tahun) -- hanya muncul kalau ada
+    // rencana tahunan yang aktif (kalau tidak, hanya Bacaan Harian yang ada, jadi tab tak perlu).
+    if (hasPb || hasPl) {
+      html += '<div class="nav-tabs" style="padding:2px 0 6px 0; overflow-x:visible; scroll-snap-type:none;">';
+      html += `<button type="button" class="nav-tab-btn${sheetBacaAktif === 'harian' ? ' active-tab' : ''}" style="flex:1 1 0; opacity:${sheetBacaAktif === 'harian' ? 1 : 0.62};" onclick="pilihSheetBaca('harian')">Bacaan Harian</button>`;
+      if (hasPb) html += `<button type="button" class="nav-tab-btn${sheetBacaAktif === 'pb' ? ' active-tab' : ''}" style="flex:1 1 0; opacity:${sheetBacaAktif === 'pb' ? 1 : 0.62};" onclick="pilihSheetBaca('pb')">PB 1 Tahun</button>`;
+      if (hasPl) html += `<button type="button" class="nav-tab-btn${sheetBacaAktif === 'pl' ? ' active-tab' : ''}" style="flex:1 1 0; opacity:${sheetBacaAktif === 'pl' ? 1 : 0.62};" onclick="pilihSheetBaca('pl')">PL 2 Tahun</button>`;
+      html += '</div>';
+    }
+
+    // NAVIGASI HARI -- PENTING: mulai sekarang SELALU tampil langsung di sini (TIDAK disembunyikan
+    // lagi di dalam menu ▼ yang harus dibuka dulu), posisinya SAMA & konsisten utk ketiga sheet
+    // (Bacaan Harian / PB 1 Tahun / PL 2 Tahun), supaya gampang terlihat & langsung bisa dipakai.
+    if (sheetBacaAktif === 'harian') {
+      // Navigasi hari utk Bacaan Harian hanya berlaku selama masih pakai sistem rencana LAMA
+      // (per-hari manual) -- kalau sudah pakai sistem baru (adil per jumlah ayat / kalender),
+      // hari berjalan otomatis sehingga tombol ini tidak relevan (lihat toggleLegacyPlanUI()).
+      if (!(setupBacaAktif && setupBacaAktif.ada)) {
+        let sedangMenjelajahHarian = (currentHariKe !== actualHariKe);
+        html += `<div class="icon-bar" style="margin:0 0 6px 0;">
+          <button type="button" class="icon-btn" onclick="gantiHari(-1)">◀ Prev</button>
+          <button type="button" class="icon-btn" style="${sedangMenjelajahHarian ? 'background:#ff9500; color:white;' : ''}" onclick="kembaliHariIni()">📅 Hari Ini</button>
+          <button type="button" class="icon-btn" onclick="gantiHari(1)">Next ▶</button>
+        </div>`;
+        if (sedangMenjelajahHarian) {
+          html += `<div style="font-size:12px; color:#ff9500; text-align:center; margin:-2px 0 6px 0;">🔍 Sedang melihat Hari ke-${currentHariKe} (bukan hari ini)</div>`;
+        }
+      }
+    } else if (sheetBacaAktif === 'pb' || sheetBacaAktif === 'pl') {
       let dataHari = rencanaTahunanAktif[sheetBacaAktif];
       let sedangMenjelajah = !!(dataHari && !dataHari.error && dataHari.hari_ke !== dataHari.hari_ke_asli);
       html += `<div class="icon-bar" style="margin:0 0 6px 0;">
@@ -5736,7 +5700,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     }
     renderTabSheetBaca();
     renderRencanaTahunanKeLayar(rencanaTahunanAktif[jenis]);
-    renderMediaBarUntukSheet(rencanaTahunanAktif[jenis] ? rencanaTahunanAktif[jenis].links : null);
+    renderMediaBarUntukSheet(rencanaTahunanAktif[jenis] || null);
   }
 
   // Pindah sheet aktif. Menghentikan suara & lepas titik-mulai lama dulu (supaya tidak "nyambung" ke
@@ -5798,7 +5762,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     document.getElementById('btn-tandai').style.display = 'block';
 
     renderRencanaTahunanKeLayar(dataHari);
-    renderMediaBarUntukSheet(dataHari ? dataHari.links : null);
+    renderMediaBarUntukSheet(dataHari || null);
   }
 
   // Merender bacaan PB 1 Tahun / PL 2 Tahun ke #reading-content memakai PIPA RENDER YANG SAMA dgn
@@ -5852,55 +5816,134 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
   // CAROUSEL MEDIA MP3/MP4/YOUTUBE (menu Baca, khusus sheet PB/PL) -- menampilkan SEMUA media yang
   // tersedia hari itu sekaligus sebagai kartu yang bisa digeser (swipe).
   //
-  // CATATAN PENTING (setelah dicoba, versi <audio>/<video> asli langsung ke link Google Drive
-  // TERNYATA tidak selalu bisa diputar -- Drive sering menampilkan halaman "tidak bisa memindai
-  // virus" alih-alih file medianya, jadi malah gagal main). Makanya dikembalikan ke IFRAME PREVIEW
-  // Google Drive / YouTube (sama seperti versi paling awal yang terbukti selalu bisa diputar),
-  // hanya saja SEKARANG dibungkus dalam kartu carousel yang bisa digeser, bukan satu-per-satu.
+  // Per slide sekarang ada 2 tombol tambahan:
+  //  - "🔗 Salin Link" -- tersedia utk SEMUA user, menyalin URL asli (bukan iframe) ke clipboard
+  //    supaya bisa dibagikan (paste) ke tempat lain (WhatsApp, dst).
+  //  - "✏️ Ubah/Isi Link" -- HANYA administrator, membuka kotak input utk mengubah/menambah link
+  //    MP3/MP4/Youtube hari itu, lalu tombol 💾 Simpan mengirimkannya ke server (sheet
+  //    Link_Bacaan_Tahunan, lewat action saveLinkBacaanTahunanHari). User BUKAN administrator tidak
+  //    melihat tombol ini sama sekali, dan tidak bisa memanggil aksi simpannya (backend juga menolak).
   //
-  // Kecepatan putar: iframe preview Drive & iframe YouTube sudah PUNYA pengaturan kecepatan
-  // sendiri bawaan dari Google (ikon ⚙️ Setelan di pojok kanan bawah pemutar, saat video/YouTube
-  // diputar) -- jadi tidak perlu tombol kecepatan buatan sendiri lagi (yang sempat dicoba, tapi
-  // tidak bisa "menembus" iframe Drive karena itu memang dibatasi Google sendiri, bukan batasan
-  // dari sisi web ini).
+  // MP4 & YouTube: tetap pakai IFRAME PREVIEW Google Drive / YouTube (sudah terbukti selalu bisa
+  // diputar, beda dgn <video> langsung yg kadang kena halaman "tidak bisa memindai virus" dari Drive).
+  // Ukurannya sudah pas (rasio 16:9 responsif), jadi TIDAK diubah.
+  //
+  // MP3: SEKARANG pakai elemen <audio> ASLI (bukan iframe) supaya (1) ukurannya ringkas -- tidak
+  // makan tempat besar seperti iframe preview Drive -- dan (2) kecepatan putar bisa diatur LANGSUNG
+  // lewat tombol 0.75x/1x/1.25x/1.5x/2x di bawah pemutar (audio.playbackRate), karena iframe Drive
+  // tidak bisa dikendalikan dari luar (cross-origin). Kalau file audio ternyata gagal diputar lewat
+  // link langsung (jarang terjadi utk audio, biasanya hanya file besar yg kena halaman "pindai
+  // virus" Drive), otomatis jatuh kembali (fallback) ke iframe preview seperti sebelumnya.
   // =====================================================================================
+  let mediaKonteksAktif = null; // { plan, hari_ke, bahasa } milik slide yg sedang tampil -- dipakai admin saat Simpan
+
   function hentikanSemuaMediaCarousel() {
     const wrap = document.getElementById('read-media-carousel');
     if (!wrap) return;
     wrap.classList.add('hidden');
     document.getElementById('read-media-carousel-track').innerHTML = '';
     document.getElementById('read-media-carousel-dots').innerHTML = '';
+    mediaKonteksAktif = null;
   }
 
   // Menggambar ulang carousel sesuai link yang tersedia hari itu (dipanggil tiap ganti hari/sheet).
-  function renderMediaBarUntukSheet(links) {
+  // dataHari: objek PB/PL yg sedang aktif { plan, hari_ke, bahasa, links:{mp3,mp4,youtube}, ... } atau null.
+  function renderMediaBarUntukSheet(dataHari) {
     hentikanSemuaMediaCarousel();
     const wrap = document.getElementById('read-media-carousel');
-    if (!links || (!links.mp3 && !links.mp4 && !links.youtube)) return;
-    wrap.classList.remove('hidden');
+    let links = (dataHari && dataHari.links) || null;
+    let isAdmin = !!(userSession && levelTokens(userSession.level).includes('administrator'));
+    let adaMedia = !!(links && (links.mp3 || links.mp4 || links.youtube));
 
-    let slides = [];
-    if (links.mp3) slides.push({ tipe: 'mp3', label: '🔊 MP3', url: links.mp3 });
-    if (links.mp4) slides.push({ tipe: 'mp4', label: '🎬 MP4', url: links.mp4 });
-    if (links.youtube) slides.push({ tipe: 'youtube', label: '▶️ YouTube', url: links.youtube });
+    // User biasa: carousel disembunyikan total kalau memang belum ada media sama sekali.
+    // Administrator: tetap ditampilkan (slot kosong sekalipun) supaya bisa MENAMBAH link hari itu.
+    if (!dataHari || (!adaMedia && !isAdmin)) return;
+    wrap.classList.remove('hidden');
+    mediaKonteksAktif = { plan: dataHari.plan, hari_ke: dataHari.hari_ke, bahasa: dataHari.bahasa };
+
+    const TIPE_INFO = { mp3: { label: '🔊 MP3', namaPendek: 'MP3' }, mp4: { label: '🎬 MP4', namaPendek: 'MP4' }, youtube: { label: '▶️ YouTube', namaPendek: 'YouTube' } };
+    let slides = ['mp3', 'mp4', 'youtube']
+      .map(t => ({ tipe: t, label: TIPE_INFO[t].label, namaPendek: TIPE_INFO[t].namaPendek, url: (links && links[t]) || '' }))
+      .filter(s => s.url || isAdmin); // admin juga melihat slot yg masih kosong, supaya bisa diisi
+    if (slides.length === 0) { wrap.classList.add('hidden'); return; }
 
     const dots = document.getElementById('read-media-carousel-dots');
     const track = document.getElementById('read-media-carousel-track');
-    dots.innerHTML = slides.map(s => `<button type="button" class="icon-btn" style="flex:1;" onclick="geserKeSlideMedia('media-slide-${s.tipe}')">${s.label}</button>`).join('');
+    dots.innerHTML = slides.map(s => `<button type="button" class="icon-btn" style="flex:1; ${s.url ? '' : 'opacity:0.55;'}" onclick="geserKeSlideMedia('media-slide-${s.tipe}')">${s.label}${s.url ? '' : ' (kosong)'}</button>`).join('');
     track.innerHTML = slides.map(s => `
       <div id="media-slide-${s.tipe}" class="log-item-card" style="flex:0 0 90%; scroll-snap-align:start; flex-direction:column; align-items:stretch; gap:6px;">
-        <b>${s.label}</b>
-        <div id="media-slide-${s.tipe}-player"></div>
-        <div style="font-size:11px; color:gray;">⏩ Untuk mengatur kecepatan putar, klik ikon ⚙️ Setelan di pemutarnya.</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+          <b>${s.label}</b>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            ${s.url ? `<button type="button" class="icon-btn" style="padding:4px 10px; font-size:12px;" onclick="salinLinkMedia('${s.tipe}')" title="Salin link asli untuk dibagikan">🔗 Salin Link</button>` : ''}
+            ${isAdmin ? `<button type="button" class="icon-btn" style="padding:4px 10px; font-size:12px; background:#5856d6; color:white;" onclick="toggleEditLinkMedia('${s.tipe}')">✏️ ${s.url ? 'Ubah' : 'Isi'} Link</button>` : ''}
+          </div>
+        </div>
+        <div id="media-slide-${s.tipe}-player">${s.url ? '' : '<i style="font-size:13px; color:gray;">Belum ada link untuk hari ini.</i>'}</div>
+        <div id="media-slide-${s.tipe}-edit" class="hidden" style="display:flex; flex-direction:column; gap:6px; background:var(--btn-bg); padding:8px; border-radius:8px;">
+          <input type="text" id="media-slide-${s.tipe}-input" placeholder="Tempel link ${s.namaPendek} di sini..." value="${escAttr(s.url)}" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); box-sizing:border-box; background:var(--card); color:var(--text);">
+          <div class="icon-bar">
+            <button type="button" class="icon-btn" style="background:#34c759; color:white; flex:1;" onclick="simpanLinkMediaHari('${s.tipe}')">💾 Simpan</button>
+            <button type="button" class="icon-btn" style="flex:1;" onclick="toggleEditLinkMedia('${s.tipe}')">Batal</button>
+          </div>
+        </div>
+        ${s.url && s.tipe !== 'mp3' ? `<div style="font-size:11px; color:gray;">⏩ Untuk mengatur kecepatan putar, klik ikon ⚙️ Setelan di pemutarnya.</div>` : ''}
       </div>`).join('');
 
     // Elemen sudah ada di DOM (innerHTML di atas ditulis SEKALIGUS), baru sekarang aman isi playernya.
-    slides.forEach(s => siapkanPlayerMediaSlide(s.tipe, s.url));
+    slides.forEach(s => { if (s.url) siapkanPlayerMediaSlide(s.tipe, s.url); });
   }
 
   function geserKeSlideMedia(slideId) {
     const el = document.getElementById(slideId);
     if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+  }
+
+  // Tombol "🔗 Salin Link" -- salin URL ASLI (bukan link iframe/preview) ke clipboard supaya user
+  // bisa membagikannya ke tempat lain. Tersedia utk SEMUA user, bukan cuma administrator.
+  async function salinLinkMedia(tipe) {
+    let input = document.getElementById(`media-slide-${tipe}-input`);
+    let url = input ? input.value : '';
+    if (!url) return alert('Link belum tersedia untuk dibagikan.');
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('✅ Link sudah disalin. Silakan tempel (paste) ke tempat lain.');
+    } catch (e) {
+      prompt('Salin link di bawah ini secara manual:', url);
+    }
+  }
+
+  // Tombol "✏️ Ubah/Isi Link" (khusus administrator) -- buka/tutup kotak input utk ganti/tambah link.
+  function toggleEditLinkMedia(tipe) {
+    const box = document.getElementById(`media-slide-${tipe}-edit`);
+    if (box) box.classList.toggle('hidden');
+  }
+
+  // Simpan perubahan/tambahan link MP3/MP4/Youtube utk hari yg sedang tampil (khusus administrator).
+  // Link tipe lain (yg tidak sedang diubah) dikirim apa adanya supaya tidak ikut terhapus.
+  async function simpanLinkMediaHari(tipe) {
+    if (!levelTokens(userSession.level).includes('administrator')) return alert('Hanya administrator yang boleh mengubah link ini.');
+    if (!mediaKonteksAktif) return alert('Konteks hari/rencana tidak ditemukan. Coba buka ulang menu Baca.');
+    let input = document.getElementById(`media-slide-${tipe}-input`);
+    let urlBaru = input ? input.value.trim() : '';
+    let linksSekarang = (rencanaTahunanAktif[sheetBacaAktif] && rencanaTahunanAktif[sheetBacaAktif].links) || {};
+    let payload = {
+      action: 'saveLinkBacaanTahunanHari', username: userSession.username,
+      plan: mediaKonteksAktif.plan, hari_ke: mediaKonteksAktif.hari_ke, bahasa: mediaKonteksAktif.bahasa,
+      mp3: tipe === 'mp3' ? urlBaru : (linksSekarang.mp3 || ''),
+      mp4: tipe === 'mp4' ? urlBaru : (linksSekarang.mp4 || ''),
+      youtube: tipe === 'youtube' ? urlBaru : (linksSekarang.youtube || '')
+    };
+    try {
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const out = await res.json();
+      if (out.status !== 'success') return alert(out.message || 'Gagal menyimpan link.');
+      if (rencanaTahunanAktif[sheetBacaAktif]) {
+        rencanaTahunanAktif[sheetBacaAktif].links = { mp3: out.mp3, mp4: out.mp4, youtube: out.youtube };
+      }
+      alert('✅ Link berhasil disimpan.');
+      renderMediaBarUntukSheet(rencanaTahunanAktif[sheetBacaAktif]);
+    } catch (e) { alert('Koneksi terputus.'); }
   }
 
   function siapkanPlayerMediaSlide(tipe, url) {
@@ -5914,13 +5957,40 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
       return;
     }
 
-    // MP3 / MP4 (Google Drive) -- iframe /preview, sama seperti versi awal yang sudah terbukti jalan.
     let fid = idFileGdrive(url);
     if (!fid) { playerBox.innerHTML = `<span style="color:#ff3b30;">Link Google Drive tidak dikenali. Pastikan link berbentuk https://drive.google.com/file/d/FILE_ID/view dan sudah dibagikan ("Semua yang memiliki link").</span>`; return; }
+
     if (tipe === 'mp3') {
-      playerBox.innerHTML = `<iframe src="https://drive.google.com/file/d/${fid}/preview" style="width:100%; height:110px; border:0; border-radius:10px;" allow="autoplay"></iframe>`;
+      let audioId = `audio-player-${fid}`;
+      playerBox.innerHTML = `
+        <audio id="${audioId}" controls preload="none" style="width:100%; height:40px; display:block;" src="https://drive.google.com/uc?export=download&id=${fid}"></audio>
+        <div class="icon-bar" style="margin-top:6px;">
+          <button type="button" class="icon-btn" style="padding:4px 8px; font-size:12px;" onclick="setKecepatanAudio('${audioId}', 0.75, this)">0.75x</button>
+          <button type="button" class="icon-btn" style="padding:4px 8px; font-size:12px; background:var(--primary); color:white;" onclick="setKecepatanAudio('${audioId}', 1, this)">1x</button>
+          <button type="button" class="icon-btn" style="padding:4px 8px; font-size:12px;" onclick="setKecepatanAudio('${audioId}', 1.25, this)">1.25x</button>
+          <button type="button" class="icon-btn" style="padding:4px 8px; font-size:12px;" onclick="setKecepatanAudio('${audioId}', 1.5, this)">1.5x</button>
+          <button type="button" class="icon-btn" style="padding:4px 8px; font-size:12px;" onclick="setKecepatanAudio('${audioId}', 2, this)">2x</button>
+        </div>`;
+      const audioEl = document.getElementById(audioId);
+      if (audioEl) {
+        audioEl.addEventListener('error', () => {
+          playerBox.innerHTML = `<iframe src="https://drive.google.com/file/d/${fid}/preview" style="width:100%; height:110px; border:0; border-radius:10px;" allow="autoplay"></iframe><div style="font-size:11px; color:gray; margin-top:4px;">⏩ Untuk mengatur kecepatan putar, klik ikon ⚙️ Setelan di pemutarnya.</div>`;
+        }, { once: true });
+      }
     } else {
       playerBox.innerHTML = `<div style="position:relative; padding-top:56.25%; height:0; border-radius:10px; overflow:hidden;"><iframe src="https://drive.google.com/file/d/${fid}/preview" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay"></iframe></div>`;
+    }
+  }
+
+  // Tombol 0.75x/1x/1.25x/1.5x/2x di pemutar MP3 -- mengatur audio.playbackRate langsung dari web
+  // (mp4/YouTube sudah punya pengaturan kecepatan bawaan sendiri lewat ikon ⚙️ Setelan di pemutarnya).
+  function setKecepatanAudio(audioId, rate, btn) {
+    const el = document.getElementById(audioId);
+    if (!el) return;
+    el.playbackRate = rate;
+    if (btn && btn.parentElement) {
+      btn.parentElement.querySelectorAll('button').forEach(b => { b.style.background = ''; b.style.color = ''; });
+      btn.style.background = 'var(--primary)'; btn.style.color = 'white';
     }
   }
 
