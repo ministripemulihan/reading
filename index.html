@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>17.00 E-Bible </title>
+    <title>11.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -219,6 +219,23 @@
         
         /* padding-bottom besar (50vh) supaya baris teks terakhir bisa terus discroll sampai ke separuh atas layar */
         .reading-area { padding: 20px 15px 50vh 15px; min-height: 50vh; font-size: var(--font-size); text-align: justify; color: var(--custom-color, var(--text)); transition: color 0.3s;}
+
+        /* ===== MODE LAYAR PENUH (FULLSCREEN) UNTUK MENU BACA =====
+           Dipicu oleh toggleFullscreenBaca() lewat Fullscreen API bawaan browser (requestFullscreen).
+           Selector :fullscreen (+ awalan vendor lama utk kompatibilitas Safari/iOS) hanya aktif pada
+           elemen yang SEDANG dalam mode fullscreen -- di sini itu adalah #read-page itu sendiri, jadi
+           semua isinya (nav, kontrol suara, teks bacaan, tombol Tandai Selesai) ikut membesar penuh
+           memenuhi layar, dengan scroll internal sendiri. */
+        #read-page:fullscreen, #read-page:-webkit-full-screen, #read-page:-ms-fullscreen {
+            background: var(--bg); padding: 10px 10px 30px 10px; box-sizing: border-box;
+            width: 100vw; height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        #read-page:fullscreen .reading-area, #read-page:-webkit-full-screen .reading-area, #read-page:-ms-fullscreen .reading-area {
+            min-height: calc(100vh - 160px); padding-bottom: 30vh; max-width: 900px; margin: 0 auto;
+        }
+        #read-page:fullscreen #btn-tandai, #read-page:-webkit-full-screen #btn-tandai { max-width: 900px; margin-left: auto; margin-right: auto; display: block; }
+        .btn-fullscreen-baca.fs-active { background: #ff3b30 !important; border-color: #ff3b30 !important; color: #fff !important; }
+        .btn-autoscroll-baca.as-off { opacity: 0.5; }
         .book-title { font-size: 1.6em; font-weight: bold; color: var(--primary); margin: 30px 0 15px 0; border-bottom: 2px solid var(--border); padding-bottom: 5px; display: block; width: 100%;}
         
         .verse-num { font-size: 0.65em; font-weight: bold; color: var(--primary); margin-right: 4px; vertical-align: super; cursor: pointer; text-decoration: underline; padding: 0 2px;}
@@ -296,7 +313,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 17.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 11.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -735,6 +752,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="read-ref-title">Mempersiapkan...</span></span>
                 <button class="nav-circle-btn nav-play-circle" id="btn-suara-read" onclick="event.stopPropagation(); toggleSuaraNav('reading-content', 'read')" title="Putar / Hentikan suara">▶️</button>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
+                <button class="nav-circle-btn btn-fullscreen-baca" onclick="event.stopPropagation(); toggleFullscreenBaca('read-page')" title="Layar Penuh (Fullscreen)">⤢</button>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
                 <span class="nav-chevron" id="chevron-read">▼</span>
@@ -828,6 +846,10 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
                     <button class="icon-btn" style="background:#8e8e93; color:white; flex:1;" onclick="resetSuaraError()" title="Reset kalau suara sebelumnya macet/error">🔄</button>
                     <button class="icon-btn" style="background:#ff9500; color:white; flex:1;" onclick="toggleModePilihTitikMulai('read')" title="Klik nomor ayat untuk mulai baca dari situ">🎯</button>
                 </div>
+                <div class="icon-bar">
+                    <button class="icon-btn" style="background:#ff9500; color:white; flex:1;" onclick="pilihTitikMulaiAngka('reading-content')" title="Ketik langsung nomor ayat untuk mulai baca dari situ">#️⃣ Mulai dari Ayat No...</button>
+                    <button class="icon-btn btn-autoscroll-baca" onclick="toggleAutoScrollBaca()" title="Kalau ON, layar otomatis ikut bergeser ke ayat yang sedang dibacakan">🔽 Auto-Scroll: ON</button>
+                </div>
                 <div class="tts-opts">
                     <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-kitab-read" checked><span class="track"></span><span class="thumb"></span></span> Baca Nama Kitab</label>
                     <label class="tts-opt"><span class="ios-switch"><input type="checkbox" id="chk-baca-note-read"><span class="track"></span><span class="thumb"></span></span> Baca Catatan</label>
@@ -836,6 +858,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
                 <hr style="border-color: var(--border); margin: 10px 0;">
                 <div class="icon-bar">
                     <button class="icon-btn" onclick="toggleLebarLayar()">📱/💻 Ubah Ukuran Layar</button>
+                    <button class="icon-btn btn-fullscreen-baca" onclick="toggleFullscreenBaca('read-page')">⤢ Layar Penuh</button>
                     <button class="icon-btn" onclick="salinTeks('reading-content')">📋 Copy</button>
                     <button class="icon-btn" id="btn-hl-read" onclick="toggleHighlightMode()">🖍️ Highlight Klik: OFF</button>
                 </div>
@@ -1657,6 +1680,11 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     let isClickHighlightOn = false;
     let isNavSticky = false;
     let historyHariKe = []; // daftar hari ke berapa saja yang sudah ditandai selesai dibaca
+
+    // FITUR "AUTO-SCROLL IKUTI BACAAN": kalau ON (default), layar otomatis scroll mengikuti ayat yang
+    // sedang dibacakan suara (highlight kuning) supaya user tidak perlu scroll manual. Kalau OFF, suara
+    // tetap jalan seperti biasa tapi layar tidak ikut bergerak sendiri -- user bebas scroll ke mana saja.
+    let autoScrollIkutiBacaan = true;
 
     // State untuk fitur Simpan Log
     let lastAyatRead = null, lastAyatSearch = null;
@@ -4258,6 +4286,11 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         let elTeks = verseQueue[currentVerseIndex];
         let grup = elTeks.closest('.verse-group');
         grup.classList.add('highlight-tts');
+        // Auto-scroll: hanya aktif di menu Baca (bukan Cari/Jadwal), dan hanya kalau togglenya ON --
+        // scroll halus supaya ayat yang sedang dibacakan selalu berada di tengah layar.
+        if (autoScrollIkutiBacaan && page === 'read') {
+            try { grup.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        }
 
         let selIdx = document.getElementById(`voice-select-${page}`).value;
         let rate = parseFloat(document.getElementById(`voice-speed-${page}`).value);
@@ -4376,6 +4409,66 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     
     function hapusHighlight() { 
         document.querySelectorAll('.highlight-tts').forEach(el => el.classList.remove('highlight-tts')); 
+    }
+
+    // =====================================================================
+    // TOMBOL "⤢ Layar Penuh": pakai Fullscreen API bawaan browser (bukan sekadar CSS lebar) supaya
+    // area baca benar-benar memenuhi seluruh layar (chrome/address bar HP ikut hilang). Berlaku untuk
+    // #read-page -- otomatis mencakup KEDUA model pembacaan (rencana lama & rencana baru berbasis
+    // daftar isi Pembacaan_Alkitab.xlsx), karena keduanya tampil lewat elemen yang sama.
+    // =====================================================================
+    function toggleFullscreenBaca(pageId) {
+        const el = document.getElementById(pageId);
+        const sudahFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+        if (!sudahFullscreen) {
+            const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+            if (!req) { alert('Mode layar penuh tidak didukung di browser ini.'); return; }
+            req.call(el).catch(err => alert('Gagal masuk layar penuh: ' + err.message));
+        } else {
+            const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+            if (exit) exit.call(document);
+        }
+    }
+    function updateFullscreenButtonsUI() {
+        const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        document.querySelectorAll('.btn-fullscreen-baca').forEach(btn => {
+            btn.classList.toggle('fs-active', isFS);
+            btn.title = isFS ? 'Keluar dari Layar Penuh' : 'Layar Penuh (Fullscreen)';
+        });
+    }
+    ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(ev =>
+        document.addEventListener(ev, updateFullscreenButtonsUI)
+    );
+
+    // TOMBOL "🔽 Auto-Scroll": ON (default) = layar otomatis ikut bergeser ke ayat yang sedang
+    // dibacakan suara. OFF = suara tetap jalan normal, tapi user bebas scroll sendiri tanpa "ditarik"
+    // otomatis mengikuti bacaan.
+    function toggleAutoScrollBaca() {
+        autoScrollIkutiBacaan = !autoScrollIkutiBacaan;
+        document.querySelectorAll('.btn-autoscroll-baca').forEach(btn => {
+            btn.innerText = autoScrollIkutiBacaan ? '🔽 Auto-Scroll: ON' : '🔽 Auto-Scroll: OFF';
+            btn.classList.toggle('as-off', !autoScrollIkutiBacaan);
+        });
+    }
+
+    // TOMBOL "#️⃣ Mulai dari Ayat No...": alternatif dari mode klik 🎯 -- berguna terutama saat layar
+    // penuh/besar dan mencari-cari nomor ayat lewat klik agak merepotkan. User cukup ketik angka nomor
+    // ayat (sesuai yang tertulis di teks bacaan saat ini), lalu ayat itu otomatis ditandai sbg titik
+    // mulai (sama seperti hasil klik nomor ayat), dan layar scroll ke situ supaya user bisa lihat dulu.
+    function pilihTitikMulaiAngka(containerId) {
+        let no = prompt('Mulai membaca dari ayat nomor berapa?\n(Ketik nomor ayat sesuai yang tertulis di teks bacaan saat ini)');
+        if (no === null) return;
+        no = no.trim();
+        if (!no) return;
+        let grupTarget = null;
+        document.querySelectorAll(`#${containerId} .verse-group`).forEach(grp => {
+            if (!grupTarget && grp.getAttribute('data-verse') === no) grupTarget = grp;
+        });
+        if (!grupTarget) { alert('Ayat nomor ' + no + ' tidak ditemukan di tampilan bacaan saat ini.'); return; }
+        document.querySelectorAll('.verse-group.tts-start-pointer').forEach(el => el.classList.remove('tts-start-pointer'));
+        grupTarget.classList.add('tts-start-pointer');
+        try { grupTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        alert('✅ Titik mulai diatur ke ayat ' + no + '. Tekan ▶ untuk mulai membaca dari sini.');
     }
     
     // Fitur Mode Klik Tahan/Highlight Otomatis
