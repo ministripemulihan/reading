@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12.00 E-Bible </title>
+    <title>16.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -162,6 +162,11 @@
         .btn-signout { background: #ff3b30; color: white; border-radius: 999px; padding: 10px; font-size: 14px; border: none; cursor: pointer; width: 100%; }
         /* Dipakai khusus label mode di viewer Jadwal (bukan lagi di 4 nav utama) */
         .nav-user-title { flex: 0 0 auto; font-size: 11px; font-weight: 600; opacity: 0.75; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+        /* Badge BULAT nama user login -- ditaruh di navigasi 1 baris (.nav-summary-row), sebelah KIRI
+           dari kumpulan tombol bulat lain (▶️ suara/⛶ lebar/⤢ layar penuh/🎨 tema/📌 pin). Isinya huruf
+           pertama username (kapital), nama lengkapnya muncul lewat tooltip (title=) & lewat alert saat
+           diketuk (soalnya tooltip title tidak muncul di HP/layar sentuh). */
+        .nav-user-circle { font-weight: 700; font-size: 13px; text-transform: uppercase; background: var(--primary); color: #fff; border-color: var(--primary); }
 
         /* =====================================================================
            PENGUMUMAN: banner dismissible, dipakai di header menu & di dalam isi search
@@ -321,7 +326,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 12.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 16.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -676,6 +681,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('search-menu', 'chevron-search')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="search-ref-title">Pencarian Kosong...</span></span>
+                <button type="button" class="nav-circle-btn nav-user-circle" id="search-user-title" onclick="event.stopPropagation(); alert('👤 ' + (userSession.username || '-'));" title=""></button>
                 <button class="nav-circle-btn nav-play-circle" id="btn-suara-search" onclick="event.stopPropagation(); toggleSuaraNav('search-results', 'search')" title="Putar / Hentikan suara">▶️</button>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
@@ -816,6 +822,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
             <!-- BAR NAVIGASI 1 BARIS: kitab/pasal/ayat/bahasa paling depan, user, tema, pin, panah paling belakang -->
             <div class="nav-summary-row" onclick="toggleNavMenu('read-menu', 'chevron-read')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="read-ref-title">Mempersiapkan...</span></span>
+                <button type="button" class="nav-circle-btn nav-user-circle" id="read-user-title" onclick="event.stopPropagation(); alert('👤 ' + (userSession.username || '-'));" title=""></button>
                 <button class="nav-circle-btn nav-play-circle" id="btn-suara-read" onclick="event.stopPropagation(); toggleSuaraNav('reading-content', 'read')" title="Putar / Hentikan suara">▶️</button>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
                 <button class="nav-circle-btn btn-fullscreen-baca" onclick="event.stopPropagation(); toggleFullscreenBaca('read-page')" title="Layar Penuh (Fullscreen)">⤢</button>
@@ -1406,6 +1413,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
             </div>
             <div class="nav-summary-row" onclick="toggleNavMenu('searchkata-menu', 'chevron-searchkata')">
                 <span class="nav-ref-title"><span class="theme-name-label">Terang Default</span><span id="searchkata-ref-title">🔎 Cari Kata di Ayat &amp; Catatan</span></span>
+                <button type="button" class="nav-circle-btn nav-user-circle" id="searchkata-user-title" onclick="event.stopPropagation(); alert('👤 ' + (userSession.username || '-'));" title=""></button>
                 <button class="nav-circle-btn" onclick="event.stopPropagation(); toggleLebarLayar()" title="Perlebar / Perkecil Layar">⛶</button>
                 <button class="nav-circle-btn theme-circle" onclick="event.stopPropagation(); bukaModalTema()" title="Ganti Tema">🎨</button>
                 <button class="nav-circle-btn btn-pin" onclick="event.stopPropagation(); toggleStickyNav()" title="Kunci navigasi tetap tampil saat scroll">📌</button>
@@ -2749,6 +2757,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         hideAllPages();
         document.getElementById('searchkata-page').classList.remove('hidden');
         isiChecklistKitabSearchKata();
+        updateUserLabel('searchkata');
     }
 
     // =====================================================================
@@ -5235,10 +5244,16 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         return langLabel ? `📖 ${ref} (${langLabel})` : `📖 ${ref}`;
     }
 
-    // Label user login yang tampil di bagian BELAKANG navigasi 1 baris (setelah info kitab/pasal/ayat)
+    // Label user login yang tampil sbg badge BULAT di navigasi 1 baris (.nav-summary-row), sebelah
+    // kiri kumpulan tombol bulat lain (suara/lebar/fullscreen/tema/pin). Isinya huruf pertama username
+    // (kapital) -- nama lengkapnya via tooltip title= (desktop) & alert saat diketuk (HP, lihat onclick
+    // di HTML elemennya).
     function updateUserLabel(prefix) {
         const el = document.getElementById(`${prefix}-user-title`);
-        if (el) el.innerText = `👤 ${userSession.username || '-'}`;
+        if (!el) return;
+        let nama = userSession.username || '-';
+        el.innerText = nama.trim().charAt(0).toUpperCase() || '?';
+        el.title = `👤 ${nama}`;
     }
 
     async function prosesLogin() {
@@ -5260,7 +5275,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
                 userSession = out.data;
                 historyHariKe = (userSession.history || "").split(',').map(s => s.trim()).filter(Boolean).map(Number);
                 document.getElementById('login-page').classList.add('hidden');
-                updateUserLabel('search'); updateUserLabel('read'); updateUserLabel('log'); updateUserLabel('announce');
+                updateUserLabel('search'); updateUserLabel('read'); updateUserLabel('searchkata'); updateUserLabel('log'); updateUserLabel('announce');
                 terapkanVisibilitasMenuGembalaDomba();
 
                 // Language tersimpan di database (diatur administrator) dipakai sebagai bahasa default final,
