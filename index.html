@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>09.00 E-Bible </title>
+    <title>07.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -326,7 +326,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 09.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 07.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -1693,7 +1693,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 
 <script>
     // UBAH APPSCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxAUDhvQ07jM04fKng5zPTt6i4VhkCYRogxJ_MFXNjRopuCVJ-94hn6KuOSazsyqGh3xg/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxK-US53QXzplMAtIwg7FZiqwQmwTBKOayxroPw-U28iIzXOWRXpUzn_5nwzfZWsRUldQ/exec';
     
     let userSession = {};
     let waktuMulaiBaca = null; // timestamp (ms) saat halaman Baca dibuka, dipakai hitung durasi baca (detik)
@@ -3786,8 +3786,52 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     }
 
     let pendingLogItem = null, pendingLogItemLabel = null;
+    let pendingLogItems = null; // dipakai KHUSUS mode multi-referensi (banyak kitab/segmen sekaligus)
+
+    // Ubah larik rentang ayat [[s,e],[s,e],...] jadi teks ringkas, mis. [[5,12]] -> "5-12",
+    // [[1,1],[5,7]] -> "1,5-7". Dipakai utk label tiap item Jadwal hasil pencarian multi-referensi.
+    function formatRentangAyat(ranges) {
+        return ranges.map(r => (r[0] === r[1]) ? String(r[0]) : `${r[0]}-${r[1]}`).join(',');
+    }
 
     async function simpanKeLog(pageId) {
+        // ============================================================================================
+        // MODE MULTI-REFERENSI (menu Cari, format "Matius 6:5-12; Matius 5:5-10; Kejadian 3:15; ..."):
+        // SEBELUMNYA kode ini menggabungkan SEMUA ayat hasil pencarian jadi satu larik lalu mengambil
+        // ayat MINIMUM & MAKSIMUM dari SELURUH gabungan itu -- makanya "Matius 6:5-12; Matius 5:5-10;
+        // Matius 4:3-7; Kejadian 3:15; Wahyu 1:7; Matius 1:23" keliru tersimpan jadi satu baris aneh
+        // "Matius 6:3-23" (pasal dari kelompok PERTAMA + ayat min/max dari SEMUA kitab tercampur).
+        // SEKARANG setiap kelompok kitab (bahkan tiap segmen pasal di dalamnya, mis. "Wahyu 1:5;2:2-4"
+        // yang punya 2 pasal berbeda) disimpan sebagai ITEM JADWAL TERPISAH -- persis seperti yang
+        // tampil di layar, dan tetap satu Jadwal yang sama (urutannya nanti masih bisa diatur di menu
+        // Jadwal seperti biasa).
+        // ============================================================================================
+        if (pageId === 'search-info' && lastMultiRefGroups && lastMultiRefGroups.length > 0) {
+            pendingLogItems = [];
+            lastMultiRefGroups.forEach(g => {
+                (g.segments || []).forEach(seg => {
+                    let ayatSegmen = (g.ayat || []).filter(a => Number(a.c) === Number(seg.chapter));
+                    if (!ayatSegmen.length) return;
+                    let vs = Math.min(...seg.ranges.map(r => r[0])), ve = Math.max(...seg.ranges.map(r => r[1]));
+                    pendingLogItems.push({
+                        book_number: g.book_number, book_name: g.book_name, chapter: seg.chapter,
+                        verse_start: vs, verse_end: ve,
+                        languages: getSelectedLangs('search'),
+                        ayat_text: ayatSegmen,
+                        spec_type: (Number(vs) === Number(ve)) ? 'satu' : 'sebagian',
+                        verse_spec: `${seg.chapter}:${formatRentangAyat(seg.ranges)}`
+                    });
+                });
+            });
+            if (!pendingLogItems.length) return alert("Belum ada ayat yang ditampilkan untuk disimpan.");
+            pendingLogItem = null;
+            pendingLogItemLabel = `${pendingLogItems.length} referensi (${lastMultiRefJudul || ''})`;
+            await bukaModalPilihJadwal('save');
+            return;
+        }
+
+        // MODE BIASA -- Bacaan Harian, atau pencarian referensi TUNGGAL (1 kitab/1 pasal) di menu Cari.
+        pendingLogItems = null;
         let arr = pageId === 'read-info' ? lastAyatRead : lastAyatSearch;
         if (!arr || arr.length === 0) return alert("Belum ada ayat yang ditampilkan untuk disimpan.");
 
@@ -3912,11 +3956,11 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     }
 
     async function eksekusiSimpanItem(logName) {
-        if (!pendingLogItem) return;
+        if (!pendingLogItem && (!pendingLogItems || !pendingLogItems.length)) return;
         try {
             const res = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "saveLogItem", username: userSession.username, log_name: logName, item: pendingLogItem, device: userDevice, ip: userIP })
+                body: JSON.stringify({ action: "saveLogItem", username: userSession.username, log_name: logName, item: pendingLogItem, items: pendingLogItems, device: userDevice, ip: userIP })
             });
             const data = await res.json();
             if (data.status === "success") {
@@ -5476,6 +5520,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         box.innerHTML = pesanTungguAcak();
         tutupSemuaNavMenu();
         lastSearchRefSpec = null; // pencarian sederhana (bukan referensi campuran), reset penanda referensi
+        lastMultiRefGroups = null; // pastikan tidak nyangkut dari pencarian referensi-campuran sebelumnya
 
         let targetLangs = getSelectedLangs('search');
         try {
@@ -5644,6 +5689,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     }
 
     let lastMultiRefGroups = null; // hasil pencarian referensi multi-kitab terakhir, dipakai saat Simpan ke Jadwal
+    let lastMultiRefJudul = null; // teks gabungan persis yang diketik user, dipakai sbg judul modal Simpan ke Jadwal
 
     async function eksekusiPencarianReferensi() {
         const teks = document.getElementById('search-referensi').value;
@@ -5678,6 +5724,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 
             // Judul navigasi 1 baris memakai teks referensi persis yang diketik (semua kitab digabung)
             let judul = groups.map(g => `${g.book_name} ${g.verse_spec}`).join('; ');
+            lastMultiRefJudul = judul; // dipakai lagi nanti sebagai judul modal "Simpan ke Jadwal"
             let selectedLangsArray = getSelectedLangs('search');
             document.getElementById('search-ref-title').innerText = buildRefText('search-info', judul, selectedLangsArray);
 
