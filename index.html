@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12.00 E-Bible </title>
+    <title>10.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     
     <style>
         :root { --bg: #f2f2f7; --text: #1c1c1e; --card: #ffffff; --primary: #007aff; --border: #d1d1d6; --btn-bg: #e5e5ea; --font-size: 18px; --custom-divider: transparent;
@@ -313,7 +314,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 12.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 10.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -875,15 +876,14 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
              cuma jalan di Bacaan Harian, sekarang otomatis ikut berfungsi juga di PB 1 Tahun/PL 2 Tahun. -->
         <div id="bacaan-tahunan-container" style="padding:0 2px;"></div>
 
-        <!-- Bar media MP3/MP4/YouTube -- hanya muncul kalau sheet aktif (PB/PL) sedang punya link, dan
-             tombol yang linknya kosong otomatis di-offkan (redup, tidak bisa diklik). Diputar LANGSUNG
-             di dalam kotak ini (embed), tidak pindah tab/halaman. -->
-        <div id="read-media-bar" class="icon-bar hidden" style="margin:0 0 8px 0;">
-            <button type="button" class="icon-btn" id="btn-media-mp3-read" style="background:#34c759; color:white; flex:1;">🔊 MP3</button>
-            <button type="button" class="icon-btn" id="btn-media-mp4-read" style="background:#ff9500; color:white; flex:1;">🎬 MP4</button>
-            <button type="button" class="icon-btn" id="btn-media-yt-read" style="background:#ff3b30; color:white; flex:1;">▶️ YouTube</button>
+        <!-- Carousel media MP3/MP4/YouTube -- hanya muncul kalau sheet aktif (PB/PL) sedang punya link.
+             Baris tombol atas berfungsi ganda: tab cepat (klik = geser) SEKALIGUS indikator media apa
+             saja yang tersedia. Baris di bawahnya adalah trek carousel yang bisa digeser (swipe) berisi
+             player sungguhan (audio/video/YouTube) + tombol kecepatan putar per media. -->
+        <div id="read-media-carousel" class="hidden" style="margin:0 0 10px 0;">
+            <div id="read-media-carousel-dots" class="icon-bar" style="margin-bottom:6px;"></div>
+            <div id="read-media-carousel-track" style="display:flex; overflow-x:auto; gap:12px; padding:2px 2px 8px 2px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;"></div>
         </div>
-        <div id="read-media-player" class="hidden" style="margin-bottom:10px;"></div>
 
         <div id="reading-content" class="reading-area card" style="background: var(--card);">
             <div id="read-inline-banner"></div>
@@ -1706,7 +1706,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     // suara (TTS), highlight, fullscreen, dst otomatis berfungsi di ketiganya tanpa kode terpisah.
     let sheetBacaAktif = 'harian'; // 'harian' | 'pb' | 'pl'
     let savedLangSelectionRead = null; // simpan pilihan bahasa lang1/2/3-read milik user sebelum ditimpa sementara oleh sheet PB/PL (1 bahasa saja)
-    let mediaSheetAktifTipe = null; // 'mp3' | 'mp4' | 'youtube' | null -- media yg sedang diputar di read-media-player
+    // (variabel mediaSheetAktifTipe lama sudah tidak dipakai lagi -- diganti carousel, lihat ytPlayerBaca)
 
     // State untuk fitur Simpan Log
     let lastAyatRead = null, lastAyatSearch = null;
@@ -5764,10 +5764,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         document.getElementById('voice-target-read').value = savedLangSelectionRead.target;
         savedLangSelectionRead = null;
       }
-      document.getElementById('read-media-bar').classList.add('hidden');
-      document.getElementById('read-media-player').classList.add('hidden');
-      document.getElementById('read-media-player').innerHTML = '';
-      mediaSheetAktifTipe = null;
+      hentikanSemuaMediaCarousel();
       toggleLegacyPlanUI();
       if (setupBacaAktif && setupBacaAktif.ada) muatBacaanSetup(); else kalkulasiTanggal();
       return;
@@ -5842,48 +5839,112 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     }
   }
 
-  // Bar media MP3/MP4/YouTube inline di bawah bar pemilih sheet -- tombol yang linknya kosong otomatis
-  // "di-offkan" (redup & tidak bisa diklik). Diputar LANGSUNG di dalam halaman (embed iframe), tidak
-  // pernah pindah tab/keluar dari web ini.
+  // =====================================================================================
+  // CAROUSEL MEDIA MP3/MP4/YOUTUBE (menu Baca, khusus sheet PB/PL) -- menampilkan SEMUA media yang
+  // tersedia hari itu sekaligus sebagai kartu yang bisa digeser (swipe), bukan cuma satu per satu
+  // seperti sebelumnya. Setiap kartu punya kontrol kecepatan putar sendiri (0.5x - 2x):
+  //  - MP3/MP4: pakai tag <audio>/<video> asli (bukan iframe preview) supaya playbackRate bisa
+  //    diatur langsung oleh browser. Sumbernya link download langsung dari Google Drive -- kalau
+  //    filenya terlalu besar/dibatasi Drive, otomatis muncul link cadangan "Buka di Google Drive".
+  //  - YouTube: pakai YouTube IFrame API (bukan iframe polos) supaya setPlaybackRate() bisa dipanggil.
+  // =====================================================================================
+  const MEDIA_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  let ytApiSiap = false;
+  let ytPlayerBaca = null; // instance YT.Player yang sedang aktif di carousel menu Baca
+
+  // Dipanggil otomatis oleh script YouTube IFrame API begitu selesai dimuat (nama function ini
+  // WAJIB persis begini & WAJIB global -- dipanggil langsung oleh youtube.com/iframe_api).
+  function onYouTubeIframeAPIReady() {
+    ytApiSiap = true;
+    window.dispatchEvent(new Event('yt-api-siap'));
+  }
+
+  function hentikanSemuaMediaCarousel() {
+    const wrap = document.getElementById('read-media-carousel');
+    if (!wrap) return;
+    wrap.classList.add('hidden');
+    document.getElementById('read-media-carousel-track').innerHTML = '';
+    document.getElementById('read-media-carousel-dots').innerHTML = '';
+    if (ytPlayerBaca) { try { ytPlayerBaca.destroy(); } catch (e) {} ytPlayerBaca = null; }
+  }
+
+  // Menggambar ulang carousel sesuai link yang tersedia hari itu (dipanggil tiap ganti hari/sheet).
   function renderMediaBarUntukSheet(links) {
-    const bar = document.getElementById('read-media-bar');
-    const player = document.getElementById('read-media-player');
-    player.innerHTML = ''; player.classList.add('hidden'); mediaSheetAktifTipe = null;
-    if (!links || (!links.mp3 && !links.mp4 && !links.youtube)) { bar.classList.add('hidden'); return; }
-    bar.classList.remove('hidden');
-    aturTombolMediaSheet('btn-media-mp3-read', 'mp3', links.mp3);
-    aturTombolMediaSheet('btn-media-mp4-read', 'mp4', links.mp4);
-    aturTombolMediaSheet('btn-media-yt-read', 'youtube', links.youtube);
+    hentikanSemuaMediaCarousel();
+    const wrap = document.getElementById('read-media-carousel');
+    if (!links || (!links.mp3 && !links.mp4 && !links.youtube)) return;
+    wrap.classList.remove('hidden');
+
+    let slides = [];
+    if (links.mp3) slides.push({ tipe: 'mp3', label: '🔊 MP3' });
+    if (links.mp4) slides.push({ tipe: 'mp4', label: '🎬 MP4' });
+    if (links.youtube) slides.push({ tipe: 'youtube', label: '▶️ YouTube' });
+
+    const dots = document.getElementById('read-media-carousel-dots');
+    const track = document.getElementById('read-media-carousel-track');
+    dots.innerHTML = slides.map(s => `<button type="button" class="icon-btn" style="flex:1;" onclick="geserKeSlideMedia('media-slide-${s.tipe}')">${s.label}</button>`).join('');
+    track.innerHTML = slides.map(s => `
+      <div id="media-slide-${s.tipe}" class="log-item-card" style="flex:0 0 90%; scroll-snap-align:start; flex-direction:column; align-items:stretch; gap:8px;">
+        <b>${s.label}</b>
+        <div id="media-slide-${s.tipe}-player"></div>
+        <div id="media-slide-${s.tipe}-fallback" class="hidden" style="font-size:12px; color:#ff3b30;"></div>
+        <div style="font-size:11px; color:gray; font-weight:bold;">⏩ Kecepatan Putar</div>
+        <div id="media-slide-${s.tipe}-speed" class="icon-bar" style="flex-wrap:wrap;"></div>
+      </div>`).join('');
+
+    // Elemen sudah ada di DOM (innerHTML di atas ditulis SEKALIGUS), baru sekarang aman isi playernya.
+    slides.forEach(s => siapkanPlayerMediaSlide(s.tipe, s.tipe === 'youtube' ? links.youtube : (s.tipe === 'mp3' ? links.mp3 : links.mp4)));
   }
-  function aturTombolMediaSheet(idTombol, tipe, url) {
-    const btn = document.getElementById(idTombol);
-    let ada = !!(url && String(url).trim());
-    btn.disabled = !ada;
-    btn.style.opacity = ada ? '1' : '0.35';
-    btn.style.cursor = ada ? 'pointer' : 'not-allowed';
-    btn.onclick = ada ? () => putarMediaSheetAktif(tipe, url) : null;
+
+  function geserKeSlideMedia(slideId) {
+    const el = document.getElementById(slideId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
   }
-  function putarMediaSheetAktif(tipe, url) {
-    const player = document.getElementById('read-media-player');
-    if (mediaSheetAktifTipe === tipe) {
-      player.innerHTML = ''; player.classList.add('hidden'); mediaSheetAktifTipe = null;
-      return;
-    }
-    mediaSheetAktifTipe = tipe;
+
+  function siapkanPlayerMediaSlide(tipe, url) {
+    const playerBox = document.getElementById(`media-slide-${tipe}-player`);
+    const speedBox = document.getElementById(`media-slide-${tipe}-speed`);
+    if (!playerBox || !speedBox) return;
+
     if (tipe === 'youtube') {
       let vid = idVideoYoutube(url);
-      if (!vid) { alert('Link YouTube tidak dikenali.'); mediaSheetAktifTipe = null; return; }
-      player.innerHTML = `<div style="position:relative; padding-top:56.25%; height:0; border-radius:10px; overflow:hidden;"><iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
-    } else {
-      let fid = idFileGdrive(url);
-      if (!fid) { alert('Link Google Drive tidak dikenali. Pastikan link berbentuk https://drive.google.com/file/d/FILE_ID/view dan sudah dibagikan.'); mediaSheetAktifTipe = null; return; }
-      if (tipe === 'mp3') {
-        player.innerHTML = `<iframe src="https://drive.google.com/file/d/${fid}/preview" style="width:100%; height:110px; border:0; border-radius:10px;" allow="autoplay"></iframe>`;
-      } else {
-        player.innerHTML = `<div style="position:relative; padding-top:56.25%; height:0; border-radius:10px; overflow:hidden;"><iframe src="https://drive.google.com/file/d/${fid}/preview" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay"></iframe></div>`;
-      }
+      if (!vid) { playerBox.innerHTML = `<span style="color:#ff3b30;">Link YouTube tidak dikenali.</span>`; return; }
+      playerBox.innerHTML = `<div style="position:relative; padding-top:56.25%; height:0; border-radius:10px; overflow:hidden;"><div id="yt-target-baca" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div></div>`;
+      const buatPlayerYt = () => {
+        ytPlayerBaca = new YT.Player('yt-target-baca', { videoId: vid, playerVars: { rel: 0 } });
+      };
+      if (window.YT && window.YT.Player) buatPlayerYt();
+      else window.addEventListener('yt-api-siap', buatPlayerYt, { once: true });
+      speedBox.innerHTML = MEDIA_SPEED_OPTIONS.map(r => `<button type="button" class="icon-btn${r === 1 ? ' active-tab' : ''}" onclick="aturKecepatanMedia('youtube', ${r}, this)">${r}x</button>`).join('');
+      return;
     }
-    player.classList.remove('hidden');
+
+    // MP3 / MP4 (Google Drive): tag audio/video ASLI (bukan iframe) supaya kecepatan bisa diatur.
+    let fid = idFileGdrive(url);
+    if (!fid) { playerBox.innerHTML = `<span style="color:#ff3b30;">Link Google Drive tidak dikenali.</span>`; return; }
+    let srcLangsung = `https://drive.google.com/uc?export=download&id=${fid}`;
+    let tagName = (tipe === 'mp3') ? 'audio' : 'video';
+    playerBox.innerHTML = `<${tagName} id="media-el-${tipe}" controls preload="metadata" style="width:100%; ${tipe === 'mp4' ? 'border-radius:10px; max-height:220px; background:#000;' : ''}" src="${srcLangsung}"></${tagName}>`;
+    const el = document.getElementById(`media-el-${tipe}`);
+    el.addEventListener('error', () => {
+      const fb = document.getElementById(`media-slide-${tipe}-fallback`);
+      fb.classList.remove('hidden');
+      fb.innerHTML = `⚠️ Tidak bisa diputar langsung (biasanya karena file besar atau dibatasi Google Drive). <a href="${url}" target="_blank" rel="noopener noreferrer">Buka di Google Drive ↗</a>`;
+    });
+    speedBox.innerHTML = MEDIA_SPEED_OPTIONS.map(r => `<button type="button" class="icon-btn${r === 1 ? ' active-tab' : ''}" onclick="aturKecepatanMedia('${tipe}', ${r}, this)">${r}x</button>`).join('');
+  }
+
+  // Tombol kecepatan (0.5x s/d 2x) -- berlaku untuk MP3/MP4 (native playbackRate) maupun YouTube
+  // (lewat YT.Player.setPlaybackRate). Tombol yang sedang aktif disorot (active-tab).
+  function aturKecepatanMedia(tipe, rate, btnEl) {
+    if (tipe === 'youtube') {
+      if (ytPlayerBaca && ytPlayerBaca.setPlaybackRate) ytPlayerBaca.setPlaybackRate(rate);
+    } else {
+      const el = document.getElementById(`media-el-${tipe}`);
+      if (el) el.playbackRate = rate;
+    }
+    btnEl.parentElement.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active-tab'));
+    btnEl.classList.add('active-tab');
   }
 
   async function tandaiRencanaTahunanSelesai(jenis, hariKe) {
