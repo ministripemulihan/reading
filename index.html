@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>16.00 E-Bible </title>
+    <title>12.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -277,6 +277,11 @@
 
         .highlight-tts { background-color: rgba(255, 235, 59, 0.4) !important; box-shadow: 0 0 5px rgba(255, 235, 59, 0.5); padding: 5px; border-radius: 5px; }
         .user-highlight { background-color: rgba(135, 206, 250, 0.4) !important; padding: 5px; border-radius: 5px; } /* Warna Highlight Klik */
+        /* Highlight 1-ayat-saja saat diklik (dipakai sambil dengar MP3/MP4/YouTube di PB 1 Tahun/PL 2
+           Tahun maupun Bacaan Harian) -- beda warna dari .highlight-tts (kuning, auto TTS) dan
+           .user-highlight (biru muda, mode toggle manual) supaya tidak tertukar. Klik ayat lain
+           otomatis memindahkan highlight ini (hanya 1 yang aktif sekaligus, lihat listener JS-nya). */
+        .verse-tap-highlight { background-color: rgba(88, 86, 214, 0.20) !important; box-shadow: 0 0 0 2px rgba(88, 86, 214, 0.55) inset; padding: 5px; border-radius: 5px; }
 
         /* ===== ANOTASI & HIGHLIGHT (per user, tersimpan di database) ===== */
         .verse-group.anot-merah  { background-color: rgba(255, 59, 48, 0.18) !important; padding: 6px; border-radius: 6px; }
@@ -316,7 +321,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 16.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 12.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -445,9 +450,11 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 <div id="quick-annot-popup" class="hidden" style="position:fixed; z-index:9999; background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:10px; box-shadow:0 4px 18px rgba(0,0,0,0.3); padding:10px; width:230px;">
   <div id="qap-ref" style="font-size:12px; font-weight:700; color:var(--primary); margin-bottom:8px;"></div>
   <div id="qap-existing-info" style="font-size:11px; color:gray; margin-bottom:6px; white-space:pre-wrap;"></div>
-  <div id="qap-menu" class="icon-bar" style="gap:6px;">
+  <div id="qap-menu" class="icon-bar" style="gap:6px; flex-wrap:wrap;">
     <button type="button" class="icon-btn" style="flex:1; padding:6px 4px; font-size:12px;" onclick="qapBukaAnotasi()">🖊️ Anotasi</button>
     <button type="button" class="icon-btn" style="flex:1; padding:6px 4px; font-size:12px;" onclick="qapBukaHighlight()">🌈 Highlight</button>
+    <button type="button" class="icon-btn" style="flex:1 1 100%; padding:6px 4px; font-size:12px;" onclick="qapSalinAyat(false, event)">📋 Copy Ayat Ini</button>
+    <button type="button" class="icon-btn" style="flex:1 1 100%; padding:6px 4px; font-size:12px;" onclick="qapSalinAyat(true, event)">📝 Copy Ayat + Catatan</button>
   </div>
   <div id="qap-form-anotasi" class="hidden" style="margin-top:8px;">
     <textarea id="qap-catatan-input" rows="3" placeholder="Tulis catatan..." style="width:100%; box-sizing:border-box; font-size:13px;"></textarea>
@@ -469,6 +476,12 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     </div>
   </div>
   <button type="button" class="icon-btn" style="width:100%; margin-top:8px; padding:5px; font-size:11px;" onclick="tutupQuickPopupAyat()">✖ Tutup</button>
+</div>
+
+<!-- POPUP "📋 Salin Bacaan" -- muncul dekat tombol 📋 di toolbar Prev/Next (Bacaan Harian & PB/PL) -->
+<div id="salin-bacaan-popup" class="hidden" style="position:fixed; z-index:9999; background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:10px; box-shadow:0 4px 18px rgba(0,0,0,0.3); padding:8px; width:200px;">
+  <button type="button" class="icon-btn" style="width:100%; margin-bottom:6px; font-size:12px;" onclick="salinSemuaAyatBaca(false, event); tutupSalinBacaanPopup();">📋 Copy Semua Teks</button>
+  <button type="button" class="icon-btn" style="width:100%; font-size:12px;" onclick="salinSemuaAyatBaca(true, event); tutupSalinBacaanPopup();">📝 Copy Teks + Catatan</button>
 </div>
     
     <!-- MODAL THEME 21 PILIHAN -->
@@ -3077,6 +3090,26 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         tutupQuickPopupAyat();
     }
 
+    // Cari ulang elemen .verse-group milik ayat yang lagi dibuka di popup -- dicari ulang lewat
+    // atribut data-* (bukan disimpan langsung sbg referensi elemen) supaya tetap benar walau layar
+    // sempat dirender ulang (mis. abis Prev/Next) selagi popup masih terbuka.
+    function qapCariGrupEl() {
+        if (!qapCtx) return null;
+        return document.querySelector(`.verse-group[data-bn="${qapCtx.bn}"][data-chapter="${qapCtx.c}"][data-verse="${qapCtx.v}"]`);
+    }
+
+    // Tombol "📋 Copy Ayat Ini" / "📝 Copy Ayat + Catatan" di popup nomor ayat -- berlaku di Bacaan
+    // Harian maupun PB 1 Tahun/PL 2 Tahun (sama-sama pakai buildAyatHtml/.verse-group).
+    function qapSalinAyat(withNote, evt) {
+        let grup = qapCariGrupEl();
+        if (!grup) { alert('Ayat tidak ditemukan di layar (mungkin tampilan sudah berubah).'); return; }
+        let data = ekstrakReferensiVerseGroup(grup);
+        let teks = `${data.ref} ${data.teks}`;
+        if (withNote && data.catatan) teks += `\n📝 Catatan: ${data.catatan}`;
+        let tombol = evt ? (evt.currentTarget || evt.target) : null;
+        salinKeClipboardBaca(teks, tombol);
+    }
+
     // Tutup popup otomatis kalau user klik di luar area popup (dan bukan klik nomor ayat lain,
     // yang seharusnya justru MEMBUKA popup untuk ayat itu, ditangani oleh klikNomorAyat()).
     document.addEventListener('click', function (e) {
@@ -4656,6 +4689,113 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         }
     });
 
+    // =====================================================================================
+    // HIGHLIGHT 1-AYAT-SAJA SAAT DIKLIK -- SELALU AKTIF (tidak perlu mode ON/OFF spt di atas),
+    // berguna sambil dengar MP3/MP4/YouTube (PB 1 Tahun/PL 2 Tahun) maupun Bacaan Harian: user
+    // tap ayat yang sedang didengar, ayat itu ditandai, ayat yang aktif SEBELUMNYA otomatis lepas
+    // (hanya 1 yang aktif dalam satu waktu). Berlaku di SEMUA tampilan yang lewat buildAyatHtml()
+    // (reading-content utk ketiga sheet, & viewer/hasil cari) karena strukturnya sama persis.
+    // Klik pada nomor ayat (.verse-num) DIKECUALIKAN karena sudah punya aksi sendiri (buka
+    // catatan/anotasi lewat klikNomorAyat) -- klik di teks ayatnya sendiri yang memicu ini.
+    // =====================================================================================
+    document.addEventListener('click', function (e) {
+        let vi = e.target.closest('.verse-item');
+        if (!vi || e.target.closest('.verse-num')) return;
+        let grup = vi.closest('.verse-group');
+        if (!grup) return;
+        let sudahAktif = grup.classList.contains('verse-tap-highlight');
+        document.querySelectorAll('.verse-tap-highlight').forEach(el => el.classList.remove('verse-tap-highlight'));
+        if (!sudahAktif) grup.classList.add('verse-tap-highlight');
+    });
+
+    // =====================================================================================
+    // SALIN BACAAN (dipakai bersama: tombol 📋 di toolbar Prev/Next SEMUA sheet, & 2 tombol baru
+    // di popup nomor ayat). Formatnya selalu "Kitab Pasal:Ayat isi ayat" per baris (bukan cuma di
+    // judul pasal) supaya tetap jelas kalau ditempel di tempat lain terpisah dari konteks aplikasi.
+    // =====================================================================================
+    function ekstrakReferensiVerseGroup(grupEl) {
+        let book = grupEl.getAttribute('data-book') || '';
+        let c = grupEl.getAttribute('data-chapter') || '';
+        let v = grupEl.getAttribute('data-verse') || '';
+        let teksArr = [];
+        grupEl.querySelectorAll('.verse-text').forEach(el => teksArr.push(teksPolosUntukSalin(el.innerHTML)));
+        let catatan = grupEl.getAttribute('data-note') || '';
+        return { ref: `${book} ${c}:${v}`, teks: teksArr.join(' '), catatan: catatan };
+    }
+
+    // Salin ke clipboard dgn fallback + konfirmasi visual sebentar di tombolnya -- dibuat terpisah dari
+    // salinTeks() yang sudah ada (namanya kepakai dobel utk 2 hal beda di kode lama) supaya tidak
+    // bentrok/berisiko mengubah perilaku fitur salin yang sudah ada sebelumnya.
+    async function salinKeClipboardBaca(teks, btnEl) {
+        let berhasil = true;
+        try { await navigator.clipboard.writeText(teks); }
+        catch (e) {
+            try {
+                let ta = document.createElement('textarea');
+                ta.value = teks; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.focus(); ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            } catch (e2) { berhasil = false; }
+        }
+        if (btnEl) {
+            let asli = btnEl.innerHTML;
+            btnEl.innerHTML = berhasil ? '✅ Tersalin' : '⚠️ Gagal salin';
+            setTimeout(() => { btnEl.innerHTML = asli; }, 1500);
+        } else {
+            alert(berhasil ? '✅ Berhasil disalin.' : '⚠️ Gagal menyalin.');
+        }
+    }
+
+    // Tombol 📋 di toolbar -- salin SEMUA ayat yang sedang tampil di #reading-content (berlaku otomatis
+    // utk Bacaan Harian maupun PB 1 Tahun/PL 2 Tahun, karena keduanya dirender ke wadah yang sama).
+    function salinSemuaAyatBaca(withNote, evt) {
+        let grups = document.querySelectorAll('#reading-content .verse-group');
+        if (!grups.length) { alert('Tidak ada bacaan untuk disalin.'); return; }
+        let baris = [];
+        grups.forEach(g => {
+            let data = ekstrakReferensiVerseGroup(g);
+            let line = `${data.ref} ${data.teks}`;
+            if (withNote && data.catatan) line += `\n📝 Catatan: ${data.catatan}`;
+            baris.push(line);
+        });
+        let tombol = evt ? (evt.currentTarget || evt.target) : null;
+        salinKeClipboardBaca(baris.join('\n\n'), tombol);
+    }
+
+    // =====================================================================================
+    // POPUP KECIL "📋 Salin Bacaan" -- muncul dekat tombol 📋 di toolbar, isinya 2 pilihan: salin
+    // semua teks saja, atau salin teks + catatan. Pola sama seperti quick-annot-popup (posisi
+    // menempel & auto-tutup kalau klik di luar), tapi dibuat terpisah supaya tidak saling ganggu.
+    // =====================================================================================
+    function bukaSalinBacaanPopup(btnEl) {
+        const pop = document.getElementById('salin-bacaan-popup');
+        pop.classList.remove('hidden');
+        sbpPosisikanDekat(btnEl);
+    }
+    function tutupSalinBacaanPopup() {
+        document.getElementById('salin-bacaan-popup').classList.add('hidden');
+    }
+    function sbpPosisikanDekat(anchorEl) {
+        const pop = document.getElementById('salin-bacaan-popup');
+        let rect = anchorEl.getBoundingClientRect();
+        requestAnimationFrame(() => {
+            let pr = pop.getBoundingClientRect();
+            let top = rect.bottom + 6;
+            let left = rect.right - pr.width;
+            if (left < 8) left = 8;
+            if (top + pr.height > window.innerHeight - 8) top = rect.top - pr.height - 6;
+            pop.style.left = Math.max(8, left) + 'px';
+            pop.style.top = Math.max(8, top) + 'px';
+        });
+    }
+    document.addEventListener('click', function (e) {
+        const pop = document.getElementById('salin-bacaan-popup');
+        if (!pop || pop.classList.contains('hidden')) return;
+        if (e.target.closest('#salin-bacaan-popup') || e.target.closest('[onclick^="bukaSalinBacaanPopup"]')) return;
+        tutupSalinBacaanPopup();
+    });
+
     function toggleLebarLayar() {
         const container = document.getElementById('main-container');
         currentLayoutMode = (currentLayoutMode + 1) % 3; 
@@ -5869,8 +6009,9 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         let sedangMenjelajahHarian = (currentHariKe !== actualHariKe);
         html += `<div class="icon-bar" style="margin:0 0 6px 0;">
           <button type="button" class="icon-btn" onclick="gantiHari(-1)">◀ Prev</button>
-          <button type="button" class="icon-btn" style="${sedangMenjelajahHarian ? 'background:#ff9500; color:white;' : ''}" onclick="kembaliHariIni()">📅 Hari Ini</button>
+          <button type="button" class="icon-btn" style="${sedangMenjelajahHarian ? 'background:#ff9500; color:white;' : 'background:#007aff; color:white;'}" onclick="kembaliHariIni()">📅 Hari Ini</button>
           <button type="button" class="icon-btn" onclick="gantiHari(1)">Next ▶</button>
+          <button type="button" class="icon-btn" style="background:#34c759; color:white;" title="Salin Bacaan" onclick="bukaSalinBacaanPopup(this)">📋 Copy</button>
         </div>`;
         if (sedangMenjelajahHarian) {
           html += `<div style="font-size:12px; color:#ff9500; text-align:center; margin:-2px 0 6px 0;">🔍 Sedang melihat Hari ke-${currentHariKe} (bukan hari ini)</div>`;
@@ -5882,11 +6023,12 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
       // Pengumuman berkategori "Menu Baca" (kalau ada & sedang aktif) langsung tampil di sini,
       // begitu tab PB 1 Tahun / PL 2 Tahun dibuka -- tidak perlu buka tab 📢 Info dulu.
       html += `<div id="menu-baca-pengumuman-banner"></div>`;
-      html += `<div class="icon-bar" style="margin:0 0 6px 0; justify-content:center; gap:16px;">
+      html += `<div class="icon-bar" style="margin:0 0 6px 0; justify-content:center; gap:16px; flex-wrap:wrap;">
         <button type="button" class="icon-btn-round" title="Hari Sebelumnya" onclick="gantiHariTahunan(-1)">◀</button>
-        <button type="button" class="icon-btn-round" title="Pilih Tanggal / Hari" onclick="bukaModalPilihTanggalTahunan('${sheetBacaAktif}')">🗓️</button>
-        <button type="button" class="icon-btn-round${sedangMenjelajah ? ' aktif-jelajah' : ''}" title="Kembali ke Hari Ini" onclick="kembaliHariIniTahunan()">📅</button>
+        <button type="button" class="icon-btn-round" style="background:#ff3b30; color:#fff; border-color:#ff3b30;" title="Pilih Tanggal / Hari" onclick="bukaModalPilihTanggalTahunan('${sheetBacaAktif}')">🗓️</button>
+        <button type="button" class="icon-btn-round${sedangMenjelajah ? ' aktif-jelajah' : ''}" style="${sedangMenjelajah ? '' : 'background:#007aff; color:#fff; border-color:#007aff;'}" title="Kembali ke Hari Ini" onclick="kembaliHariIniTahunan()">📅</button>
         <button type="button" class="icon-btn-round" title="Hari Berikutnya" onclick="gantiHariTahunan(1)">▶</button>
+        <button type="button" class="icon-btn-round" style="background:#34c759; color:#fff; border-color:#34c759;" title="Salin Bacaan" onclick="bukaSalinBacaanPopup(this)">📋</button>
       </div>`;
       if (sedangMenjelajah) {
         html += `<div style="font-size:12px; color:#ff9500; text-align:center; margin:-2px 0 6px 0;">🔍 Sedang melihat Hari ke-${dataHari.hari_ke} (bukan hari ini) — ketuk 📅 untuk kembali ke hari ini</div>`;
