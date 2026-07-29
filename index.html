@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>18.00 E-Bible </title>
+    <title>17.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -296,7 +296,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 18.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 17.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -1580,7 +1580,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 
 <script>
     // GANTI URL INI DENGAN URL DEPLOY APP SCRIPT ANDA YANG TERBARU
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7XcO9Cxl6phWQz34GiKeTMrpdnwFBcUyvTgYemd8CH8Jn5NVroMP8kYATPsO2FzoqmA/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOigzm-A19FEk2yL-unKx2MDvmhZ1JIpw8O4A4JMLSXjmVoB09ZC35pVDUw3djfFnHHg/exec';
     
     let userSession = {};
     let waktuMulaiBaca = null; // timestamp (ms) saat halaman Baca dibuka, dipakai hitung durasi baca (detik)
@@ -5565,7 +5565,12 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
       ? data.ayat.map(a => `<p><b>${a.b} ${a.c}:${a.v}</b> ${a.t}</p>`).join('')
       : '<i style="color:gray;">Bacaan hari ini belum tersedia.</i>';
 
-    let tombolAudio = data.link ? `<a href="${data.link}" target="_blank" class="icon-btn" style="display:inline-block; width:auto; padding:6px 14px; text-decoration:none; margin-top:6px;">🔊 Dengarkan / Lihat</a>` : '';
+    let tombolAudio = '';
+    if (data.links) {
+      if (data.links.mp3) tombolAudio += `<a href="${data.links.mp3}" target="_blank" class="icon-btn" style="display:inline-block; width:auto; padding:6px 14px; text-decoration:none;">🔊 MP3</a>`;
+      if (data.links.mp4) tombolAudio += `<a href="${data.links.mp4}" target="_blank" class="icon-btn" style="display:inline-block; width:auto; padding:6px 14px; text-decoration:none;">🎬 MP4</a>`;
+      if (data.links.youtube) tombolAudio += `<a href="${data.links.youtube}" target="_blank" class="icon-btn" style="display:inline-block; width:auto; padding:6px 14px; text-decoration:none;">▶️ YouTube</a>`;
+    }
     let tombolTandai = data.sudah_tandai_hari_ini
       ? `<span style="color:#34c759; font-size:13px;">✅ Sudah ditandai selesai hari ini</span>`
       : `<button onclick="tandaiRencanaTahunanSelesai('${jenis}', ${data.hari_ke})" style="width:auto; padding:6px 14px; background:#34c759; color:white;">✅ Tandai Selesai</button>`;
