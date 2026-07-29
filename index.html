@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>14.00 E-Bible </title>
+    <title>12.00 E-Bible </title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -313,7 +313,7 @@
     <!-- LOGIN -->
     <div id="login-page" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; margin-bottom: 5px;">📖 E-Bible Online</h2>
-        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 14.00</h4>
+        <h4 style="text-align: center; color: gray; margin-top: 0; margin-bottom: 4px;">ver 12.00</h4>
         
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password (Tekan Enter)" onkeypress="if(event.key==='Enter') prosesLogin()">
@@ -413,6 +413,59 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     <button onclick="simpanRencanaTahunan()">Simpan</button>
     <button style="background:#8e8e93;" onclick="document.getElementById('modal-rencana-tahunan').classList.add('hidden')">✖ Tutup</button>
   </div>
+</div>
+
+<!-- MODAL "PILIH TANGGAL / HARI" -- lompat ke tanggal/hari mana pun (dalam batas 1..durasi_hari)
+     di sheet PB 1 Tahun atau PL 2 Tahun yang sedang aktif. -->
+<div id="modal-pilih-tanggal-tahunan" class="modal hidden" onclick="this.classList.add('hidden')">
+  <div class="modal-content card" onclick="event.stopPropagation()">
+    <h2 id="ptt-judul" style="text-align:center;">🗓️ Pilih Tanggal</h2>
+    <p style="font-size:12px; color:gray; text-align:center;">Pilih tanggal atau nomor hari yang mau dituju. Bacaan untuk tanggal itu akan ditampilkan di bawah ini.</p>
+
+    <label>📅 Berdasarkan Tanggal:</label>
+    <input type="date" id="ptt-tanggal" onchange="pttUbahDariTanggal()">
+
+    <label style="margin-top:8px; display:block;">#️⃣ Atau Hari ke- (1 s/d <span id="ptt-maks-hari">-</span>):</label>
+    <input type="number" id="ptt-hari-ke" min="1" step="1" onchange="pttUbahDariHari()">
+
+    <div id="ptt-preview" style="background:var(--btn-bg); border-radius:8px; padding:10px 12px; margin:10px 0 4px 0; font-size:13px; min-height:20px;">-</div>
+    <p id="ptt-status" style="text-align:center; font-size:12px; color:#ff3b30; min-height:14px;"></p>
+
+    <button onclick="konfirmasiPilihTanggalTahunan()">Pergi ke Sini</button>
+    <button style="background:#8e8e93;" onclick="document.getElementById('modal-pilih-tanggal-tahunan').classList.add('hidden')">✖ Tutup</button>
+  </div>
+</div>
+
+<!-- POPUP CEPAT ANOTASI/HIGHLIGHT -- muncul menempel di posisi tombol nomor ayat yang diklik.
+     Klik 🖊️ Anotasi -> kitab/pasal/ayat sudah otomatis terisi, tinggal isi catatan & Simpan.
+     Klik 🌈 Highlight -> kitab/pasal/ayat sudah otomatis terisi, tinggal pilih warna (langsung tersimpan). -->
+<div id="quick-annot-popup" class="hidden" style="position:fixed; z-index:9999; background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:10px; box-shadow:0 4px 18px rgba(0,0,0,0.3); padding:10px; width:230px;">
+  <div id="qap-ref" style="font-size:12px; font-weight:700; color:var(--primary); margin-bottom:8px;"></div>
+  <div id="qap-existing-info" style="font-size:11px; color:gray; margin-bottom:6px; white-space:pre-wrap;"></div>
+  <div id="qap-menu" class="icon-bar" style="gap:6px;">
+    <button type="button" class="icon-btn" style="flex:1; padding:6px 4px; font-size:12px;" onclick="qapBukaAnotasi()">🖊️ Anotasi</button>
+    <button type="button" class="icon-btn" style="flex:1; padding:6px 4px; font-size:12px;" onclick="qapBukaHighlight()">🌈 Highlight</button>
+  </div>
+  <div id="qap-form-anotasi" class="hidden" style="margin-top:8px;">
+    <textarea id="qap-catatan-input" rows="3" placeholder="Tulis catatan..." style="width:100%; box-sizing:border-box; font-size:13px;"></textarea>
+    <div class="icon-bar" style="margin-top:6px; gap:6px;">
+      <button type="button" class="icon-btn" style="flex:1; background:#34c759; color:white; padding:6px; font-size:12px;" onclick="qapSimpanAnotasi(event)">💾 Simpan</button>
+      <button type="button" class="icon-btn" style="flex:1; padding:6px; font-size:12px;" onclick="qapKembaliMenu()">◀ Kembali</button>
+    </div>
+  </div>
+  <div id="qap-form-highlight" class="hidden" style="margin-top:8px;">
+    <div class="icon-bar" style="flex-wrap:wrap; gap:6px;">
+      <button type="button" class="hl-swatch-btn" style="min-width:45px; padding:6px 4px; font-size:11px; background:#ff3b30;" onclick="qapSimpanHighlight(event, '#ff3b30')">Merah</button>
+      <button type="button" class="hl-swatch-btn" style="min-width:45px; padding:6px 4px; font-size:11px; background:#007aff;" onclick="qapSimpanHighlight(event, '#007aff')">Biru</button>
+      <button type="button" class="hl-swatch-btn" style="min-width:45px; padding:6px 4px; font-size:11px; background:#34c759; color:#063;" onclick="qapSimpanHighlight(event, '#34c759')">Hijau</button>
+      <button type="button" class="hl-swatch-btn" style="min-width:45px; padding:6px 4px; font-size:11px; background:#ffcc00; color:#664400;" onclick="qapSimpanHighlight(event, '#ffcc00')">Kuning</button>
+    </div>
+    <div class="icon-bar" style="margin-top:6px; gap:6px;">
+      <button type="button" class="icon-btn" style="flex:1; padding:6px; font-size:12px;" onclick="qapHapusHighlight(event)">✖ Hapus Warna</button>
+      <button type="button" class="icon-btn" style="flex:1; padding:6px; font-size:12px;" onclick="qapKembaliMenu()">◀ Kembali</button>
+    </div>
+  </div>
+  <button type="button" class="icon-btn" style="width:100%; margin-top:8px; padding:5px; font-size:11px;" onclick="tutupQuickPopupAyat()">✖ Tutup</button>
 </div>
     
     <!-- MODAL THEME 21 PILIHAN -->
@@ -2892,6 +2945,144 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
             </div>`).join("");
     }
 
+    // =====================================================================================
+    // POPUP CEPAT ANOTASI/HIGHLIGHT -- muncul menempel di posisi tombol nomor ayat yang baru
+    // diklik di menu Baca (Bacaan Harian / PB 1 Tahun / PL 2 Tahun, semuanya lewat buildAyatHtml
+    // yang sama). Kitab/pasal/ayat diambil otomatis dari data-bn/data-book/data-chapter/data-verse
+    // milik .verse-group yang bersangkutan -- user tidak perlu memilih apa-apa lagi, tinggal isi
+    // catatan (Anotasi) atau pilih warna (Highlight) lalu langsung tersimpan.
+    // =====================================================================================
+    let qapCtx = null; // { bn, bookName, c, v }
+
+    async function bukaQuickPopupAyat(elNomor) {
+        let grup = elNomor.closest('.verse-group');
+        if (!grup) return;
+        let bn = Number(grup.getAttribute('data-bn'));
+        let bookName = grup.getAttribute('data-book');
+        let c = Number(grup.getAttribute('data-chapter'));
+        let v = Number(grup.getAttribute('data-verse'));
+        if (!bn || !c || !v) return;
+        qapCtx = { bn: bn, bookName: bookName, c: c, v: v };
+
+        const pop = document.getElementById('quick-annot-popup');
+        document.getElementById('qap-ref').innerText = `📖 ${bookName} ${c}:${v}`;
+        qapKembaliMenu();
+        document.getElementById('qap-existing-info').innerText = '';
+        pop.classList.remove('hidden');
+        qapPosisikanDekat(elNomor);
+
+        if (!anotasiCacheLoaded) { try { await muatAnotasiCache(); } catch (e) {} }
+        if (!qapCtx || qapCtx.bn !== bn || qapCtx.c !== c || qapCtx.v !== v) return; // popup sudah dipindah ke ayat lain sebelum cache selesai dimuat
+        let existing = cariDiCacheAnotasi(bn, c, v);
+        let info = [];
+        if (existing && existing.warna) info.push(`🎨 Warna: ${WARNA_LABEL_HL[existing.warna] || existing.warna}`);
+        if (existing && existing.catatan) info.push(`📝 ${existing.catatan}`);
+        document.getElementById('qap-existing-info').innerText = info.join('\n');
+        qapPosisikanDekat(elNomor);
+    }
+
+    function qapPosisikanDekat(elNomor) {
+        const pop = document.getElementById('quick-annot-popup');
+        let rect = elNomor.getBoundingClientRect();
+        requestAnimationFrame(() => {
+            let pr = pop.getBoundingClientRect();
+            let top = rect.bottom + 6;
+            let left = rect.left;
+            if (left + pr.width > window.innerWidth - 8) left = window.innerWidth - pr.width - 8;
+            if (top + pr.height > window.innerHeight - 8) top = rect.top - pr.height - 6;
+            pop.style.left = Math.max(8, left) + 'px';
+            pop.style.top = Math.max(8, top) + 'px';
+        });
+    }
+
+    function tutupQuickPopupAyat() {
+        document.getElementById('quick-annot-popup').classList.add('hidden');
+        qapCtx = null;
+    }
+
+    function qapKembaliMenu() {
+        document.getElementById('qap-menu').classList.remove('hidden');
+        document.getElementById('qap-form-anotasi').classList.add('hidden');
+        document.getElementById('qap-form-highlight').classList.add('hidden');
+    }
+
+    function qapBukaAnotasi() {
+        if (!qapCtx) return;
+        document.getElementById('qap-menu').classList.add('hidden');
+        document.getElementById('qap-form-highlight').classList.add('hidden');
+        document.getElementById('qap-form-anotasi').classList.remove('hidden');
+        let existing = cariDiCacheAnotasi(qapCtx.bn, qapCtx.c, qapCtx.v);
+        document.getElementById('qap-catatan-input').value = existing ? (existing.catatan || '') : '';
+        document.getElementById('qap-catatan-input').focus();
+    }
+
+    function qapBukaHighlight() {
+        if (!qapCtx) return;
+        document.getElementById('qap-menu').classList.add('hidden');
+        document.getElementById('qap-form-anotasi').classList.add('hidden');
+        document.getElementById('qap-form-highlight').classList.remove('hidden');
+    }
+
+    // Simpan catatan (Anotasi) langsung dari popup -- kitab/pasal/ayat sudah otomatis dari qapCtx,
+    // warna yang mungkin sudah ada di ayat yang sama TIDAK ikut dihapus (sama seperti simpanAnotasiCatatan()).
+    async function qapSimpanAnotasi(evt) {
+        if (!qapCtx) return;
+        let catatan = document.getElementById('qap-catatan-input').value.trim();
+        if (!catatan) return alert('Isi dulu catatannya.');
+        let existing = cariDiCacheAnotasi(qapCtx.bn, qapCtx.c, qapCtx.v);
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: "saveAnotasi", username: userSession.username, book_number: qapCtx.bn, book_name: qapCtx.bookName,
+                chapter: qapCtx.c, verse: qapCtx.v, language: (existing && existing.language) || 'ind',
+                warna: existing ? existing.warna : '', catatan: catatan
+            }) });
+            const out = await res.json();
+            if (out.status !== "success") return alert(out.message || "Gagal menyimpan catatan.");
+            await muatAnotasiCache(true);
+            let tombol = evt ? (evt.currentTarget || evt.target) : null;
+            tampilkanToastDekat(tombol, '✅ Tersimpan');
+            tutupQuickPopupAyat();
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
+    // Simpan warna (Highlight) langsung dari popup -- catatan yang mungkin sudah ada di ayat yang
+    // sama TIDAK ikut dihapus (sama seperti simpanHighlightWarna()).
+    async function qapSimpanHighlight(evt, warna) {
+        if (!qapCtx) return;
+        let existing = cariDiCacheAnotasi(qapCtx.bn, qapCtx.c, qapCtx.v);
+        try {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                action: "saveAnotasi", username: userSession.username, book_number: qapCtx.bn, book_name: qapCtx.bookName,
+                chapter: qapCtx.c, verse: qapCtx.v, language: (existing && existing.language) || 'ind',
+                warna: warna, catatan: existing ? existing.catatan : ''
+            }) });
+            const out = await res.json();
+            if (out.status !== "success") return alert(out.message || "Gagal menyimpan highlight.");
+            await muatAnotasiCache(true);
+            let tombol = evt ? (evt.currentTarget || evt.target) : null;
+            tampilkanToastDekat(tombol, '✅ Tersimpan');
+            tutupQuickPopupAyat();
+        } catch (e) { alert("Koneksi terputus."); }
+    }
+
+    async function qapHapusHighlight(evt) {
+        if (!qapCtx) return;
+        await hapusSalahSatuAnotasi(qapCtx.bn, qapCtx.c, qapCtx.v, 'warna');
+        let tombol = evt ? (evt.currentTarget || evt.target) : null;
+        tampilkanToastDekat(tombol, '✅ Warna dihapus');
+        tutupQuickPopupAyat();
+    }
+
+    // Tutup popup otomatis kalau user klik di luar area popup (dan bukan klik nomor ayat lain,
+    // yang seharusnya justru MEMBUKA popup untuk ayat itu, ditangani oleh klikNomorAyat()).
+    document.addEventListener('click', function (e) {
+        const pop = document.getElementById('quick-annot-popup');
+        if (!pop || pop.classList.contains('hidden')) return;
+        if (e.target.closest('#quick-annot-popup')) return;
+        if (e.target.closest('.verse-num')) return;
+        tutupQuickPopupAyat();
+    });
+
     function bukaAnotasi() {
         hentikanSuara();
         tutupSemuaNavMenu();
@@ -4372,6 +4563,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
             return;
         }
         toggleNote(noteId);
+        bukaQuickPopupAyat(elNomor);
     }
     
     function hapusHighlight() { 
@@ -4670,6 +4862,41 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     }
 
     // =====================================================================
+    // TOAST KECIL DEKAT TOMBOL: pengganti alert() untuk notifikasi ringan (mis. "Copied") yang
+    // tidak perlu ditekan OK -- muncul menempel di atas/kiri elemen sumbernya (biasanya tombol yang
+    // baru diklik), lalu hilang otomatis sendiri. Dipakai a.l. oleh tombol "Salin Link" (mp3/mp4/
+    // youtube) supaya tidak lagi memakai alert() yang mengharuskan user menekan OK.
+    // =====================================================================
+    function tampilkanToastDekat(sourceEl, teks) {
+        if (!sourceEl) return;
+        let rect = sourceEl.getBoundingClientRect();
+        let el = document.createElement('div');
+        el.textContent = teks;
+        el.style.cssText = 'position:fixed; z-index:99999; background:#34c759; color:white; font-size:12px; font-weight:700; padding:5px 10px; border-radius:7px; box-shadow:0 2px 8px rgba(0,0,0,0.3); pointer-events:none; opacity:0; transition:opacity .15s ease; white-space:nowrap;';
+        el.style.left = '-9999px';
+        el.style.top = '-9999px';
+        document.body.appendChild(el);
+        requestAnimationFrame(() => {
+            let elRect = el.getBoundingClientRect();
+            // Prioritas: tampil di SEBELAH KIRI tombol; kalau tidak cukup ruang, tampil di ATAS tombol.
+            let left = rect.left - elRect.width - 6;
+            let top = rect.top + (rect.height - elRect.height) / 2;
+            if (left < 4) {
+                left = Math.min(rect.left, window.innerWidth - elRect.width - 4);
+                top = rect.top - elRect.height - 6;
+                if (top < 4) top = rect.bottom + 6;
+            }
+            el.style.left = Math.max(4, left) + 'px';
+            el.style.top = Math.max(4, top) + 'px';
+            el.style.opacity = '1';
+        });
+        setTimeout(() => {
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 200);
+        }, 1300);
+    }
+
+    // =====================================================================
     // PEMBERSIH TAG <sup>/<FR> & FORMAT HTML AMAN (ayat & catatan)
     // - <FR>...<Fr> (pembungkus penanda catatan kaki, mis. "<FR><sup>a</sup><Fr>")
     //   HANYA tag <FR>/<Fr>-nya yang dibuang saat TAMPIL -- isi di dalamnya (yaitu
@@ -4771,7 +4998,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
             // polos tanpa tag sama sekali (lihat teksUntukSuara), supaya "<p>", "<br/>" dst tidak
             // pernah ikut terbacakan sebagai kata-kata.
             let noteAttr = escAttr(teksUntukSuara(g.note));
-            htmlOut += `<div class="verse-group" data-book="${escAttr(currentHeaderBookName)}" data-chapter="${g.c}" data-verse="${g.v}" data-note="${noteAttr}">`;
+            htmlOut += `<div class="verse-group" data-bn="${g.bn}" data-book="${escAttr(currentHeaderBookName)}" data-chapter="${g.c}" data-verse="${g.v}" data-note="${noteAttr}">`;
 
             // Render BERDASARKAN URUTAN array dropdown (selectedLangsArray), bukan urutan acak JavaScript
             selectedLangsArray.forEach(langCode => {
@@ -5652,6 +5879,9 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         <button type="button" class="icon-btn" onclick="gantiHariTahunan(-1)">◀ Prev</button>
         <button type="button" class="icon-btn" style="${sedangMenjelajah ? 'background:#ff9500; color:white;' : ''}" onclick="kembaliHariIniTahunan()">📅 Hari Ini</button>
         <button type="button" class="icon-btn" onclick="gantiHariTahunan(1)">Next ▶</button>
+      </div>
+      <div class="icon-bar" style="margin:0 0 6px 0;">
+        <button type="button" class="icon-btn" onclick="bukaModalPilihTanggalTahunan('${sheetBacaAktif}')">🗓️ Pilih Tanggal / Hari</button>
       </div>`;
       if (sedangMenjelajah) {
         html += `<div style="font-size:12px; color:#ff9500; text-align:center; margin:-2px 0 6px 0;">🔍 Sedang melihat Hari ke-${dataHari.hari_ke} (bukan hari ini)</div>`;
@@ -5701,6 +5931,113 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
     renderTabSheetBaca();
     renderRencanaTahunanKeLayar(rencanaTahunanAktif[jenis]);
     renderMediaBarUntukSheet(rencanaTahunanAktif[jenis] || null);
+  }
+
+  // =====================================================================================
+  // MODAL "🗓️ Pilih Tanggal / Hari" -- lompat langsung ke tanggal atau nomor hari MANA PUN
+  // (1 s/d durasi_hari: 365/366 utk PB 1 Tahun, 730/731 utk PL 2 Tahun) tanpa harus menekan
+  // Prev/Next berkali-kali. Tanggal & nomor hari saling terhubung (ubah salah satu, yang lain
+  // ikut menyesuaikan), dan pratinjau bacaan (tanggal + referensi ayat dalam 1 baris) langsung
+  // diambil dari server begitu tanggal/hari dipilih -- baru dipakai sungguhan saat "Pergi ke Sini".
+  // =====================================================================================
+  let pttCtx = null; // { jenis, tanggalMulai, maksHari, hariDiminta }
+
+  function tambahHariISO(tanggalISO, tambahHari) {
+    let d = new Date(tanggalISO + 'T00:00:00');
+    d.setDate(d.getDate() + tambahHari);
+    return d.toISOString().slice(0, 10);
+  }
+  function selisihHariISO(tanggalAwalISO, tanggalAkhirISO) {
+    let a = new Date(tanggalAwalISO + 'T00:00:00');
+    let b = new Date(tanggalAkhirISO + 'T00:00:00');
+    return Math.round((b - a) / 86400000);
+  }
+
+  function bukaModalPilihTanggalTahunan(jenis) {
+    let dataHari = rencanaTahunanAktif[jenis];
+    if (!dataHari || dataHari.error) { alert('Rencana ' + (jenis === 'pb' ? 'PB 1 Tahun' : 'PL 2 Tahun') + ' tidak aktif.'); return; }
+    pttCtx = { jenis: jenis, tanggalMulai: dataHari.tanggal_mulai, maksHari: dataHari.durasi_hari, hariDiminta: null };
+
+    document.getElementById('ptt-judul').innerText = '🗓️ Pilih Tanggal (' + (jenis === 'pb' ? 'PB 1 Tahun' : 'PL 2 Tahun') + ')';
+    document.getElementById('ptt-maks-hari').innerText = dataHari.durasi_hari;
+    document.getElementById('ptt-status').innerText = '';
+
+    let hariKeSekarang = dataHari.hari_ke || 1;
+    let elHari = document.getElementById('ptt-hari-ke');
+    elHari.min = 1; elHari.max = dataHari.durasi_hari; elHari.value = hariKeSekarang;
+    let elTgl = document.getElementById('ptt-tanggal');
+    elTgl.min = dataHari.tanggal_mulai;
+    elTgl.max = tambahHariISO(dataHari.tanggal_mulai, dataHari.durasi_hari - 1);
+    elTgl.value = tambahHariISO(dataHari.tanggal_mulai, hariKeSekarang - 1);
+
+    document.getElementById('modal-pilih-tanggal-tahunan').classList.remove('hidden');
+    pttMuatPreview(hariKeSekarang);
+  }
+
+  // Dipanggil saat user mengubah input tanggal -- hitung ulang nomor hari yang sesuai (dibatasi
+  // 1..durasi_hari), sinkronkan ke input #ptt-hari-ke, lalu muat pratinjau bacaannya.
+  function pttUbahDariTanggal() {
+    if (!pttCtx) return;
+    let tglPilih = document.getElementById('ptt-tanggal').value;
+    if (!tglPilih) return;
+    let hariKe = selisihHariISO(pttCtx.tanggalMulai, tglPilih) + 1;
+    if (hariKe < 1) hariKe = 1;
+    if (hariKe > pttCtx.maksHari) hariKe = pttCtx.maksHari;
+    document.getElementById('ptt-hari-ke').value = hariKe;
+    document.getElementById('ptt-tanggal').value = tambahHariISO(pttCtx.tanggalMulai, hariKe - 1);
+    pttMuatPreview(hariKe);
+  }
+
+  // Dipanggil saat user mengubah input nomor hari langsung -- hitung ulang tanggal yang sesuai,
+  // sinkronkan ke input #ptt-tanggal, lalu muat pratinjau bacaannya.
+  function pttUbahDariHari() {
+    if (!pttCtx) return;
+    let hariKe = Number(document.getElementById('ptt-hari-ke').value);
+    if (!hariKe || hariKe < 1) hariKe = 1;
+    if (hariKe > pttCtx.maksHari) hariKe = pttCtx.maksHari;
+    document.getElementById('ptt-hari-ke').value = hariKe;
+    document.getElementById('ptt-tanggal').value = tambahHariISO(pttCtx.tanggalMulai, hariKe - 1);
+    pttMuatPreview(hariKe);
+  }
+
+  // Ambil pratinjau bacaan (tanggal + referensi ayat dalam 1 baris, mis. "13 Mei 2026 — Mazmur
+  // 119:1-2") utk nomor hari tertentu, TANPA mengubah tampilan bacaan utama -- baru dipakai
+  // sungguhan kalau user menekan "Pergi ke Sini".
+  async function pttMuatPreview(hariKe) {
+    if (!pttCtx) return;
+    const previewEl = document.getElementById('ptt-preview');
+    document.getElementById('ptt-status').innerText = '';
+    previewEl.innerHTML = '⏳ Memuat bacaan...';
+    pttCtx.hariDiminta = hariKe;
+    try {
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getRencanaTahunanHariIni', username: userSession.username, override_jenis: pttCtx.jenis, override_hari_ke: hariKe }) });
+      const data = await res.json();
+      if (pttCtx.hariDiminta !== hariKe) return; // sudah ganti pilihan lagi sebelum respons ini tiba -- abaikan supaya tidak "race"
+      let dataHari = (data.status === 'success') ? data[pttCtx.jenis] : null;
+      if (!dataHari || dataHari.error || !dataHari.ayat || dataHari.ayat.length === 0) {
+        previewEl.innerHTML = '<span style="color:#ff3b30;">Bacaan untuk hari ini belum tersedia.</span>';
+        return;
+      }
+      let tglTampil = formatTanggalIndo(tambahHariISO(pttCtx.tanggalMulai, hariKe - 1));
+      let minV = Math.min(...dataHari.ayat.map(a => a.v)), maxV = Math.max(...dataHari.ayat.map(a => a.v));
+      let refText = formatRefLabel(dataHari.ayat[0].b, dataHari.ayat[0].c, minV, maxV);
+      previewEl.innerHTML = `<b>${escHtml(tglTampil)}</b> — ${escHtml(refText)} <span style="color:gray; font-size:11px;">(Hari ke-${hariKe})</span>`;
+    } catch (e) {
+      if (pttCtx.hariDiminta !== hariKe) return;
+      previewEl.innerHTML = '<span style="color:#ff3b30;">Gagal memuat pratinjau.</span>';
+    }
+  }
+
+  // Tombol "Pergi ke Sini" -- tutup modal, lalu benar-benar pindahkan tampilan bacaan utama
+  // (#reading-content) ke hari yang dipilih, memakai fungsi Prev/Next yang sudah ada.
+  async function konfirmasiPilihTanggalTahunan() {
+    if (!pttCtx) return;
+    let hariKe = Number(document.getElementById('ptt-hari-ke').value);
+    if (!hariKe || hariKe < 1) hariKe = 1;
+    if (hariKe > pttCtx.maksHari) hariKe = pttCtx.maksHari;
+    let jenis = pttCtx.jenis;
+    document.getElementById('modal-pilih-tanggal-tahunan').classList.add('hidden');
+    await muatRencanaTahunanUntukHari(jenis, hariKe);
   }
 
   // Pindah sheet aktif. Menghentikan suara & lepas titik-mulai lama dulu (supaya tidak "nyambung" ke
@@ -5875,7 +6212,7 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
         <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
           <b>${s.label}</b>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            ${s.url ? `<button type="button" class="icon-btn" style="padding:4px 10px; font-size:12px;" onclick="salinLinkMedia('${s.tipe}')" title="Salin link asli untuk dibagikan">🔗 Salin Link</button>` : ''}
+            ${s.url ? `<button type="button" class="icon-btn" style="padding:4px 10px; font-size:12px;" onclick="salinLinkMedia(event, '${s.tipe}')" title="Salin link asli untuk dibagikan">🔗 Salin Link</button>` : ''}
             ${isAdmin ? `<button type="button" class="icon-btn" style="padding:4px 10px; font-size:12px; background:#5856d6; color:white;" onclick="toggleEditLinkMedia('${s.tipe}')">✏️ ${s.url ? 'Ubah' : 'Isi'} Link</button>` : ''}
           </div>
         </div>
@@ -5901,13 +6238,14 @@ Tempel bagian <script> di bawahnya ke sebelum tag </script> penutup terakhir di 
 
   // Tombol "🔗 Salin Link" -- salin URL ASLI (bukan link iframe/preview) ke clipboard supaya user
   // bisa membagikannya ke tempat lain. Tersedia utk SEMUA user, bukan cuma administrator.
-  async function salinLinkMedia(tipe) {
+  async function salinLinkMedia(evt, tipe) {
+    let tombol = evt ? (evt.currentTarget || evt.target) : null;
     let input = document.getElementById(`media-slide-${tipe}-input`);
     let url = input ? input.value : '';
     if (!url) return alert('Link belum tersedia untuk dibagikan.');
     try {
       await navigator.clipboard.writeText(url);
-      alert('✅ Link sudah disalin. Silakan tempel (paste) ke tempat lain.');
+      tampilkanToastDekat(tombol, '✅ Copied');
     } catch (e) {
       prompt('Salin link di bawah ini secara manual:', url);
     }
